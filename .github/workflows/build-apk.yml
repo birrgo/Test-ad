@@ -1,4 +1,4 @@
-name: Convert PWA to Unsigned APK 
+name: Convert PWA to Installable APK 
 
 on:
   push:
@@ -31,8 +31,8 @@ jobs:
       - name: Create Capacitor Config Safely
         run: |
           echo '{' > capacitor.config.json
-          echo '  "appId": "com.nappro.app",' >> capacitor.config.json
-          echo '  "appName": "Nappro",' >> capacitor.config.json
+          echo '  "appId": "com.firapro.app",' >> capacitor.config.json
+          echo '  "appName": "Fira Pro",' >> capacitor.config.json
           echo '  "webDir": "www",' >> capacitor.config.json
           echo '  "bundledWebRuntime": false,' >> capacitor.config.json
           echo '  "plugins": {' >> capacitor.config.json
@@ -72,9 +72,9 @@ jobs:
 
       - name: Fix Android Hardware Back Button
         run: |
-          mkdir -p android/app/src/main/java/com/nappro/app
-          cat << 'EOF' > android/app/src/main/java/com/nappro/app/MainActivity.java
-          package com.nappro.app;
+          mkdir -p android/app/src/main/java/com/firapro/app
+          cat << 'EOF' > android/app/src/main/java/com/firapro/app/MainActivity.java
+          package com.firapro.app;
 
           import com.getcapacitor.BridgeActivity;
 
@@ -93,15 +93,12 @@ jobs:
       - name: Setup App Icon (Fixed AAPT Error)
         run: |
           if [ -f s.png ]; then
-            # Install ImageMagick to provide the 'convert' command
             sudo apt-get update
             sudo apt-get install -y imagemagick
             
-            # Re-encode to a strict PNG format to prevent AAPT compilation failures
             convert s.png -strip s_valid.png
             
             rm -rf android/app/src/main/res/mipmap-anydpi-v26
-            # Delete ALL default icons (including .webp variants) to avoid duplicate resources
             find android/app/src/main/res -name "ic_launcher*" -type f -delete
             
             for dir in android/app/src/main/res/mipmap-*/; do
@@ -128,17 +125,17 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Build Unsigned APK
+      - name: Build Auto-Signed Debug APK
         run: |
           cd android
           chmod +x ./gradlew
-          ./gradlew assembleRelease
+          ./gradlew assembleDebug
 
       - name: Move & Rename APK Output
-        run: mv android/app/build/outputs/apk/release/*.apk fira.apk
+        run: mv android/app/build/outputs/apk/debug/*.apk fira-pro.apk
 
-      - name: Upload Unsigned APK Artifact
+      - name: Upload Installable APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: fira-apk
-          path: fira.apk
+          name: fira-pro-apk
+          path: fira-pro.apk
