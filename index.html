@@ -20,18 +20,7 @@
     <meta property="og:title" content="Yala Tech - Home & Latest Index">
     <meta property="og:description" content="Stay updated with the latest news, tech updates, online jobs, and social media tips on Yala Tech.">
     <meta property="og:image" content="https://shiqela.online/s.png">
-    <meta property="og:image:secure_url" content="https://shiqela.online/s.png">
-    <meta property="og:image:type" content="image/png">
-    <meta property="og:image:width" content="500">
-    <meta property="og:image:height" content="500">
-
-    <!-- X / Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Yala Tech - Home & Latest Index">
-    <meta name="twitter:description" content="Stay updated with the latest news, tech updates, online jobs, and social media tips on Yala Tech.">
-    <meta name="twitter:image" content="https://shiqela.online/s.png">
-    <meta name="twitter:image:alt" content="Yala Tech Logo and Branding Preview">
-
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap" rel="stylesheet">
@@ -50,12 +39,10 @@
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-
         .menu-iframe-overlay.active {
             opacity: 1;
             visibility: visible;
         }
-
         .menu-iframe-drawer {
             position: absolute;
             top: 0;
@@ -68,12 +55,11 @@
             transition: transform 0.3s ease-in-out;
             box-shadow: 4px 0 12px rgba(0, 0, 0, 0.3);
         }
-
         .menu-iframe-overlay.active .menu-iframe-drawer {
             transform: translateX(0);
         }
 
-        /* AdMob Test Previews Styling */
+        /* Floating Bottom Banner Ad */
         .ad-container-wrapper {
             position: fixed;
             bottom: 70px;
@@ -102,28 +88,40 @@
             pointer-events: auto;
         }
         
-        .native-ad-placeholder {
-            background: rgba(241, 196, 15, 0.1);
-            border: 1px dashed #f1c40f;
-            border-radius: 8px;
-            padding: 15px;
+        /* Simulated Google Test Ad for Native / Inline Slots */
+        .mock-test-ad-block {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 0;
+            padding: 10px;
             text-align: center;
-            margin-top: 10px;
+            margin-top: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
-        .native-ad-badge {
-            background: #f39c12;
+        .mock-test-ad-label {
+            background: #4285f4;
             color: white;
             font-size: 10px;
-            text-transform: uppercase;
             padding: 2px 6px;
-            border-radius: 4px;
-            align-self: flex-start;
-            margin-bottom: 10px;
-            font-weight: 700;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-bottom-right-radius: 4px;
+        }
+        .mock-test-ad-title {
+            font-size: 16px;
+            color: #333;
+            margin: 10px 0 5px 0;
+            font-weight: 600;
+        }
+        .mock-test-ad-desc {
+            font-size: 13px;
+            color: #555;
+            margin: 0;
         }
     </style>
 </head>
@@ -162,20 +160,22 @@
                     <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
+            <!-- The full article content will load here -->
             <div class="news-reader-content" id="fullNewsReaderBody"></div>
         </div>
 
+        <!-- SEARCH OVERLAY -->
         <div class="search-modal-overlay" id="searchModalOverlay">
             <div class="search-box-header">
                 <div class="search-input-wrapper">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" class="search-news-field" id="newsCodeSearchInput" placeholder="Enter Post Code..." autocomplete="off">
+                    <input type="text" class="search-news-field" id="newsCodeSearchInput" placeholder="Search any word or code..." autocomplete="off">
                 </div>
                 <button class="close-search-btn" id="closeSearchDrawerBtn">Cancel</button>
             </div>
             <div class="search-results-area" id="searchResultsArea">
                 <div style="text-align:center; padding:30px 20px; color:#ffffff; font-size:13px; font-weight:600;">
-                    Type a post code above to find updates quickly.
+                    Type a word above to search all posted items.
                 </div>
             </div>
         </div>
@@ -256,7 +256,7 @@
         </nav>
     </div>
 
-    <!-- ✅ CRITICAL: CAPACITOR SCRIPTS ADDED HERE ✅ -->
+    <!-- CAPACITOR SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@capacitor/core@5.0.0/dist/capacitor.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@capacitor-community/admob@5.0.0/dist/plugin.min.js"></script>
 
@@ -265,7 +265,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Firebase Database Config
         const firebaseConfig = {
             apiKey: "AIzaSyCqwgwiukwKb7o6gwnaLoPQSWc7BfMDuYQ",
             authDomain: "besuad.firebaseapp.com",
@@ -279,10 +278,6 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
-        // ==========================================
-        // 🔴 Set to app1 for this build
-        // ==========================================
         const APP_NODE_NAME = "app1"; 
 
         let rawShikelaNewsData = {};
@@ -292,9 +287,7 @@
         let cardClockIntervalId = null;
         let hasTriggeredAppOpen = false;
 
-        // Variables to hold ad unit IDs
         window.globalAdConfig = {};
-
         const urlParams = new URLSearchParams(window.location.search);
         const isAdminMode = urlParams.get('admin') === 'true';
 
@@ -311,20 +304,17 @@
                     document.getElementById('customPopupModule').classList.remove('show-popup');
                 });
             }
-            
             initiateLiveInterfaceClocks();
         });
 
         // ==========================================
-        // 🟢 Fetch AdMob Units Logic & INITIALIZE
+        // Fetch AdMob Config
         // ==========================================
         function fetchAdMobUnits() {
             const adManagerRef = ref(db, `${APP_NODE_NAME}/adManager`);
-
             onValue(adManagerRef, (snapshot) => {
                 if (snapshot.exists()) {
                     const adData = snapshot.val();
-                    
                     window.globalAdConfig = {
                         status: adData.adStatus,
                         primaryNetwork: adData.primaryAdNetwork,
@@ -335,76 +325,49 @@
                         placements: adData.placements || {}
                     };
 
-                    console.log("--- AdMob Configuration Successfully Loaded ---");
-
-                    // ✅ FIX: Initialize Capacitor AdMob natively if on an Android device
                     if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                         const { AdMob } = Capacitor.Plugins;
                         AdMob.initialize({
                             requestTrackingAuthorization: true,
-                            initializeForTesting: false // Change to true if strictly testing local builds
+                            initializeForTesting: false
                         }).then(() => {
                             triggerAppOpenAd();
                             triggerBannerAd();
-                            if(localCachedBroadcasts.length > 0) {
-                                renderFilteredBroadcasts();
-                            }
+                            if(localCachedBroadcasts.length > 0) renderFilteredBroadcasts();
                         });
                     } else {
-                        // Web mock fallback
                         triggerAppOpenAd();
                         triggerBannerAd();
-                        if(localCachedBroadcasts.length > 0) {
-                            renderFilteredBroadcasts();
-                        }
+                        if(localCachedBroadcasts.length > 0) renderFilteredBroadcasts();
                     }
                 }
-            }, (error) => {
-                console.error("Firebase read error (adManager):", error);
             });
         }
 
-        // ==========================================
-        // 🟣 AdMob App Open & Banner Triggers (✅ FIXED)
-        // ==========================================
         async function triggerAppOpenAd() {
             if (hasTriggeredAppOpen) return; 
             if (window.globalAdConfig?.placements?.appOpenAdStart && window.globalAdConfig.appOpenId) {
                 hasTriggeredAppOpen = true;
-                
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     const { AdMob } = Capacitor.Plugins;
                     try {
                         await AdMob.prepareAppOpenAd({ adId: window.globalAdConfig.appOpenId });
                         await AdMob.showAppOpenAd();
-                    } catch (e) {
-                        console.error("App Open Ad Failed:", e);
-                    }
-                } else {
-                    triggerUiPopup("📱", "App Open Ad", `Showing App Open Ad...\nUnit: ${window.globalAdConfig.appOpenId}`);
+                    } catch (e) { console.error(e); }
                 }
             }
         }
 
         async function triggerBannerAd() {
             const adWrapper = document.getElementById('adContainerWrapper');
-            const adBanner = document.getElementById('admobPreviewBanner');
-            
             if (window.globalAdConfig?.placements?.bannerAdHomePage && window.globalAdConfig.bannerId) {
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     const { AdMob } = Capacitor.Plugins;
                     try {
-                        await AdMob.showBanner({
-                            adId: window.globalAdConfig.bannerId,
-                            position: 'BOTTOM_CENTER',
-                            margin: 70
-                        });
-                    } catch (e) {
-                        console.error("Banner Ad Failed:", e);
-                    }
+                        await AdMob.showBanner({ adId: window.globalAdConfig.bannerId, position: 'BOTTOM_CENTER', margin: 70 });
+                    } catch (e) { console.error(e); }
                 } else {
                     adWrapper.style.display = 'flex';
-                    adBanner.innerHTML = `AdMob Banner Active<br><span style="font-size:10px; font-weight:normal;">Unit: ${window.globalAdConfig.bannerId}</span>`;
                     document.getElementById('mainContentArea').style.paddingBottom = '130px';
                 }
             } else {
@@ -412,9 +375,6 @@
             }
         }
 
-        // ==========================================
-        // 🟠 AdMob Interstitial Trigger (✅ FIXED)
-        // ==========================================
         async function showInterstitialAdMock(onAdClosedCallback) {
             if (window.globalAdConfig?.placements?.interstitialAdPostDetails && window.globalAdConfig.interstitialId) {
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
@@ -424,15 +384,14 @@
                         await AdMob.showInterstitial();
                         onAdClosedCallback();
                     } catch (e) {
-                        console.error("Interstitial Ad Failed, opening content:", e);
                         onAdClosedCallback(); 
                     }
                 } else {
-                    triggerUiPopup("📺", "Interstitial Ad Loading", `Ad Unit: ${window.globalAdConfig.interstitialId}\nPlease wait...`);
+                    triggerUiPopup("📺", "Interstitial Ad Loading", `Please wait...`);
                     setTimeout(() => {
                         document.getElementById('customPopupModule').classList.remove('show-popup');
                         onAdClosedCallback();
-                    }, 2000);
+                    }, 1000);
                 }
             } else {
                 onAdClosedCallback(); 
@@ -447,22 +406,16 @@
         }
 
         function initiateLiveInterfaceClocks() {
-            const cornerClockNode = document.getElementById('topCornerLiveClock');
-            
-            if (cardClockIntervalId) clearInterval(cardClockIntervalId);
-            cardClockIntervalId = setInterval(() => {
-                const now = new Date();
+            setInterval(() => {
+                const cornerClockNode = document.getElementById('topCornerLiveClock');
                 if (cornerClockNode) {
-                    cornerClockNode.innerText = now.toLocaleTimeString(undefined, {
+                    cornerClockNode.innerText = new Date().toLocaleTimeString(undefined, {
                         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
                     });
                 }
-                const clockNodes = document.querySelectorAll('.timestamp-log-text[data-timestamp]');
-                clockNodes.forEach(node => {
+                document.querySelectorAll('.timestamp-log-text[data-timestamp]').forEach(node => {
                     const rawTime = parseInt(node.getAttribute('data-timestamp'));
-                    if (rawTime && !isNaN(rawTime)) {
-                        node.innerText = formatExactTimestampWithSeconds(rawTime);
-                    }
+                    if (rawTime) node.innerText = formatExactTimestampWithSeconds(rawTime);
                 });
             }, 1000);
         }
@@ -470,11 +423,8 @@
         function formatExactTimestampWithSeconds(baseEpoch) {
             const dateObj = new Date(baseEpoch);
             if (isNaN(dateObj.getTime())) return "Recent";
-            return dateObj.toLocaleDateString(undefined, { 
-                month: 'short', day: 'numeric', year: 'numeric' 
-            }) + ' • ' + dateObj.toLocaleTimeString(undefined, { 
-                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
-            });
+            return dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + ' • ' + 
+                   dateObj.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
         }
 
         function extractValidTimestamp(item) {
@@ -491,61 +441,34 @@
 
         function rebuildAndRenderBroadcastsCache() {
             localCachedBroadcasts = [];
-
-            Object.keys(rawShikelaNewsData).forEach(key => {
-                const item = rawShikelaNewsData[key];
-                if (typeof item === 'object' && item !== null) {
-                    localCachedBroadcasts.push({
-                        id: key, ...item,
-                        title: item.title || item.newsTitle || "Shikela Update",
-                        category: item.category || "Shikela Update",
-                        resolvedTimestamp: extractValidTimestamp(item)
-                    });
-                }
-            });
-
-            Object.keys(rawNewNewsData).forEach(key => {
-                const item = rawNewNewsData[key];
-                if (typeof item === 'object' && item !== null) {
-                    localCachedBroadcasts.push({
-                        id: key, ...item,
-                        title: item.title || item.newsTitle || "Shikela Tip",
-                        category: item.category || "Shikela Tips",
-                        resolvedTimestamp: extractValidTimestamp(item)
-                    });
-                }
-            });
-
+            const addNode = (dataObj, defaultCat) => {
+                Object.keys(dataObj).forEach(key => {
+                    const item = dataObj[key];
+                    if (typeof item === 'object' && item !== null) {
+                        localCachedBroadcasts.push({
+                            id: key, ...item,
+                            title: item.title || item.newsTitle || defaultCat,
+                            category: item.category || defaultCat,
+                            resolvedTimestamp: extractValidTimestamp(item)
+                        });
+                    }
+                });
+            };
+            addNode(rawShikelaNewsData, "Shikela Update");
+            addNode(rawNewNewsData, "Shikela Tips");
             localCachedBroadcasts.sort((a, b) => b.resolvedTimestamp - a.resolvedTimestamp);
             renderFilteredBroadcasts();
         }
 
         function streamLiveAdminUpdatesLog() {
-            const shikelaNewsRef = ref(db, `${APP_NODE_NAME}/shikelaNews`);
-            const newNewsRef = ref(db, `${APP_NODE_NAME}/newNews`);
-
-            onValue(shikelaNewsRef, (snapshot) => {
+            onValue(ref(db, `${APP_NODE_NAME}/shikelaNews`), (snapshot) => {
                 rawShikelaNewsData = snapshot.exists() ? snapshot.val() : {};
                 rebuildAndRenderBroadcastsCache();
-            }, (error) => console.error(error));
-
-            onValue(newNewsRef, (snapshot) => {
+            });
+            onValue(ref(db, `${APP_NODE_NAME}/newNews`), (snapshot) => {
                 rawNewNewsData = snapshot.exists() ? snapshot.val() : {};
                 rebuildAndRenderBroadcastsCache();
-            }, (error) => console.error(error));
-        }
-
-        function renderEmptyState() {
-            const container = document.getElementById('broadcastsContainer');
-            if (!container) return;
-            const displayFilter = currentActiveCategoryFilter.replace('Shikela', 'Yala Tech');
-            container.innerHTML = `
-                <article class="featured-broadcast-card">
-                    <div class="badge-meta-row"><span class="spotlight-pill">Yala Tech Network</span></div>
-                    <h2 class="broadcast-title">All Systems Nominal</h2>
-                    <p class="broadcast-body-text">There are no updates or notices posted under <strong>${displayFilter}</strong> today.</p>
-                </article>
-            `;
+            });
         }
 
         function buildSingleNewsCardHTML(item) {
@@ -555,26 +478,18 @@
             const category = item.category || "Shikela Update";
             const imageUrl = item.imageUrl || item.image || "";
 
-            const maxPreviewLen = 120;
-            const isLongText = fullContent.length > maxPreviewLen;
-            const previewContent = isLongText ? fullContent.substring(0, maxPreviewLen).trim() + "..." : fullContent;
+            const previewContent = fullContent.length > 120 ? fullContent.substring(0, 120).trim() + "..." : fullContent;
             const numericalTime = item.resolvedTimestamp || Date.now();
-            const initialFormattedClock = formatExactTimestampWithSeconds(numericalTime);
-            
-            const isTips = category.trim().toLowerCase().includes("tips");
-            const pillBadgeClass = isTips ? "spotlight-pill system-badge" : "spotlight-pill";
+            const pillBadgeClass = category.toLowerCase().includes("tips") ? "spotlight-pill system-badge" : "spotlight-pill";
 
-            let imageHTML = "";
-            if (imageUrl && imageUrl.trim().length > 0) {
-                imageHTML = `<div class="broadcast-image-frame" onclick="openFullNewsReader('${item.id}')"><img src="${imageUrl}" onload="this.classList.add('loaded')"></div>`;
-            }
+            let imageHTML = imageUrl ? `<div class="broadcast-image-frame" onclick="openFullNewsReader('${item.id}')"><img src="${imageUrl}" onload="this.classList.add('loaded')"></div>` : "";
 
             return `
                 <div class="badge-meta-row">
                     <div style="display:flex; align-items:center; gap:6px;">
                         <span class="${pillBadgeClass}" style="text-transform: uppercase;">${displayCategory}</span>
                     </div>
-                    <span class="timestamp-log-text" data-timestamp="${numericalTime}">${initialFormattedClock}</span>
+                    <span class="timestamp-log-text" data-timestamp="${numericalTime}"></span>
                 </div>
                 ${imageHTML}
                 <div class="clickable-news-content" onclick="openFullNewsReader('${item.id}')">
@@ -584,10 +499,11 @@
             `;
         }
 
+        // ==========================================
+        // 🔵 FULL ARTICLE READER & SCROLL AD 
+        // ==========================================
         window.openFullNewsReader = function(itemId) {
-            showInterstitialAdMock(() => {
-                executeOpenReader(itemId);
-            });
+            showInterstitialAdMock(() => executeOpenReader(itemId));
         };
 
         function executeOpenReader(itemId) {
@@ -596,81 +512,68 @@
 
             const readerOverlay = document.getElementById('fullNewsModalOverlay');
             const readerBody = document.getElementById('fullNewsReaderBody');
-            if (!readerOverlay || !readerBody) return;
-
-            const headline = item.title || item.newsTitle || "Yala Tech Update";
+            
+            const headline = item.title || item.newsTitle;
             const fullContent = item.content || item.message || "";
-            const displayCategory = (item.category || "Yala Tech Update").replace('Shikela', 'Yala Tech');
+            const displayCategory = (item.category || "").replace('Shikela', 'Yala Tech');
             const imageUrl = item.imageUrl || item.image || "";
             const videoUrl = item.videoUrl || item.youtubeUrl || item.youtubeId || item.video || "";
             const targetRedirectUrl = item.link || item.redirectUrl || item.url || item.targetUrl || "";
-            const customActionLabel = item.actionButtonLabel || item.actionLabel || item.buttonLabel || item.btnLabel || "Visit External Source / Link";
-            
-            const numericalTime = item.resolvedTimestamp || Date.now();
-            const initialFormattedClock = formatExactTimestampWithSeconds(numericalTime);
+            const customActionLabel = item.actionButtonLabel || item.actionLabel || "Visit External Source / Link";
             const pillBadgeClass = (item.category || "").toLowerCase().includes("tips") ? "spotlight-pill system-badge" : "spotlight-pill";
 
-            let imageHTML = "";
-            if (imageUrl && imageUrl.trim().length > 0 && Boolean(item.duplicateCoverInArticle ?? true)) {
-                imageHTML = `<div class="reader-image-frame"><img src="${imageUrl.trim()}" alt="${headline}"></div>`;
-            }
+            let imageHTML = (imageUrl && Boolean(item.duplicateCoverInArticle ?? true)) 
+                ? `<div class="reader-image-frame"><img src="${imageUrl.trim()}" alt="${headline}"></div>` : "";
 
             let videoHTML = "";
             const embedUrl = getYouTubeEmbedUrl(videoUrl);
-            if (embedUrl) {
-                videoHTML = `<div class="reader-video-container"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
-            }
+            if (embedUrl) videoHTML = `<div class="reader-video-container"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
 
-            let redirectBtnHTML = "";
-            if (targetRedirectUrl && targetRedirectUrl.trim().length > 0) {
-                redirectBtnHTML = `
-                    <div style="margin-top:20px;">
-                        <a href="${targetRedirectUrl.trim()}" target="_blank" rel="noopener noreferrer" class="redirect-link-btn" style="width:100%; justify-content:center;">
-                            <span>${customActionLabel}</span>
-                        </a>
+            let redirectBtnHTML = targetRedirectUrl 
+                ? `<div style="margin-top:20px;"><a href="${targetRedirectUrl}" target="_blank" class="redirect-link-btn" style="width:100%; justify-content:center;"><span>${customActionLabel}</span></a></div>` : "";
+
+            // END OF ARTICLE AD (Large Banner)
+            let endOfArticleAd = "";
+            if (window.globalAdConfig?.placements?.bannerAdPostDetails) {
+                endOfArticleAd = `
+                    <div class="mock-test-ad-block" style="margin-top: 35px; border-radius: 8px;">
+                        <span class="mock-test-ad-label">Test Ad</span>
+                        <div class="mock-test-ad-title">AdMob Banner</div>
+                        <p class="mock-test-ad-desc">This is a 300x250 test ad.<br>ID: ${window.globalAdConfig.bannerId || 'Not Configured'}</p>
                     </div>
                 `;
             }
 
             readerBody.innerHTML = `
                 <div class="reader-meta-bar">
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span class="${pillBadgeClass}" style="text-transform: uppercase;">${displayCategory}</span>
-                    </div>
-                    <span class="timestamp-log-text">${initialFormattedClock}</span>
+                    <span class="${pillBadgeClass}" style="text-transform: uppercase;">${displayCategory}</span>
                 </div>
                 <h1 class="reader-title">${headline}</h1>
                 ${imageHTML}
                 ${videoHTML}
                 <div class="reader-full-body">${fullContent}</div>
                 ${redirectBtnHTML}
+                ${endOfArticleAd}
             `;
-
             readerOverlay.classList.add('active-reader');
         }
 
         // ==========================================
-        // 🟢 Inject Native Ad Every 2 News Posts
+        // 🟢 NATIVE IN-FEED AD (Visual Test Ad Mock)
         // ==========================================
         function renderFilteredBroadcasts() {
             const container = document.getElementById('broadcastsContainer');
             if (!container) return;
-            
             container.innerHTML = "";
 
-            const filtered = localCachedBroadcasts.filter(item => {
-                const nodeCategory = (item.category || "").trim().toLowerCase();
-                const targetFilter = currentActiveCategoryFilter.trim().toLowerCase();
-                return nodeCategory === targetFilter;
-            });
-
+            const filtered = localCachedBroadcasts.filter(item => (item.category || "").trim().toLowerCase() === currentActiveCategoryFilter.trim().toLowerCase());
+            
             if (filtered.length === 0) {
-                renderEmptyState();
+                container.innerHTML = `<article class="featured-broadcast-card"><h2 class="broadcast-title">No updates posted today.</h2></article>`;
                 return;
             }
 
             let currentPostCount = 0;
-
             filtered.forEach((item) => {
                 const card = document.createElement('article');
                 card.className = "featured-broadcast-card";
@@ -684,12 +587,12 @@
                         const nativeAdCard = document.createElement('article');
                         nativeAdCard.className = "featured-broadcast-card";
                         
+                        // Makes the placeholder look exactly like the Google Test Ad screenshot
                         nativeAdCard.innerHTML = `
-                            <div class="native-ad-badge">Sponsored</div>
-                            <div class="native-ad-placeholder">
-                                <h3 style="margin: 0 0 5px 0; font-size: 14px; color: #333;">Advertisement</h3>
-                                <p style="font-size:11px; color:#666; margin:0;">In native device this area will render the Native ad.</p>
-                                <p style="font-size:10px; color:#999; margin-top:5px;">ID: ${window.globalAdConfig.nativeId}</p>
+                            <div class="mock-test-ad-block">
+                                <span class="mock-test-ad-label">Test Ad</span>
+                                <div class="mock-test-ad-title">Nice job!</div>
+                                <p class="mock-test-ad-desc">This is a 320x50 test ad.<br>ID: ${window.globalAdConfig.nativeId}</p>
                             </div>
                         `;
                         container.appendChild(nativeAdCard);
@@ -698,60 +601,88 @@
             });
         }
 
-        function setupNewsReaderModalControls() {
-            const closeBtn = document.getElementById('closeNewsReaderBtn');
-            const readerOverlay = document.getElementById('fullNewsModalOverlay');
-            if (closeBtn && readerOverlay) {
-                closeBtn.addEventListener('click', () => readerOverlay.classList.remove('active-reader'));
-            }
-        }
-
-        function bindVisualInterfaceControls() {
-            const pills = document.querySelectorAll('.filter-btn, .filter-pill');
-            pills.forEach(pill => {
-                pill.addEventListener('click', function() {
-                    pills.forEach(p => { p.classList.remove('active-pill'); p.classList.remove('active'); });
-                    this.classList.add('active-pill');
-                    this.classList.add('active');
-                    currentActiveCategoryFilter = this.getAttribute('data-filter') || this.getAttribute('data-category') || "Shikela Update";
-                    renderFilteredBroadcasts();
-                });
-            });
-        }
-
+        // ==========================================
+        // 🟡 FULLY RESTORED SEARCH ENGINE
+        // ==========================================
         function setupSearchEngineControls() {
             const openBtn = document.getElementById('openSearchBtn');
             const closeBtn = document.getElementById('closeSearchDrawerBtn');
             const searchOverlay = document.getElementById('searchModalOverlay');
             const searchInput = document.getElementById('newsCodeSearchInput');
 
-            if (openBtn && searchOverlay) {
+            if (openBtn) {
                 openBtn.addEventListener('click', () => {
                     searchOverlay.classList.add('active-search');
-                    if (searchInput) { searchInput.value = ''; searchInput.focus(); }
+                    if (searchInput) { searchInput.value = ''; searchInput.focus(); executeNewsSearchQuery(''); }
                 });
             }
-            if (closeBtn && searchOverlay) {
+            if (closeBtn) {
                 closeBtn.addEventListener('click', () => searchOverlay.classList.remove('active-search'));
             }
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => executeNewsSearchQuery(e.target.value));
+            }
+        }
+
+        function executeNewsSearchQuery(query) {
+            const resultsArea = document.getElementById('searchResultsArea');
+            if (!resultsArea) return;
+
+            const cleanQuery = query.trim().toLowerCase();
+            if (!cleanQuery) {
+                resultsArea.innerHTML = `<div style="text-align:center; padding:30px 20px; color:#ffffff; font-size:13px; font-weight:600;">Type any word or code above to search all posts.</div>`;
+                return;
+            }
+
+            const matchedNews = localCachedBroadcasts.filter(item => {
+                const code = String(item.newsCode || item.code || item.id || '').toLowerCase();
+                const title = String(item.title || item.newsTitle || '').toLowerCase();
+                const content = String(item.content || item.message || '').toLowerCase();
+                const cat = String(item.category || '').toLowerCase();
+
+                // Searches everywhere: ID, Title, Content, and Category
+                return code.includes(cleanQuery) || title.includes(cleanQuery) || content.includes(cleanQuery) || cat.includes(cleanQuery);
+            });
+
+            if (matchedNews.length === 0) {
+                resultsArea.innerHTML = `<div style="text-align:center; padding:30px 20px; color:#ffffff; font-size:13px; font-weight:600;">No updates matching "<strong>${cleanQuery}</strong>" found.</div>`;
+                return;
+            }
+
+            resultsArea.innerHTML = '';
+            matchedNews.forEach((item) => {
+                const card = document.createElement('article');
+                card.className = "featured-broadcast-card";
+                card.innerHTML = buildSingleNewsCardHTML(item);
+                resultsArea.appendChild(card);
+            });
+        }
+
+        // ==========================================
+        // UI Controls & Toggles
+        // ==========================================
+        function bindVisualInterfaceControls() {
+            document.querySelectorAll('.filter-btn').forEach(pill => {
+                pill.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(p => p.classList.remove('active-pill', 'active'));
+                    this.classList.add('active-pill', 'active');
+                    currentActiveCategoryFilter = this.getAttribute('data-filter') || "Shikela Update";
+                    renderFilteredBroadcasts();
+                });
+            });
+        }
+
+        function setupNewsReaderModalControls() {
+            const closeBtn = document.getElementById('closeNewsReaderBtn');
+            if (closeBtn) closeBtn.addEventListener('click', () => document.getElementById('fullNewsModalOverlay').classList.remove('active-reader'));
         }
 
         function triggerUiPopup(icon, title, desc) {
             const overlay = document.getElementById('customPopupModule');
-            const iconNode = document.getElementById('popupIconNode');
-            const titleNode = document.getElementById('popupTitleNode');
-            const descNode = document.getElementById('popupDescNode');
-            const dismissBtn = document.getElementById('closePopupBtn');
-            
-            if (overlay && iconNode && titleNode && descNode) {
-                if (dismissBtn) {
-                    dismissBtn.innerText = "Continue";
-                    dismissBtn.onclick = () => overlay.classList.remove('show-popup');
-                }
-                iconNode.innerText = icon;
-                iconNode.style.display = "inline-block";
-                titleNode.innerText = title;
-                descNode.innerText = desc;
+            if (overlay) {
+                document.getElementById('popupIconNode').innerText = icon;
+                document.getElementById('popupTitleNode').innerText = title;
+                document.getElementById('popupDescNode').innerText = desc;
                 overlay.classList.add('show-popup');
             }
         }
@@ -760,18 +691,8 @@
     <script>
         const openBtn = document.getElementById('openMenuIframeBtn');
         const overlay = document.getElementById('menuIframeOverlay');
-        const iframe = document.getElementById('menuIframe');
-
-        openBtn.addEventListener('click', () => {
-            iframe.src = 'menu.html';
-            overlay.classList.add('active');
-        });
-
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                overlay.classList.remove('active');
-            }
-        });
+        openBtn.addEventListener('click', () => { document.getElementById('menuIframe').src = 'menu.html'; overlay.classList.add('active'); });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
     </script>
 </body>
 </html>
