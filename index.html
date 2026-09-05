@@ -253,10 +253,14 @@
         let currentActiveCategoryFilter = "Shikela Update";
         let cardClockIntervalId = null;
 
+        // Variables to hold ad unit IDs
+        window.globalAdConfig = {};
+
         const urlParams = new URLSearchParams(window.location.search);
         const isAdminMode = urlParams.get('admin') === 'true';
 
         document.addEventListener('DOMContentLoaded', () => {
+            fetchAdMobUnits(); // Initialize AdMob fetcher
             streamLiveAdminUpdatesLog();
             bindVisualInterfaceControls();
             setupSearchEngineControls();
@@ -271,6 +275,41 @@
             
             initiateLiveInterfaceClocks();
         });
+
+        // ==========================================
+        // 🟢 Fetch AdMob Units Logic
+        // ==========================================
+        function fetchAdMobUnits() {
+            const adManagerRef = ref(db, `${APP_NODE_NAME}/adManager`);
+
+            onValue(adManagerRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const adData = snapshot.val();
+                    
+                    // Assign to global variable for use elsewhere in your app
+                    window.globalAdConfig = {
+                        status: adData.adStatus,
+                        primaryNetwork: adData.primaryAdNetwork,
+                        bannerId: adData.adMobBannerUnitId,
+                        interstitialId: adData.adMobInterstitialUnitId,
+                        nativeId: adData.adMobNativeUnitId,
+                        appOpenId: adData.adMobAppOpenUnitId,
+                        placements: adData.placements || {}
+                    };
+
+                    console.log("--- AdMob Configuration Successfully Loaded ---");
+                    console.log("Banner Unit ID:", window.globalAdConfig.bannerId);
+                    console.log("Interstitial Unit ID:", window.globalAdConfig.interstitialId);
+                    console.log("Native Unit ID:", window.globalAdConfig.nativeId);
+                    console.log("App Open Unit ID:", window.globalAdConfig.appOpenId);
+                    
+                } else {
+                    console.log("No AdMob configuration found in database.");
+                }
+            }, (error) => {
+                console.error("Firebase read error (adManager):", error);
+            });
+        }
 
         function getYouTubeEmbedUrl(url) {
             if (!url) return null;
