@@ -85,6 +85,59 @@
         .menu-iframe-overlay.active .menu-iframe-drawer {
             transform: translateX(0);
         }
+
+        /* AdMob Test Previews Styling */
+        .ad-container-wrapper {
+            position: fixed;
+            bottom: 70px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            pointer-events: none; 
+            z-index: 9000;
+        }
+        .admob-preview-banner {
+            width: 320px;
+            height: 50px;
+            background: #f1c40f;
+            color: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: bold;
+            border: 2px dashed #d35400;
+            border-radius: 4px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            pointer-events: auto;
+        }
+        
+        .native-ad-placeholder {
+            background: rgba(241, 196, 15, 0.1);
+            border: 1px dashed #f1c40f;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .native-ad-badge {
+            background: #f39c12;
+            color: white;
+            font-size: 10px;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 4px;
+            align-self: flex-start;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
@@ -108,6 +161,7 @@
             <iframe class="menu-iframe-drawer" id="menuIframe" src="about:blank"></iframe>
         </div>
 
+        <!-- Reusable Popup Module (Also used for Interstitial Ad Mocking) -->
         <div class="custom-popup-overlay" id="customPopupModule">
             <div class="custom-popup-modal">
                 <span class="popup-status-icon" id="popupIconNode">ℹ️</span>
@@ -168,7 +222,7 @@
             </div>
         </header>
 
-        <main class="app-content">
+        <main class="app-content" id="mainContentArea">
             <!-- Two-Choice Top Menu with Yala Tech Update and Yala Tech Tips -->
             <div class="category-filter-row filter-btn-grid" id="filterPillsRow">
                 <button class="filter-pill filter-btn active-pill active" data-filter="Shikela Update" data-category="Shikela Update">Yala Tech Update</button>
@@ -182,37 +236,37 @@
             </div>
 
             <footer class="verified-footer-shield">
-                <span class="footer-shield-text">Yala Tech  Matrix Verified</span>
+                <span class="footer-shield-text">Yala Tech Matrix Verified</span>
             </footer>
         </main>
 
+        <!-- AdMob Test Preview Banner Container -->
+        <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;">
+            <div class="admob-preview-banner" id="admobPreviewBanner">
+                AdMob Banner Preview Loading...
+            </div>
+        </div>
+
         <!-- Bottom Navigation Menu -->
         <nav class="bottom-nav">
-            <!-- 1. Home (Active for index.html) -->
             <a id="nav-home" href="index.html" class="nav-item active">
                 <div class="icon-bg">
                     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                 </div>
                 <span>Home</span>
             </a>
-
-            <!-- 2. Online Jobs -->
             <a id="nav-jobs" href="s.html" class="nav-item">
                 <div class="icon-bg">
                     <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
                 </div>
                 <span>Online Jobs</span>
             </a>
-
-            <!-- 3. Tech -->
             <a id="nav-tech" href="in.html" class="nav-item">
                 <div class="icon-bg">
                     <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                 </div>
                 <span>Tech</span>
             </a>
-
-            <!-- 4. Social Media -->
             <a id="nav-social" href="sm.html" class="nav-item">
                 <div class="icon-bg">
                     <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
@@ -252,6 +306,7 @@
         let localCachedBroadcasts = [];
         let currentActiveCategoryFilter = "Shikela Update";
         let cardClockIntervalId = null;
+        let hasTriggeredAppOpen = false;
 
         // Variables to hold ad unit IDs
         window.globalAdConfig = {};
@@ -260,7 +315,7 @@
         const isAdminMode = urlParams.get('admin') === 'true';
 
         document.addEventListener('DOMContentLoaded', () => {
-            fetchAdMobUnits(); // Initialize AdMob fetcher
+            fetchAdMobUnits(); 
             streamLiveAdminUpdatesLog();
             bindVisualInterfaceControls();
             setupSearchEngineControls();
@@ -286,7 +341,6 @@
                 if (snapshot.exists()) {
                     const adData = snapshot.val();
                     
-                    // Assign to global variable for use elsewhere in your app
                     window.globalAdConfig = {
                         status: adData.adStatus,
                         primaryNetwork: adData.primaryAdNetwork,
@@ -298,17 +352,80 @@
                     };
 
                     console.log("--- AdMob Configuration Successfully Loaded ---");
-                    console.log("Banner Unit ID:", window.globalAdConfig.bannerId);
-                    console.log("Interstitial Unit ID:", window.globalAdConfig.interstitialId);
-                    console.log("Native Unit ID:", window.globalAdConfig.nativeId);
-                    console.log("App Open Unit ID:", window.globalAdConfig.appOpenId);
                     
-                } else {
-                    console.log("No AdMob configuration found in database.");
+                    // Trigger initial ad checks once config is loaded
+                    triggerAppOpenAd();
+                    triggerBannerAd();
+                    
+                    // Re-render news list to insert native ads now that we know they are enabled
+                    if(localCachedBroadcasts.length > 0) {
+                        renderFilteredBroadcasts();
+                    }
                 }
             }, (error) => {
                 console.error("Firebase read error (adManager):", error);
             });
+        }
+
+        // ==========================================
+        // 🟣 AdMob App Open & Banner Triggers
+        // ==========================================
+        function triggerAppOpenAd() {
+            if (hasTriggeredAppOpen) return; // Only do this once per session
+            if (window.globalAdConfig?.placements?.appOpenAdStart) {
+                hasTriggeredAppOpen = true;
+                
+                if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
+                    // Browser Test Mock for App Open Ad
+                    triggerUiPopup("📱", "App Open Ad", `Showing App Open Ad...\nUnit: ${window.globalAdConfig.appOpenId}`);
+                } else {
+                    console.log("Initialize Native App Open Ad:", window.globalAdConfig.appOpenId);
+                    // Add @capacitor-community/admob plugin code here
+                }
+            }
+        }
+
+        function triggerBannerAd() {
+            const adWrapper = document.getElementById('adContainerWrapper');
+            const adBanner = document.getElementById('admobPreviewBanner');
+            
+            if (window.globalAdConfig?.placements?.bannerAdHomePage && window.globalAdConfig.bannerId) {
+                if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
+                    adWrapper.style.display = 'flex';
+                    adBanner.innerHTML = `AdMob Banner Active<br><span style="font-size:10px; font-weight:normal;">Unit: ${window.globalAdConfig.bannerId}</span>`;
+                    document.getElementById('mainContentArea').style.paddingBottom = '130px';
+                } else {
+                    console.log("Initialize Native Banner Ad:", window.globalAdConfig.bannerId);
+                    // Add @capacitor-community/admob plugin code here
+                }
+            } else {
+                adWrapper.style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // 🟠 AdMob Interstitial Trigger (Before Post)
+        // ==========================================
+        function showInterstitialAdMock(onAdClosedCallback) {
+            if (window.globalAdConfig?.placements?.interstitialAdPostDetails) {
+                if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
+                    // Browser Mock
+                    triggerUiPopup("📺", "Interstitial Ad Loading", `Ad Unit: ${window.globalAdConfig.interstitialId}\nPlease wait...`);
+                    
+                    // Auto-close mock ad after 2 seconds and open article
+                    setTimeout(() => {
+                        document.getElementById('customPopupModule').classList.remove('show-popup');
+                        onAdClosedCallback();
+                    }, 2000);
+                } else {
+                    // Actual Native Device Logic
+                    console.log("Trigger Interstitial Ad plugin before continuing...");
+                    // Await ad completion then call onAdClosedCallback();
+                    onAdClosedCallback(); 
+                }
+            } else {
+                onAdClosedCallback(); // Ad placement is disabled, open instantly
+            }
         }
 
         function getYouTubeEmbedUrl(url) {
@@ -373,7 +490,6 @@
         function rebuildAndRenderBroadcastsCache() {
             localCachedBroadcasts = [];
 
-            // Shikela Update node
             Object.keys(rawShikelaNewsData).forEach(key => {
                 const item = rawShikelaNewsData[key];
                 if (typeof item === 'object' && item !== null) {
@@ -388,7 +504,6 @@
                 }
             });
 
-            // Shikela Tips node
             Object.keys(rawNewNewsData).forEach(key => {
                 const item = rawNewNewsData[key];
                 if (typeof item === 'object' && item !== null) {
@@ -403,9 +518,7 @@
                 }
             });
 
-            // Sort newest first
             localCachedBroadcasts.sort((a, b) => b.resolvedTimestamp - a.resolvedTimestamp);
-
             renderFilteredBroadcasts();
         }
 
@@ -432,7 +545,6 @@
             const container = document.getElementById('broadcastsContainer');
             if (!container) return;
             
-            // Minor update: Ensure user sees "Yala Tech" in empty state even when filtering by "Shikela"
             const displayFilter = currentActiveCategoryFilter.replace('Shikela', 'Yala Tech');
             
             container.innerHTML = `
@@ -444,49 +556,9 @@
             `;
         }
 
-        window.duplicateAsAdmin = async function(itemId) {
-            const sourceItem = localCachedBroadcasts.find(n => n.id === itemId);
-            if (!sourceItem) {
-                triggerUiPopup("⚠️", "Error", "Target article to duplicate was not found.");
-                return;
-            }
-
-            try {
-                const clonedPayload = { ...sourceItem };
-                const targetNodePath = clonedPayload._dbPath || `shikelaNews`;
-                
-                delete clonedPayload.id;
-                delete clonedPayload._dbPath;
-                delete clonedPayload.resolvedTimestamp;
-
-                const now = Date.now();
-                clonedPayload.createdAtTimestamp = now;
-                clonedPayload.updatedAt = now;
-                clonedPayload.timestamp = now;
-                
-                const currentTitle = clonedPayload.title || clonedPayload.newsTitle || "Untitled";
-                clonedPayload.title = `${currentTitle} (Copy)`;
-
-                const currentCode = clonedPayload.newsCode || clonedPayload.code || "";
-                if (currentCode) {
-                    clonedPayload.newsCode = `${currentCode}_COPY`;
-                }
-
-                const nodeRef = ref(db, `${APP_NODE_NAME}/${targetNodePath}`);
-                const newRef = push(nodeRef);
-                await set(newRef, clonedPayload);
-
-                triggerUiPopup("✅", "Article Duplicated", `Successfully duplicated item into ${APP_NODE_NAME}/${targetNodePath}.`);
-            } catch (err) {
-                console.error("Duplication failed:", err);
-                triggerUiPopup("❌", "Duplication Error", "Failed to duplicate item into database.");
-            }
-        };
-
         function buildSingleNewsCardHTML(item) {
             const headline = item.title || item.newsTitle || "Yala Tech Update";
             const fullContent = item.content || item.message || "";
-            // Maps category to replace Shikela with Yala Tech for display pills only.
             const displayCategory = (item.category || "Yala Tech Update").replace('Shikela', 'Yala Tech'); 
             const category = item.category || "Shikela Update";
             const imageUrl = item.imageUrl || item.image || "";
@@ -494,7 +566,6 @@
             const maxPreviewLen = 120;
             const isLongText = fullContent.length > maxPreviewLen;
             const previewContent = isLongText ? fullContent.substring(0, maxPreviewLen).trim() + "..." : fullContent;
-
             const numericalTime = item.resolvedTimestamp || Date.now();
             const initialFormattedClock = formatExactTimestampWithSeconds(numericalTime);
             
@@ -506,17 +577,7 @@
                 imageHTML = `<div class="broadcast-image-frame" onclick="openFullNewsReader('${item.id}')"><img src="${imageUrl}" onload="this.classList.add('loaded')"></div>`;
             }
 
-            let adminBtnHTML = "";
-            if (isAdminMode) {
-                adminBtnHTML = `
-                    <div class="admin-action-row">
-                        <button class="admin-duplicate-btn" onclick="duplicateAsAdmin('${item.id}')">📋 Duplicate Post</button>
-                    </div>
-                `;
-            }
-
             return `
-                ${adminBtnHTML}
                 <div class="badge-meta-row">
                     <div style="display:flex; align-items:center; gap:6px;">
                         <span class="${pillBadgeClass}" style="text-transform: uppercase;">${displayCategory}</span>
@@ -531,7 +592,17 @@
             `;
         }
 
+        // ==========================================
+        // 🔵 Intercept Click & Trigger Interstitial
+        // ==========================================
         window.openFullNewsReader = function(itemId) {
+            // Check for interstitial ad before proceeding
+            showInterstitialAdMock(() => {
+                executeOpenReader(itemId);
+            });
+        };
+
+        function executeOpenReader(itemId) {
             const item = localCachedBroadcasts.find(n => n.id === itemId);
             if (!item) return;
 
@@ -542,24 +613,20 @@
 
             const headline = item.title || item.newsTitle || "Yala Tech Update";
             const fullContent = item.content || item.message || "";
-            // Replace Shikela with Yala Tech for the pill inside the reader
             const displayCategory = (item.category || "Yala Tech Update").replace('Shikela', 'Yala Tech');
             const category = item.category || "Shikela Update";
             const imageUrl = item.imageUrl || item.image || "";
             const videoUrl = item.videoUrl || item.youtubeUrl || item.youtubeId || item.video || "";
-            
-            const isDuplicateActive = Boolean(item.duplicateCoverInArticle ?? item.duplicateImageInArticle ?? item.duplicateImage ?? true);
-            
             const targetRedirectUrl = item.link || item.redirectUrl || item.url || item.targetUrl || "";
             const customActionLabel = item.actionButtonLabel || item.actionLabel || item.buttonLabel || item.btnLabel || "Visit External Source / Link";
-
+            
             const numericalTime = item.resolvedTimestamp || Date.now();
             const initialFormattedClock = formatExactTimestampWithSeconds(numericalTime);
             const isTips = category.trim().toLowerCase().includes("tips");
             const pillBadgeClass = isTips ? "spotlight-pill system-badge" : "spotlight-pill";
 
             let imageHTML = "";
-            if (imageUrl && imageUrl.trim().length > 0 && isDuplicateActive) {
+            if (imageUrl && imageUrl.trim().length > 0 && Boolean(item.duplicateCoverInArticle ?? true)) {
                 imageHTML = `<div class="reader-image-frame"><img src="${imageUrl.trim()}" alt="${headline}"></div>`;
             }
 
@@ -585,15 +652,7 @@
                 `;
             }
 
-            let adminDuplicateBtnReader = "";
-            if (isAdminMode) {
-                adminDuplicateBtnReader = `
-                    <button class="admin-duplicate-btn" style="margin-bottom: 12px; width: 100%;" onclick="duplicateAsAdmin('${item.id}')">📋 Duplicate Article Entry</button>
-                `;
-            }
-
             readerBody.innerHTML = `
-                ${adminDuplicateBtnReader}
                 <div class="reader-meta-bar">
                     <div style="display:flex; align-items:center; gap:6px;">
                         <span class="${pillBadgeClass}" style="text-transform: uppercase;">${displayCategory}</span>
@@ -608,19 +667,11 @@
             `;
 
             readerOverlay.classList.add('active-reader');
-        };
-
-        function setupNewsReaderModalControls() {
-            const closeBtn = document.getElementById('closeNewsReaderBtn');
-            const readerOverlay = document.getElementById('fullNewsModalOverlay');
-
-            if (closeBtn && readerOverlay) {
-                closeBtn.addEventListener('click', () => {
-                    readerOverlay.classList.remove('active-reader');
-                });
-            }
         }
 
+        // ==========================================
+        // 🟢 Inject Native Ad Every 2 News Posts
+        // ==========================================
         function renderFilteredBroadcasts() {
             const container = document.getElementById('broadcastsContainer');
             if (!container) return;
@@ -638,12 +689,52 @@
                 return;
             }
 
+            let currentPostCount = 0;
+
             filtered.forEach((item) => {
                 const card = document.createElement('article');
                 card.className = "featured-broadcast-card";
                 card.innerHTML = buildSingleNewsCardHTML(item);
                 container.appendChild(card);
+                
+                currentPostCount++;
+
+                // Trigger Native Ad Check after every 2 posts
+                if (currentPostCount % 2 === 0) {
+                    if (window.globalAdConfig?.placements?.nativeAdPostList && window.globalAdConfig.nativeId) {
+                        const nativeAdCard = document.createElement('article');
+                        nativeAdCard.className = "featured-broadcast-card";
+                        
+                        if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
+                            // HTML Browser Mock for Native Ad
+                            nativeAdCard.innerHTML = `
+                                <div class="native-ad-badge">Sponsored</div>
+                                <div class="native-ad-placeholder">
+                                    <h3 style="margin: 0 0 5px 0; font-size: 14px; color: #333;">AdMob Native Ad Active</h3>
+                                    <p style="font-size:11px; color:#666; margin:0;">In native device this area will render the ad.</p>
+                                    <p style="font-size:10px; color:#999; margin-top:5px;">ID: ${window.globalAdConfig.nativeId}</p>
+                                </div>
+                            `;
+                        } else {
+                            // Placeholder block that the Native Ad Plugin targets
+                            nativeAdCard.innerHTML = `<div class="native-ad-badge">Sponsored</div><div class="admob-native-container" style="min-height: 250px; width: 100%;"></div>`;
+                            console.log("Initialize Capacitor Native Ad Here");
+                        }
+                        container.appendChild(nativeAdCard);
+                    }
+                }
             });
+        }
+
+        function setupNewsReaderModalControls() {
+            const closeBtn = document.getElementById('closeNewsReaderBtn');
+            const readerOverlay = document.getElementById('fullNewsModalOverlay');
+
+            if (closeBtn && readerOverlay) {
+                closeBtn.addEventListener('click', () => {
+                    readerOverlay.classList.remove('active-reader');
+                });
+            }
         }
 
         function bindVisualInterfaceControls() {
@@ -651,16 +742,11 @@
 
             pills.forEach(pill => {
                 pill.addEventListener('click', function() {
-                    pills.forEach(p => {
-                        p.classList.remove('active-pill');
-                        p.classList.remove('active');
-                    });
+                    pills.forEach(p => { p.classList.remove('active-pill'); p.classList.remove('active'); });
                     this.classList.add('active-pill');
                     this.classList.add('active');
                     
-                    // Defaults back to "Shikela Update" so the underlying logic matches DB structure
                     currentActiveCategoryFilter = this.getAttribute('data-filter') || this.getAttribute('data-category') || "Shikela Update";
-
                     renderFilteredBroadcasts();
                 });
             });
@@ -679,62 +765,13 @@
                         searchInput.value = '';
                         searchInput.focus();
                     }
-                    executeNewsSearchQuery('');
                 });
             }
-
             if (closeBtn && searchOverlay) {
                 closeBtn.addEventListener('click', () => {
                     searchOverlay.classList.remove('active-search');
                 });
             }
-
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    executeNewsSearchQuery(e.target.value);
-                });
-            }
-        }
-
-        function executeNewsSearchQuery(query) {
-            const resultsArea = document.getElementById('searchResultsArea');
-            if (!resultsArea) return;
-
-            const cleanQuery = query.trim().toLowerCase();
-
-            if (!cleanQuery) {
-                resultsArea.innerHTML = `
-                    <div style="text-align:center; padding:30px 20px; color:#ffffff; font-size:13px; font-weight:600;">
-                        Type a post code above to find updates quickly.
-                    </div>
-                `;
-                return;
-            }
-
-            const matchedNews = localCachedBroadcasts.filter(item => {
-                const code = String(item.newsCode || item.code || item.id || '').toLowerCase();
-                const title = String(item.title || item.newsTitle || '').toLowerCase();
-                const content = String(item.content || item.message || '').toLowerCase();
-
-                return code.includes(cleanQuery) || title.includes(cleanQuery) || content.includes(cleanQuery);
-            });
-
-            if (matchedNews.length === 0) {
-                resultsArea.innerHTML = `
-                    <div style="text-align:center; padding:30px 20px; color:#ffffff; font-size:13px; font-weight:600;">
-                        No updates matching "<strong>${cleanQuery}</strong>" found.
-                    </div>
-                `;
-                return;
-            }
-
-            resultsArea.innerHTML = '';
-            matchedNews.forEach((item) => {
-                const card = document.createElement('article');
-                card.className = "featured-broadcast-card";
-                card.innerHTML = buildSingleNewsCardHTML(item);
-                resultsArea.appendChild(card);
-            });
         }
 
         function triggerUiPopup(icon, title, desc) {
@@ -749,7 +786,6 @@
                     dismissBtn.innerText = "Continue";
                     dismissBtn.onclick = () => overlay.classList.remove('show-popup');
                 }
-
                 iconNode.innerText = icon;
                 iconNode.style.display = "inline-block";
                 titleNode.innerText = title;
@@ -759,7 +795,6 @@
         }
     </script>
 
-    <!-- Script to manage iframe drawer toggling -->
     <script>
         const openBtn = document.getElementById('openMenuIframeBtn');
         const overlay = document.getElementById('menuIframeOverlay');
