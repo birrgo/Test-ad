@@ -32,18 +32,6 @@
     <meta name="twitter:image" content="https://shiqela.online/s.png">
     <meta name="twitter:image:alt" content="Yala Tech Logo and Branding Preview">
 
-    <!-- Schema.org Structured Data for Google Search SEO -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Yala Tech",
-      "url": "https://shiqela.online/",
-      "image": "https://shiqela.online/s.png",
-      "description": "Stay updated with the latest news, tech updates, online jobs, and social media tips on Shikela."
-    }
-    </script>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap" rel="stylesheet">
@@ -68,7 +56,6 @@
             visibility: visible;
         }
 
-        /* 3/4 width (75%), 100% full height iframe container */
         .menu-iframe-drawer {
             position: absolute;
             top: 0;
@@ -143,7 +130,6 @@
 <body>
 
     <div class="app-view">
-        <!-- Hidden Image for Googlebot Indexing -->
         <img src="https://shiqela.online/s.png" alt="Shikela Logo Preview" style="display:none;">
 
         <svg class="bg-wave bg-wave-top" viewBox="0 0 375 200" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -156,12 +142,10 @@
             </defs>
         </svg>
 
-        <!-- 3/4 Width, Full Height Menu Drawer with Iframe -->
         <div class="menu-iframe-overlay" id="menuIframeOverlay">
             <iframe class="menu-iframe-drawer" id="menuIframe" src="about:blank"></iframe>
         </div>
 
-        <!-- Reusable Popup Module (Also used for Interstitial Ad Mocking) -->
         <div class="custom-popup-overlay" id="customPopupModule">
             <div class="custom-popup-modal">
                 <span class="popup-status-icon" id="popupIconNode">ℹ️</span>
@@ -197,7 +181,6 @@
         </div>
 
         <header class="nav-header" style="display: flex; align-items: center; justify-content: space-between;">
-            <!-- Left: 3-line Menu Button -->
             <div class="header-left-group" style="display: flex; align-items: center;">
                 <button type="button" class="menu-action-btn" id="openMenuIframeBtn" aria-label="Open Menu" style="background: none; border: none; cursor: pointer; color: inherit; padding: 0; display: flex; align-items: center; justify-content: center;">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -208,12 +191,10 @@
                 </button>
             </div>
 
-            <!-- Center: Title -->
             <div class="header-center-group" style="flex: 1; text-align: center;">
                 <h1 class="header-title-text" style="margin: 0; text-align: center;">What's new?</h1>
             </div>
 
-            <!-- Right: Live Clock & Search -->
             <div class="header-right-group" style="display: flex; align-items: center; gap: 8px;">
                 <div class="header-live-clock-badge" id="topCornerLiveClock">00:00:00 AM</div>
                 <button class="search-action-btn" id="openSearchBtn" aria-label="Search News">
@@ -223,7 +204,6 @@
         </header>
 
         <main class="app-content" id="mainContentArea">
-            <!-- Two-Choice Top Menu with Yala Tech Update and Yala Tech Tips -->
             <div class="category-filter-row filter-btn-grid" id="filterPillsRow">
                 <button class="filter-pill filter-btn active-pill active" data-filter="Shikela Update" data-category="Shikela Update">Yala Tech Update</button>
                 <button class="filter-pill filter-btn" data-filter="Shikela Tips" data-category="Shikela Tips">Yala Tech Tips</button>
@@ -275,6 +255,10 @@
             </a>
         </nav>
     </div>
+
+    <!-- ✅ CRITICAL: CAPACITOR SCRIPTS ADDED HERE ✅ -->
+    <script src="https://cdn.jsdelivr.net/npm/@capacitor/core@5.0.0/dist/capacitor.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@capacitor-community/admob@5.0.0/dist/plugin.min.js"></script>
 
     <!-- Integrated Module Script for Firebase & Logic -->
     <script type="module">
@@ -332,7 +316,7 @@
         });
 
         // ==========================================
-        // 🟢 Fetch AdMob Units Logic
+        // 🟢 Fetch AdMob Units Logic & INITIALIZE
         // ==========================================
         function fetchAdMobUnits() {
             const adManagerRef = ref(db, `${APP_NODE_NAME}/adManager`);
@@ -352,14 +336,27 @@
                     };
 
                     console.log("--- AdMob Configuration Successfully Loaded ---");
-                    
-                    // Trigger initial ad checks once config is loaded
-                    triggerAppOpenAd();
-                    triggerBannerAd();
-                    
-                    // Re-render news list to insert native ads now that we know they are enabled
-                    if(localCachedBroadcasts.length > 0) {
-                        renderFilteredBroadcasts();
+
+                    // ✅ FIX: Initialize Capacitor AdMob natively if on an Android device
+                    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                        const { AdMob } = Capacitor.Plugins;
+                        AdMob.initialize({
+                            requestTrackingAuthorization: true,
+                            initializeForTesting: false // Change to true if strictly testing local builds
+                        }).then(() => {
+                            triggerAppOpenAd();
+                            triggerBannerAd();
+                            if(localCachedBroadcasts.length > 0) {
+                                renderFilteredBroadcasts();
+                            }
+                        });
+                    } else {
+                        // Web mock fallback
+                        triggerAppOpenAd();
+                        triggerBannerAd();
+                        if(localCachedBroadcasts.length > 0) {
+                            renderFilteredBroadcasts();
+                        }
                     }
                 }
             }, (error) => {
@@ -368,35 +365,47 @@
         }
 
         // ==========================================
-        // 🟣 AdMob App Open & Banner Triggers
+        // 🟣 AdMob App Open & Banner Triggers (✅ FIXED)
         // ==========================================
-        function triggerAppOpenAd() {
-            if (hasTriggeredAppOpen) return; // Only do this once per session
-            if (window.globalAdConfig?.placements?.appOpenAdStart) {
+        async function triggerAppOpenAd() {
+            if (hasTriggeredAppOpen) return; 
+            if (window.globalAdConfig?.placements?.appOpenAdStart && window.globalAdConfig.appOpenId) {
                 hasTriggeredAppOpen = true;
                 
-                if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
-                    // Browser Test Mock for App Open Ad
-                    triggerUiPopup("📱", "App Open Ad", `Showing App Open Ad...\nUnit: ${window.globalAdConfig.appOpenId}`);
+                if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                    const { AdMob } = Capacitor.Plugins;
+                    try {
+                        await AdMob.prepareAppOpenAd({ adId: window.globalAdConfig.appOpenId });
+                        await AdMob.showAppOpenAd();
+                    } catch (e) {
+                        console.error("App Open Ad Failed:", e);
+                    }
                 } else {
-                    console.log("Initialize Native App Open Ad:", window.globalAdConfig.appOpenId);
-                    // Add @capacitor-community/admob plugin code here
+                    triggerUiPopup("📱", "App Open Ad", `Showing App Open Ad...\nUnit: ${window.globalAdConfig.appOpenId}`);
                 }
             }
         }
 
-        function triggerBannerAd() {
+        async function triggerBannerAd() {
             const adWrapper = document.getElementById('adContainerWrapper');
             const adBanner = document.getElementById('admobPreviewBanner');
             
             if (window.globalAdConfig?.placements?.bannerAdHomePage && window.globalAdConfig.bannerId) {
-                if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
+                if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                    const { AdMob } = Capacitor.Plugins;
+                    try {
+                        await AdMob.showBanner({
+                            adId: window.globalAdConfig.bannerId,
+                            position: 'BOTTOM_CENTER',
+                            margin: 70
+                        });
+                    } catch (e) {
+                        console.error("Banner Ad Failed:", e);
+                    }
+                } else {
                     adWrapper.style.display = 'flex';
                     adBanner.innerHTML = `AdMob Banner Active<br><span style="font-size:10px; font-weight:normal;">Unit: ${window.globalAdConfig.bannerId}</span>`;
                     document.getElementById('mainContentArea').style.paddingBottom = '130px';
-                } else {
-                    console.log("Initialize Native Banner Ad:", window.globalAdConfig.bannerId);
-                    // Add @capacitor-community/admob plugin code here
                 }
             } else {
                 adWrapper.style.display = 'none';
@@ -404,27 +413,29 @@
         }
 
         // ==========================================
-        // 🟠 AdMob Interstitial Trigger (Before Post)
+        // 🟠 AdMob Interstitial Trigger (✅ FIXED)
         // ==========================================
-        function showInterstitialAdMock(onAdClosedCallback) {
-            if (window.globalAdConfig?.placements?.interstitialAdPostDetails) {
-                if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
-                    // Browser Mock
+        async function showInterstitialAdMock(onAdClosedCallback) {
+            if (window.globalAdConfig?.placements?.interstitialAdPostDetails && window.globalAdConfig.interstitialId) {
+                if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                    const { AdMob } = Capacitor.Plugins;
+                    try {
+                        await AdMob.prepareInterstitial({ adId: window.globalAdConfig.interstitialId });
+                        await AdMob.showInterstitial();
+                        onAdClosedCallback();
+                    } catch (e) {
+                        console.error("Interstitial Ad Failed, opening content:", e);
+                        onAdClosedCallback(); 
+                    }
+                } else {
                     triggerUiPopup("📺", "Interstitial Ad Loading", `Ad Unit: ${window.globalAdConfig.interstitialId}\nPlease wait...`);
-                    
-                    // Auto-close mock ad after 2 seconds and open article
                     setTimeout(() => {
                         document.getElementById('customPopupModule').classList.remove('show-popup');
                         onAdClosedCallback();
                     }, 2000);
-                } else {
-                    // Actual Native Device Logic
-                    console.log("Trigger Interstitial Ad plugin before continuing...");
-                    // Await ad completion then call onAdClosedCallback();
-                    onAdClosedCallback(); 
                 }
             } else {
-                onAdClosedCallback(); // Ad placement is disabled, open instantly
+                onAdClosedCallback(); 
             }
         }
 
@@ -441,13 +452,11 @@
             if (cardClockIntervalId) clearInterval(cardClockIntervalId);
             cardClockIntervalId = setInterval(() => {
                 const now = new Date();
-                
                 if (cornerClockNode) {
                     cornerClockNode.innerText = now.toLocaleTimeString(undefined, {
                         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
                     });
                 }
-
                 const clockNodes = document.querySelectorAll('.timestamp-log-text[data-timestamp]');
                 clockNodes.forEach(node => {
                     const rawTime = parseInt(node.getAttribute('data-timestamp'));
@@ -470,19 +479,12 @@
 
         function extractValidTimestamp(item) {
             const raw = item.timestamp || item.updatedAt || item.createdAtTimestamp || item.createdAt || item.date;
-
-            if (typeof raw === 'number' && !isNaN(raw)) {
-                return raw;
-            }
+            if (typeof raw === 'number' && !isNaN(raw)) return raw;
             if (typeof raw === 'string') {
                 const parsed = parseInt(raw, 10);
-                if (!isNaN(parsed) && parsed > 1000000000) {
-                    return parsed < 100000000000 ? parsed * 1000 : parsed;
-                }
+                if (!isNaN(parsed) && parsed > 1000000000) return parsed < 100000000000 ? parsed * 1000 : parsed;
                 const dateParsed = new Date(raw).getTime();
-                if (!isNaN(dateParsed)) {
-                    return dateParsed;
-                }
+                if (!isNaN(dateParsed)) return dateParsed;
             }
             return Date.now();
         }
@@ -494,9 +496,7 @@
                 const item = rawShikelaNewsData[key];
                 if (typeof item === 'object' && item !== null) {
                     localCachedBroadcasts.push({
-                        id: key,
-                        _dbPath: 'shikelaNews',
-                        ...item,
+                        id: key, ...item,
                         title: item.title || item.newsTitle || "Shikela Update",
                         category: item.category || "Shikela Update",
                         resolvedTimestamp: extractValidTimestamp(item)
@@ -508,9 +508,7 @@
                 const item = rawNewNewsData[key];
                 if (typeof item === 'object' && item !== null) {
                     localCachedBroadcasts.push({
-                        id: key,
-                        _dbPath: 'newNews',
-                        ...item,
+                        id: key, ...item,
                         title: item.title || item.newsTitle || "Shikela Tip",
                         category: item.category || "Shikela Tips",
                         resolvedTimestamp: extractValidTimestamp(item)
@@ -529,24 +527,18 @@
             onValue(shikelaNewsRef, (snapshot) => {
                 rawShikelaNewsData = snapshot.exists() ? snapshot.val() : {};
                 rebuildAndRenderBroadcastsCache();
-            }, (error) => {
-                console.error("Firebase read error (shikelaNews):", error);
-            });
+            }, (error) => console.error(error));
 
             onValue(newNewsRef, (snapshot) => {
                 rawNewNewsData = snapshot.exists() ? snapshot.val() : {};
                 rebuildAndRenderBroadcastsCache();
-            }, (error) => {
-                console.error("Firebase read error (newNews):", error);
-            });
+            }, (error) => console.error(error));
         }
 
         function renderEmptyState() {
             const container = document.getElementById('broadcastsContainer');
             if (!container) return;
-            
             const displayFilter = currentActiveCategoryFilter.replace('Shikela', 'Yala Tech');
-            
             container.innerHTML = `
                 <article class="featured-broadcast-card">
                     <div class="badge-meta-row"><span class="spotlight-pill">Yala Tech Network</span></div>
@@ -592,11 +584,7 @@
             `;
         }
 
-        // ==========================================
-        // 🔵 Intercept Click & Trigger Interstitial
-        // ==========================================
         window.openFullNewsReader = function(itemId) {
-            // Check for interstitial ad before proceeding
             showInterstitialAdMock(() => {
                 executeOpenReader(itemId);
             });
@@ -608,13 +596,11 @@
 
             const readerOverlay = document.getElementById('fullNewsModalOverlay');
             const readerBody = document.getElementById('fullNewsReaderBody');
-
             if (!readerOverlay || !readerBody) return;
 
             const headline = item.title || item.newsTitle || "Yala Tech Update";
             const fullContent = item.content || item.message || "";
             const displayCategory = (item.category || "Yala Tech Update").replace('Shikela', 'Yala Tech');
-            const category = item.category || "Shikela Update";
             const imageUrl = item.imageUrl || item.image || "";
             const videoUrl = item.videoUrl || item.youtubeUrl || item.youtubeId || item.video || "";
             const targetRedirectUrl = item.link || item.redirectUrl || item.url || item.targetUrl || "";
@@ -622,8 +608,7 @@
             
             const numericalTime = item.resolvedTimestamp || Date.now();
             const initialFormattedClock = formatExactTimestampWithSeconds(numericalTime);
-            const isTips = category.trim().toLowerCase().includes("tips");
-            const pillBadgeClass = isTips ? "spotlight-pill system-badge" : "spotlight-pill";
+            const pillBadgeClass = (item.category || "").toLowerCase().includes("tips") ? "spotlight-pill system-badge" : "spotlight-pill";
 
             let imageHTML = "";
             if (imageUrl && imageUrl.trim().length > 0 && Boolean(item.duplicateCoverInArticle ?? true)) {
@@ -633,11 +618,7 @@
             let videoHTML = "";
             const embedUrl = getYouTubeEmbedUrl(videoUrl);
             if (embedUrl) {
-                videoHTML = `
-                    <div class="reader-video-container">
-                        <iframe src="${embedUrl}" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
-                    </div>
-                `;
+                videoHTML = `<div class="reader-video-container"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
             }
 
             let redirectBtnHTML = "";
@@ -646,7 +627,6 @@
                     <div style="margin-top:20px;">
                         <a href="${targetRedirectUrl.trim()}" target="_blank" rel="noopener noreferrer" class="redirect-link-btn" style="width:100%; justify-content:center;">
                             <span>${customActionLabel}</span>
-                            <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                         </a>
                     </div>
                 `;
@@ -699,27 +679,19 @@
                 
                 currentPostCount++;
 
-                // Trigger Native Ad Check after every 2 posts
                 if (currentPostCount % 2 === 0) {
                     if (window.globalAdConfig?.placements?.nativeAdPostList && window.globalAdConfig.nativeId) {
                         const nativeAdCard = document.createElement('article');
                         nativeAdCard.className = "featured-broadcast-card";
                         
-                        if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
-                            // HTML Browser Mock for Native Ad
-                            nativeAdCard.innerHTML = `
-                                <div class="native-ad-badge">Sponsored</div>
-                                <div class="native-ad-placeholder">
-                                    <h3 style="margin: 0 0 5px 0; font-size: 14px; color: #333;">AdMob Native Ad Active</h3>
-                                    <p style="font-size:11px; color:#666; margin:0;">In native device this area will render the ad.</p>
-                                    <p style="font-size:10px; color:#999; margin-top:5px;">ID: ${window.globalAdConfig.nativeId}</p>
-                                </div>
-                            `;
-                        } else {
-                            // Placeholder block that the Native Ad Plugin targets
-                            nativeAdCard.innerHTML = `<div class="native-ad-badge">Sponsored</div><div class="admob-native-container" style="min-height: 250px; width: 100%;"></div>`;
-                            console.log("Initialize Capacitor Native Ad Here");
-                        }
+                        nativeAdCard.innerHTML = `
+                            <div class="native-ad-badge">Sponsored</div>
+                            <div class="native-ad-placeholder">
+                                <h3 style="margin: 0 0 5px 0; font-size: 14px; color: #333;">Advertisement</h3>
+                                <p style="font-size:11px; color:#666; margin:0;">In native device this area will render the Native ad.</p>
+                                <p style="font-size:10px; color:#999; margin-top:5px;">ID: ${window.globalAdConfig.nativeId}</p>
+                            </div>
+                        `;
                         container.appendChild(nativeAdCard);
                     }
                 }
@@ -729,23 +701,18 @@
         function setupNewsReaderModalControls() {
             const closeBtn = document.getElementById('closeNewsReaderBtn');
             const readerOverlay = document.getElementById('fullNewsModalOverlay');
-
             if (closeBtn && readerOverlay) {
-                closeBtn.addEventListener('click', () => {
-                    readerOverlay.classList.remove('active-reader');
-                });
+                closeBtn.addEventListener('click', () => readerOverlay.classList.remove('active-reader'));
             }
         }
 
         function bindVisualInterfaceControls() {
             const pills = document.querySelectorAll('.filter-btn, .filter-pill');
-
             pills.forEach(pill => {
                 pill.addEventListener('click', function() {
                     pills.forEach(p => { p.classList.remove('active-pill'); p.classList.remove('active'); });
                     this.classList.add('active-pill');
                     this.classList.add('active');
-                    
                     currentActiveCategoryFilter = this.getAttribute('data-filter') || this.getAttribute('data-category') || "Shikela Update";
                     renderFilteredBroadcasts();
                 });
@@ -761,16 +728,11 @@
             if (openBtn && searchOverlay) {
                 openBtn.addEventListener('click', () => {
                     searchOverlay.classList.add('active-search');
-                    if (searchInput) {
-                        searchInput.value = '';
-                        searchInput.focus();
-                    }
+                    if (searchInput) { searchInput.value = ''; searchInput.focus(); }
                 });
             }
             if (closeBtn && searchOverlay) {
-                closeBtn.addEventListener('click', () => {
-                    searchOverlay.classList.remove('active-search');
-                });
+                closeBtn.addEventListener('click', () => searchOverlay.classList.remove('active-search'));
             }
         }
 
