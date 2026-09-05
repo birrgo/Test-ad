@@ -23,7 +23,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="news.css">
     <style>
         /* Sidebar iframe drawer overlay setup */
@@ -59,7 +59,7 @@
             transform: translateX(0);
         }
 
-        /* Floating Bottom Banner Ad */
+        /* Container reserved for real plugin banner or responsive fallback */
         .ad-container-wrapper {
             position: fixed;
             bottom: 70px;
@@ -70,63 +70,20 @@
             pointer-events: none; 
             z-index: 9000;
         }
-        .admob-preview-banner {
-            width: 320px;
-            height: 50px;
-            background: #f1c40f;
-            color: #000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: bold;
-            border: 2px dashed #d35400;
-            border-radius: 4px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
-            text-align: center;
-            pointer-events: auto;
-        }
-        
-        /* Simulated Google Test Ad for Native / Inline Slots */
-        .mock-test-ad-block {
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
+
+        /* Real Native Ad Container Slot inside Articles */
+        .native-admob-slot {
+            width: 100%;
+            min-height: 90px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
             border-radius: 8px;
-            padding: 15px 10px;
-            text-align: center;
-            margin-top: 15px;
+            margin-top: 20px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             position: relative;
-            width: 100%; /* Made wide */
-            box-sizing: border-box;
             overflow: hidden;
-        }
-        .mock-test-ad-label {
-            background: #4285f4;
-            color: white;
-            font-size: 10px;
-            padding: 3px 8px;
-            position: absolute;
-            top: 0;
-            left: 0;
-            border-bottom-right-radius: 6px;
-            font-weight: bold;
-        }
-        .mock-test-ad-title {
-            font-size: 16px;
-            color: #333;
-            margin: 15px 0 5px 0;
-            font-weight: 700;
-        }
-        .mock-test-ad-desc {
-            font-size: 12px;
-            color: #666;
-            margin: 0;
-            word-break: break-all;
         }
     </style>
 </head>
@@ -225,12 +182,8 @@
             </footer>
         </main>
 
-        <!-- AdMob Test Preview Banner Container -->
-        <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;">
-            <div class="admob-preview-banner" id="admobPreviewBanner">
-                AdMob Banner Preview Loading...
-            </div>
-        </div>
+        <!-- Banner Ad Slot Placeholder -->
+        <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;"></div>
 
         <!-- Bottom Navigation Menu -->
         <nav class="bottom-nav">
@@ -291,8 +244,6 @@
         let currentActiveCategoryFilter = "Shikela Update";
         let cardClockIntervalId = null;
         let hasTriggeredAppOpen = false;
-        
-        // Anti double-click variable
         let isOpeningArticle = false; 
 
         window.globalAdConfig = {};
@@ -316,7 +267,7 @@
         });
 
         // ==========================================
-        // Fetch AdMob Config
+        // Fetch AdMob Config & Initialize Plugin
         // ==========================================
         function fetchAdMobUnits() {
             const adManagerRef = ref(db, `${APP_NODE_NAME}/adManager`);
@@ -337,7 +288,7 @@
                         const { AdMob } = Capacitor.Plugins;
                         AdMob.initialize({
                             requestTrackingAuthorization: true,
-                            initializeForTesting: false
+                            initializeForTesting: true // Set to false for live production builds
                         }).then(() => {
                             triggerAppOpenAd();
                             triggerBannerAd();
@@ -367,19 +318,28 @@
         }
 
         async function triggerBannerAd() {
-            const adWrapper = document.getElementById('adContainerWrapper');
             if (window.globalAdConfig?.placements?.bannerAdHomePage && window.globalAdConfig.bannerId) {
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                    const { AdMob } = Capacitor.Plugins;
+                    const { AdMob, BannerAdPosition, BannerAdSize } = Capacitor.Plugins;
                     try {
-                        await AdMob.showBanner({ adId: window.globalAdConfig.bannerId, position: 'BOTTOM_CENTER', margin: 70 });
+                        await AdMob.showBanner({
+                            adId: window.globalAdConfig.bannerId,
+                            position: BannerAdPosition.BOTTOM_CENTER,
+                            size: BannerAdSize.BANNER,
+                            margin: 70,
+                            restartOnActivityRecreate: true
+                        });
                     } catch (e) { console.error(e); }
                 } else {
+                    const adWrapper = document.getElementById('adContainerWrapper');
                     adWrapper.style.display = 'flex';
+                    adWrapper.innerHTML = `
+                        <div style="width:320px;height:50px;background:#f1c40f;color:#000;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;border:2px dashed #d35400;border-radius:4px;text-align:center;pointer-events:auto;">
+                            [Web Test Banner: ${window.globalAdConfig.bannerId}]
+                        </div>
+                    `;
                     document.getElementById('mainContentArea').style.paddingBottom = '130px';
                 }
-            } else {
-                adWrapper.style.display = 'none';
             }
         }
 
@@ -508,10 +468,8 @@
         }
 
         // ==========================================
-        // 🔵 FULL ARTICLE READER & SCROLL AD 
+        // 🔵 FULL ARTICLE READER & WIDE BANNER AD
         // ==========================================
-        
-        // FIXED STUCK / DOUBLE CLICK ISSUE 
         window.openFullNewsReader = function(itemId) {
             if (isOpeningArticle) return; 
             isOpeningArticle = true;
@@ -548,14 +506,11 @@
             let redirectBtnHTML = targetRedirectUrl 
                 ? `<div style="margin-top:20px;"><a href="${targetRedirectUrl}" target="_blank" class="redirect-link-btn" style="width:100%; justify-content:center;"><span>${customActionLabel}</span></a></div>` : "";
 
-            // WIDE INLINE AD & REAL IDs 
             let endOfArticleAd = "";
             if (window.globalAdConfig?.placements?.bannerAdPostDetails) {
                 endOfArticleAd = `
-                    <div class="mock-test-ad-block">
-                        <span class="mock-test-ad-label">AdMob</span>
-                        <div class="mock-test-ad-title">Test Ad View</div>
-                        <p class="mock-test-ad-desc">Banner ID: ${window.globalAdConfig.bannerId || 'Loading...'}</p>
+                    <div class="native-admob-slot">
+                        <span style="font-size:11px; color:#888; font-weight:600;">Sponsored Advertisement</span>
                     </div>
                 `;
             }
@@ -572,18 +527,17 @@
                 ${endOfArticleAd}
             `;
             
-            // Fix double overlapping banner issue: Hide the global banner if running Native
+            // Hide the bottom home banner when inside article reader so it doesn't double overlap
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                 const { AdMob } = Capacitor.Plugins;
                 AdMob.hideBanner().catch(console.error);
+            } else {
+                document.getElementById('adContainerWrapper').style.display = 'none';
             }
 
             readerOverlay.classList.add('active-reader');
         }
 
-        // ==========================================
-        // 🟢 NATIVE IN-FEED AD (Visual Test Ad Mock)
-        // ==========================================
         function renderFilteredBroadcasts() {
             const container = document.getElementById('broadcastsContainer');
             if (!container) return;
@@ -596,36 +550,16 @@
                 return;
             }
 
-            let currentPostCount = 0;
             filtered.forEach((item) => {
                 const card = document.createElement('article');
                 card.className = "featured-broadcast-card";
                 card.innerHTML = buildSingleNewsCardHTML(item);
                 container.appendChild(card);
-                
-                currentPostCount++;
-
-                if (currentPostCount % 2 === 0) {
-                    if (window.globalAdConfig?.placements?.nativeAdPostList && window.globalAdConfig.nativeId) {
-                        const nativeAdCard = document.createElement('article');
-                        nativeAdCard.className = "featured-broadcast-card";
-                        
-                        // Made wide and shows dynamic real ID
-                        nativeAdCard.innerHTML = `
-                            <div class="mock-test-ad-block">
-                                <span class="mock-test-ad-label">Test Ad</span>
-                                <div class="mock-test-ad-title">AdMob Native</div>
-                                <p class="mock-test-ad-desc">ID: ${window.globalAdConfig.nativeId}</p>
-                            </div>
-                        `;
-                        container.appendChild(nativeAdCard);
-                    }
-                }
             });
         }
 
         // ==========================================
-        // 🟡 FULLY RESTORED SEARCH ENGINE (With Ads)
+        // 🟡 FULLY RESTORED SEARCH ENGINE
         // ==========================================
         function setupSearchEngineControls() {
             const openBtn = document.getElementById('openSearchBtn');
@@ -678,26 +612,8 @@
                 card.innerHTML = buildSingleNewsCardHTML(item);
                 resultsArea.appendChild(card);
             });
-
-            // ADD AD INSIDE SEARCH RESULTS (After posts)
-            if (window.globalAdConfig?.placements?.nativeAdPostList && window.globalAdConfig.nativeId) {
-                const searchAdCard = document.createElement('article');
-                searchAdCard.className = "featured-broadcast-card";
-                searchAdCard.style.marginTop = "15px";
-                searchAdCard.innerHTML = `
-                    <div class="mock-test-ad-block" style="background:#0F2C59; color:white; border-color:#0F2C59;">
-                        <span class="mock-test-ad-label">Test Ad</span>
-                        <div class="mock-test-ad-title" style="color:white;">Sponsored Result</div>
-                        <p class="mock-test-ad-desc" style="color:#ddd;">Ad ID: ${window.globalAdConfig.nativeId}</p>
-                    </div>
-                `;
-                resultsArea.appendChild(searchAdCard);
-            }
         }
 
-        // ==========================================
-        // UI Controls & Toggles
-        // ==========================================
         function bindVisualInterfaceControls() {
             document.querySelectorAll('.filter-btn').forEach(pill => {
                 pill.addEventListener('click', function() {
@@ -714,10 +630,12 @@
             if (closeBtn) closeBtn.addEventListener('click', () => {
                 document.getElementById('fullNewsModalOverlay').classList.remove('active-reader');
                 
-                // Show global banner ad again when closing reader view
+                // Resume bottom banner ad when exiting article reader view
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     const { AdMob } = Capacitor.Plugins;
                     AdMob.resumeBanner().catch(console.error);
+                } else {
+                    document.getElementById('adContainerWrapper').style.display = 'flex';
                 }
             });
         }
