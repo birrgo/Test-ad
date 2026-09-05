@@ -93,6 +93,10 @@ jobs:
       - name: Setup App Icon (Fixed AAPT Error)
         run: |
           if [ -f s.png ]; then
+            # Install ImageMagick to provide the 'convert' command
+            sudo apt-get update
+            sudo apt-get install -y imagemagick
+            
             # Re-encode to a strict PNG format to prevent AAPT compilation failures
             convert s.png -strip s_valid.png
             
