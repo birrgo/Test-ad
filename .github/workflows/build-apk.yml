@@ -54,12 +54,10 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Configure AdMob App ID in AndroidManifest
+      - name: Configure AdMob App ID & Permissions in AndroidManifest
         run: |
-          # AdMob strictly requires an Application ID in the AndroidManifest or the app crashes.
-          # We are injecting the official Google Test App ID here. 
-          # Your Firebase Database will still provide the actual AD UNIT IDs for the ads themselves.
           sed -i '/<\/application>/i \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/>' android/app/src/main/AndroidManifest.xml
+          sed -i '/<application/i \    <uses-permission android:name="com.google.android.gms.permission.AD_ID" \/>' android/app/src/main/AndroidManifest.xml
 
       - name: Target API Level 36 (Fix Google Play Error)
         run: |
