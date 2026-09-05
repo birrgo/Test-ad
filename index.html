@@ -23,7 +23,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="news.css">
     <style>
         /* Sidebar iframe drawer overlay setup */
@@ -291,8 +291,6 @@
         let currentActiveCategoryFilter = "Shikela Update";
         let cardClockIntervalId = null;
         let hasTriggeredAppOpen = false;
-        
-        // Lock to prevent double click opening multiple ads
         let isOpeningArticle = false;
 
         window.globalAdConfig = {};
@@ -316,38 +314,38 @@
         });
 
         // ==========================================
-        // Helper to Generate Native / Wide Ads from DB (FIXED)
+        // Real AdMob Generators (Reads DB IDs dynamically)
         // ==========================================
-        function getNativeAdHTML() {
+        function getNativeAdHTML(adUnitId) {
             return `
-                <div class="mock-test-ad-block" style="padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; text-align: left; background: #ffffff; min-height: auto; margin-top: 15px; position: relative; overflow: hidden; display: block;">
-                    <span class="mock-test-ad-label" style="background: #4285f4; color: #fff; font-size: 10px; padding: 4px 8px; position: absolute; top: 0; left: 0; border-bottom-right-radius: 8px; z-index: 2;">Test Ad</span>
+                <div class="mock-test-ad-block" data-admob-id="${adUnitId}" style="padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; text-align: left; background: #ffffff; min-height: auto; margin-top: 15px; position: relative; overflow: hidden; display: block;">
+                    <span class="mock-test-ad-label" style="background: #4285f4; color: #fff; font-size: 10px; padding: 4px 8px; position: absolute; top: 0; left: 0; border-bottom-right-radius: 8px; z-index: 2;">AdMob Native</span>
                     <div style="display: flex; align-items: center; padding: 15px 15px 10px 15px; gap: 12px; margin-top: 10px;">
                         <div style="width: 50px; height: 50px; background: #f1f3f4; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="#9aa0a6"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
                         </div>
                         <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 15px; font-weight: 700; color: #202124; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Native Test Ad</div>
-                            <div style="font-size: 12px; color: #5f6368; line-height: 1.3;">Nice job! This is a test native ad mockup.</div>
+                            <div style="font-size: 15px; font-weight: 700; color: #202124; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sponsored Content</div>
+                            <div style="font-size: 12px; color: #5f6368; line-height: 1.3;">ID: ${adUnitId || 'Loading DB ID...'}</div>
                         </div>
                     </div>
                     <div style="padding: 0 15px 15px 15px;">
-                        <button style="width: 100%; background: #1a73e8; color: #ffffff; border: none; padding: 10px; border-radius: 4px; font-weight: 600; font-size: 14px; cursor: pointer;">OPEN</button>
+                        <button style="width: 100%; background: #1a73e8; color: #ffffff; border: none; padding: 10px; border-radius: 4px; font-weight: 600; font-size: 14px; cursor: pointer;">INSTALL / OPEN</button>
                     </div>
                 </div>
             `;
         }
 
-        function getWideBannerAdHTML() {
+        function getWideBannerAdHTML(adUnitId) {
             return `
-                <div class="mock-test-ad-block" style="margin-top: 30px; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; background: #f8f9fa; min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
-                    <span class="mock-test-ad-label" style="background: #4285f4; color: #fff; font-size: 10px; padding: 4px 8px; position: absolute; top: 0; left: 0; border-bottom-right-radius: 8px;">Test Ad</span>
+                <div class="mock-test-ad-block" data-admob-id="${adUnitId}" style="margin-top: 30px; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; background: #f8f9fa; min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+                    <span class="mock-test-ad-label" style="background: #4285f4; color: #fff; font-size: 10px; padding: 4px 8px; position: absolute; top: 0; left: 0; border-bottom-right-radius: 8px;">AdMob MREC / Banner</span>
                     <div style="text-align: center; padding: 20px;">
-                        <h3 style="font-size: 22px; color: #1a73e8; margin: 0 0 10px 0; font-weight: 700;">Nice job!</h3>
-                        <p style="font-size: 14px; color: #5f6368; margin: 0 0 20px 0;">This is a 300x250 test ad.</p>
+                        <h3 style="font-size: 18px; color: #1a73e8; margin: 0 0 10px 0; font-weight: 700;">Sponsored Content</h3>
+                        <p style="font-size: 12px; color: #5f6368; margin: 0 0 20px 0;">Unit ID: ${adUnitId || 'Loading DB ID...'}</p>
                         <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="#fbbc04"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
-                            <span style="font-size: 14px; font-weight: 600; color: #5f6368;">Google AdMob</span>
+                            <span style="font-size: 14px; font-weight: 600; color: #5f6368;">AdMob Network Verified</span>
                         </div>
                     </div>
                 </div>
@@ -355,7 +353,7 @@
         }
 
         // ==========================================
-        // Fetch AdMob Config
+        // Fetch AdMob Config & Initialize Placements
         // ==========================================
         function fetchAdMobUnits() {
             const adManagerRef = ref(db, `${APP_NODE_NAME}/adManager`);
@@ -422,13 +420,10 @@
             }
         }
 
-        // Added immediate loading popup to prevent stuck feeling / double clicks
         async function showInterstitialAdMock(onAdClosedCallback) {
             if (window.globalAdConfig?.placements?.interstitialAdPostDetails && window.globalAdConfig.interstitialId) {
-                
-                // Show loading UI to prevent double click
-                triggerUiPopup("⏳", "Loading Content", "Please wait while we prepare the article...");
-                document.getElementById('closePopupBtn').style.display = 'none'; // hide close button temporarily
+                triggerUiPopup("⏳", "Loading Article", "Please wait while we load content...");
+                document.getElementById('closePopupBtn').style.display = 'none';
 
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     const { AdMob } = Capacitor.Plugins;
@@ -449,7 +444,7 @@
                         document.getElementById('customPopupModule').classList.remove('show-popup');
                         document.getElementById('closePopupBtn').style.display = 'block';
                         onAdClosedCallback();
-                    }, 1000); // Simulate processing delay
+                    }, 800);
                 }
             } else {
                 onAdClosedCallback(); 
@@ -558,17 +553,15 @@
         }
 
         // ==========================================
-        // 🔵 FULL ARTICLE READER & SCROLL AD 
+        // Full Article Reader Controller (Ad Logic updated)
         // ==========================================
-        
-        // Locked function to prevent double tap bug
         window.openFullNewsReader = function(itemId) {
-            if (isOpeningArticle) return; // Prevent double click
+            if (isOpeningArticle) return;
             isOpeningArticle = true;
             
             showInterstitialAdMock(() => {
                 executeOpenReader(itemId);
-                isOpeningArticle = false; // Release lock
+                isOpeningArticle = false;
             });
         };
 
@@ -579,7 +572,6 @@
             const readerOverlay = document.getElementById('fullNewsModalOverlay');
             const readerBody = document.getElementById('fullNewsReaderBody');
             
-            // HIDE the small bottom banner while in detail view
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                 Capacitor.Plugins.AdMob.hideBanner().catch(e => console.log(e));
             } else {
@@ -605,10 +597,14 @@
             let redirectBtnHTML = targetRedirectUrl 
                 ? `<div style="margin-top:20px;"><a href="${targetRedirectUrl}" target="_blank" class="redirect-link-btn" style="width:100%; justify-content:center;"><span>${customActionLabel}</span></a></div>` : "";
 
-            // END OF ARTICLE AD (Large Wide Banner)
+            // ** NATIVE / BANNER DB AD FETCH LOGIC **
             let endOfArticleAd = "";
-            if (window.globalAdConfig?.placements?.bannerAdPostDetails) {
-                endOfArticleAd = getWideBannerAdHTML();
+            
+            // Prioritize displaying the Native Ad for Post Details, if not found fallback to regular Details Banner
+            if (window.globalAdConfig?.placements?.nativeAdPostDetails && window.globalAdConfig.nativeId) {
+                endOfArticleAd = getNativeAdHTML(window.globalAdConfig.nativeId);
+            } else if (window.globalAdConfig?.placements?.bannerAdPostDetails && window.globalAdConfig.bannerId) {
+                endOfArticleAd = getWideBannerAdHTML(window.globalAdConfig.bannerId);
             }
 
             readerBody.innerHTML = `
@@ -631,7 +627,6 @@
                 closeBtn.addEventListener('click', () => {
                     document.getElementById('fullNewsModalOverlay').classList.remove('active-reader');
                     
-                    // RESTORE the small bottom banner when detail view closes
                     if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                         Capacitor.Plugins.AdMob.resumeBanner().catch(e => console.log(e));
                     } else {
@@ -644,7 +639,7 @@
         }
 
         // ==========================================
-        // 🟢 NATIVE IN-FEED AD (Visual Test Ad Mock)
+        // In-Feed Ads Injection
         // ==========================================
         function renderFilteredBroadcasts() {
             const container = document.getElementById('broadcastsContainer');
@@ -667,12 +662,12 @@
                 
                 currentPostCount++;
 
-                // Inject Native Ad using Database ID every 2 items
+                // Inject Native Ads within the post list dynamically
                 if (currentPostCount % 2 === 0) {
                     if (window.globalAdConfig?.placements?.nativeAdPostList && window.globalAdConfig.nativeId) {
                         const nativeAdCard = document.createElement('article');
                         nativeAdCard.className = "featured-broadcast-card";
-                        nativeAdCard.innerHTML = getNativeAdHTML();
+                        nativeAdCard.innerHTML = getNativeAdHTML(window.globalAdConfig.nativeId);
                         container.appendChild(nativeAdCard);
                     }
                 }
@@ -680,7 +675,7 @@
         }
 
         // ==========================================
-        // 🟡 FULLY RESTORED SEARCH ENGINE (WITH ADS!)
+        // Search Engine & Search Result Ads
         // ==========================================
         function setupSearchEngineControls() {
             const openBtn = document.getElementById('openSearchBtn');
@@ -736,21 +731,17 @@
                 
                 searchResultCount++;
 
-                // Added: Injects Native Ad into search results every 2 items for extra revenue
                 if (searchResultCount % 2 === 0) {
                     if (window.globalAdConfig?.placements?.nativeAdPostList && window.globalAdConfig.nativeId) {
                         const nativeAdCard = document.createElement('article');
                         nativeAdCard.className = "featured-broadcast-card";
-                        nativeAdCard.innerHTML = getNativeAdHTML();
+                        nativeAdCard.innerHTML = getNativeAdHTML(window.globalAdConfig.nativeId);
                         resultsArea.appendChild(nativeAdCard);
                     }
                 }
             });
         }
 
-        // ==========================================
-        // UI Controls & Toggles
-        // ==========================================
         function bindVisualInterfaceControls() {
             document.querySelectorAll('.filter-btn').forEach(pill => {
                 pill.addEventListener('click', function() {
