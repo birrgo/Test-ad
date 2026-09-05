@@ -23,7 +23,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="news.css">
     <style>
         /* Sidebar iframe drawer overlay setup */
@@ -59,7 +59,7 @@
             transform: translateX(0);
         }
 
-        /* Container reserved for real plugin banner or responsive fallback */
+        /* Floating Bottom Banner Ad */
         .ad-container-wrapper {
             position: fixed;
             bottom: 70px;
@@ -70,20 +70,63 @@
             pointer-events: none; 
             z-index: 9000;
         }
-
-        /* Real Native Ad Container Slot inside Articles */
-        .native-admob-slot {
-            width: 100%;
-            min-height: 90px;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            margin-top: 20px;
+        .admob-preview-banner {
+            width: 320px;
+            height: 50px;
+            background: #f1c40f;
+            color: #000;
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: bold;
+            border: 2px dashed #d35400;
+            border-radius: 4px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            pointer-events: auto;
+        }
+        
+        /* Simulated Google Test Ad for Native / Inline Slots */
+        .mock-test-ad-block {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .mock-test-ad-label {
+            background: #4285f4;
+            color: white;
+            font-size: 10px;
+            padding: 4px 8px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-bottom-right-radius: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .mock-test-ad-title {
+            font-size: 16px;
+            color: #333;
+            margin: 15px 0 5px 0;
+            font-weight: 700;
+        }
+        .mock-test-ad-desc {
+            font-size: 12px;
+            color: #777;
+            margin: 0;
+            word-break: break-all;
         }
     </style>
 </head>
@@ -182,8 +225,12 @@
             </footer>
         </main>
 
-        <!-- Banner Ad Slot Placeholder -->
-        <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;"></div>
+        <!-- AdMob Test Preview Banner Container -->
+        <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;">
+            <div class="admob-preview-banner" id="admobPreviewBanner">
+                AdMob Banner Preview Loading...
+            </div>
+        </div>
 
         <!-- Bottom Navigation Menu -->
         <nav class="bottom-nav">
@@ -244,7 +291,9 @@
         let currentActiveCategoryFilter = "Shikela Update";
         let cardClockIntervalId = null;
         let hasTriggeredAppOpen = false;
-        let isOpeningArticle = false; 
+        
+        // Lock to prevent double click opening multiple ads
+        let isOpeningArticle = false;
 
         window.globalAdConfig = {};
         const urlParams = new URLSearchParams(window.location.search);
@@ -267,7 +316,32 @@
         });
 
         // ==========================================
-        // Fetch AdMob Config & Initialize Plugin
+        // Helper to Generate Native / Wide Ads from DB
+        // ==========================================
+        function getNativeAdHTML() {
+            const adId = window.globalAdConfig.nativeId || 'Loading...';
+            return `
+                <div class="mock-test-ad-block" style="min-height: 120px;">
+                    <span class="mock-test-ad-label">Ad</span>
+                    <div class="mock-test-ad-title">AdMob Native</div>
+                    <p class="mock-test-ad-desc">ID: ${adId}</p>
+                </div>
+            `;
+        }
+
+        function getWideBannerAdHTML() {
+            const adId = window.globalAdConfig.bannerId || 'Loading...';
+            return `
+                <div class="mock-test-ad-block" style="margin-top: 30px; border-radius: 8px; min-height: 250px; background: #f8f9fa;">
+                    <span class="mock-test-ad-label" style="background:#fbc531;">Advertisement</span>
+                    <div class="mock-test-ad-title" style="margin-top:25px;">Sponsored Content</div>
+                    <p class="mock-test-ad-desc">ID: ${adId}</p>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // Fetch AdMob Config
         // ==========================================
         function fetchAdMobUnits() {
             const adManagerRef = ref(db, `${APP_NODE_NAME}/adManager`);
@@ -288,7 +362,7 @@
                         const { AdMob } = Capacitor.Plugins;
                         AdMob.initialize({
                             requestTrackingAuthorization: true,
-                            initializeForTesting: true // Set to false for live production builds
+                            initializeForTesting: false
                         }).then(() => {
                             triggerAppOpenAd();
                             triggerBannerAd();
@@ -318,48 +392,50 @@
         }
 
         async function triggerBannerAd() {
+            const adWrapper = document.getElementById('adContainerWrapper');
             if (window.globalAdConfig?.placements?.bannerAdHomePage && window.globalAdConfig.bannerId) {
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                    const { AdMob, BannerAdPosition, BannerAdSize } = Capacitor.Plugins;
+                    const { AdMob } = Capacitor.Plugins;
                     try {
-                        await AdMob.showBanner({
-                            adId: window.globalAdConfig.bannerId,
-                            position: BannerAdPosition.BOTTOM_CENTER,
-                            size: BannerAdSize.BANNER,
-                            margin: 70,
-                            restartOnActivityRecreate: true
-                        });
+                        await AdMob.showBanner({ adId: window.globalAdConfig.bannerId, position: 'BOTTOM_CENTER', margin: 70 });
                     } catch (e) { console.error(e); }
                 } else {
-                    const adWrapper = document.getElementById('adContainerWrapper');
                     adWrapper.style.display = 'flex';
-                    adWrapper.innerHTML = `
-                        <div style="width:320px;height:50px;background:#f1c40f;color:#000;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;border:2px dashed #d35400;border-radius:4px;text-align:center;pointer-events:auto;">
-                            [Web Test Banner: ${window.globalAdConfig.bannerId}]
-                        </div>
-                    `;
                     document.getElementById('mainContentArea').style.paddingBottom = '130px';
                 }
+            } else {
+                adWrapper.style.display = 'none';
             }
         }
 
+        // Added immediate loading popup to prevent stuck feeling / double clicks
         async function showInterstitialAdMock(onAdClosedCallback) {
             if (window.globalAdConfig?.placements?.interstitialAdPostDetails && window.globalAdConfig.interstitialId) {
+                
+                // Show loading UI to prevent double click
+                triggerUiPopup("⏳", "Loading Content", "Please wait while we prepare the article...");
+                document.getElementById('closePopupBtn').style.display = 'none'; // hide close button temporarily
+
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     const { AdMob } = Capacitor.Plugins;
                     try {
                         await AdMob.prepareInterstitial({ adId: window.globalAdConfig.interstitialId });
+                        document.getElementById('customPopupModule').classList.remove('show-popup');
+                        document.getElementById('closePopupBtn').style.display = 'block';
+                        
                         await AdMob.showInterstitial();
                         onAdClosedCallback();
                     } catch (e) {
+                        document.getElementById('customPopupModule').classList.remove('show-popup');
+                        document.getElementById('closePopupBtn').style.display = 'block';
                         onAdClosedCallback(); 
                     }
                 } else {
-                    triggerUiPopup("📺", "Interstitial Ad Loading", `Please wait...`);
                     setTimeout(() => {
                         document.getElementById('customPopupModule').classList.remove('show-popup');
+                        document.getElementById('closePopupBtn').style.display = 'block';
                         onAdClosedCallback();
-                    }, 1000);
+                    }, 1000); // Simulate processing delay
                 }
             } else {
                 onAdClosedCallback(); 
@@ -468,15 +544,17 @@
         }
 
         // ==========================================
-        // 🔵 FULL ARTICLE READER & WIDE BANNER AD
+        // 🔵 FULL ARTICLE READER & SCROLL AD 
         // ==========================================
+        
+        // Locked function to prevent double tap bug
         window.openFullNewsReader = function(itemId) {
-            if (isOpeningArticle) return; 
+            if (isOpeningArticle) return; // Prevent double click
             isOpeningArticle = true;
-
+            
             showInterstitialAdMock(() => {
                 executeOpenReader(itemId);
-                isOpeningArticle = false; 
+                isOpeningArticle = false; // Release lock
             });
         };
 
@@ -487,6 +565,13 @@
             const readerOverlay = document.getElementById('fullNewsModalOverlay');
             const readerBody = document.getElementById('fullNewsReaderBody');
             
+            // HIDE the small bottom banner while in detail view
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                Capacitor.Plugins.AdMob.hideBanner().catch(e => console.log(e));
+            } else {
+                document.getElementById('adContainerWrapper').style.display = 'none';
+            }
+
             const headline = item.title || item.newsTitle;
             const fullContent = item.content || item.message || "";
             const displayCategory = (item.category || "").replace('Shikela', 'Yala Tech');
@@ -506,13 +591,10 @@
             let redirectBtnHTML = targetRedirectUrl 
                 ? `<div style="margin-top:20px;"><a href="${targetRedirectUrl}" target="_blank" class="redirect-link-btn" style="width:100%; justify-content:center;"><span>${customActionLabel}</span></a></div>` : "";
 
+            // END OF ARTICLE AD (Large Wide Banner)
             let endOfArticleAd = "";
             if (window.globalAdConfig?.placements?.bannerAdPostDetails) {
-                endOfArticleAd = `
-                    <div class="native-admob-slot">
-                        <span style="font-size:11px; color:#888; font-weight:600;">Sponsored Advertisement</span>
-                    </div>
-                `;
+                endOfArticleAd = getWideBannerAdHTML();
             }
 
             readerBody.innerHTML = `
@@ -526,18 +608,30 @@
                 ${redirectBtnHTML}
                 ${endOfArticleAd}
             `;
-            
-            // Hide the bottom home banner when inside article reader so it doesn't double overlap
-            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                const { AdMob } = Capacitor.Plugins;
-                AdMob.hideBanner().catch(console.error);
-            } else {
-                document.getElementById('adContainerWrapper').style.display = 'none';
-            }
-
             readerOverlay.classList.add('active-reader');
         }
 
+        function setupNewsReaderModalControls() {
+            const closeBtn = document.getElementById('closeNewsReaderBtn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    document.getElementById('fullNewsModalOverlay').classList.remove('active-reader');
+                    
+                    // RESTORE the small bottom banner when detail view closes
+                    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                        Capacitor.Plugins.AdMob.resumeBanner().catch(e => console.log(e));
+                    } else {
+                        if (window.globalAdConfig?.placements?.bannerAdHomePage) {
+                            document.getElementById('adContainerWrapper').style.display = 'flex';
+                        }
+                    }
+                });
+            }
+        }
+
+        // ==========================================
+        // 🟢 NATIVE IN-FEED AD (Visual Test Ad Mock)
+        // ==========================================
         function renderFilteredBroadcasts() {
             const container = document.getElementById('broadcastsContainer');
             if (!container) return;
@@ -550,16 +644,29 @@
                 return;
             }
 
+            let currentPostCount = 0;
             filtered.forEach((item) => {
                 const card = document.createElement('article');
                 card.className = "featured-broadcast-card";
                 card.innerHTML = buildSingleNewsCardHTML(item);
                 container.appendChild(card);
+                
+                currentPostCount++;
+
+                // Inject Native Ad using Database ID every 2 items
+                if (currentPostCount % 2 === 0) {
+                    if (window.globalAdConfig?.placements?.nativeAdPostList && window.globalAdConfig.nativeId) {
+                        const nativeAdCard = document.createElement('article');
+                        nativeAdCard.className = "featured-broadcast-card";
+                        nativeAdCard.innerHTML = getNativeAdHTML();
+                        container.appendChild(nativeAdCard);
+                    }
+                }
             });
         }
 
         // ==========================================
-        // 🟡 FULLY RESTORED SEARCH ENGINE
+        // 🟡 FULLY RESTORED SEARCH ENGINE (WITH ADS!)
         // ==========================================
         function setupSearchEngineControls() {
             const openBtn = document.getElementById('openSearchBtn');
@@ -596,7 +703,6 @@
                 const title = String(item.title || item.newsTitle || '').toLowerCase();
                 const content = String(item.content || item.message || '').toLowerCase();
                 const cat = String(item.category || '').toLowerCase();
-
                 return code.includes(cleanQuery) || title.includes(cleanQuery) || content.includes(cleanQuery) || cat.includes(cleanQuery);
             });
 
@@ -606,14 +712,31 @@
             }
 
             resultsArea.innerHTML = '';
+            let searchResultCount = 0;
+            
             matchedNews.forEach((item) => {
                 const card = document.createElement('article');
                 card.className = "featured-broadcast-card";
                 card.innerHTML = buildSingleNewsCardHTML(item);
                 resultsArea.appendChild(card);
+                
+                searchResultCount++;
+
+                // Added: Injects Native Ad into search results every 2 items for extra revenue
+                if (searchResultCount % 2 === 0) {
+                    if (window.globalAdConfig?.placements?.nativeAdPostList && window.globalAdConfig.nativeId) {
+                        const nativeAdCard = document.createElement('article');
+                        nativeAdCard.className = "featured-broadcast-card";
+                        nativeAdCard.innerHTML = getNativeAdHTML();
+                        resultsArea.appendChild(nativeAdCard);
+                    }
+                }
             });
         }
 
+        // ==========================================
+        // UI Controls & Toggles
+        // ==========================================
         function bindVisualInterfaceControls() {
             document.querySelectorAll('.filter-btn').forEach(pill => {
                 pill.addEventListener('click', function() {
@@ -622,21 +745,6 @@
                     currentActiveCategoryFilter = this.getAttribute('data-filter') || "Shikela Update";
                     renderFilteredBroadcasts();
                 });
-            });
-        }
-
-        function setupNewsReaderModalControls() {
-            const closeBtn = document.getElementById('closeNewsReaderBtn');
-            if (closeBtn) closeBtn.addEventListener('click', () => {
-                document.getElementById('fullNewsModalOverlay').classList.remove('active-reader');
-                
-                // Resume bottom banner ad when exiting article reader view
-                if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                    const { AdMob } = Capacitor.Plugins;
-                    AdMob.resumeBanner().catch(console.error);
-                } else {
-                    document.getElementById('adContainerWrapper').style.display = 'flex';
-                }
             });
         }
 
