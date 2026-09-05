@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App 2 - Manage Ads</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-blue: #2196F3;
+            --primary-dark: #1976D2;
+            --bg-gray: #f2f2f2;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --helper-blue: #2196F3;
+            --success-green: #4CAF50;
+            --danger-red: #F44336;
+            --border-color: #e0e0e0;
+            --card-bg: #ffffff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+        body { background-color: var(--bg-gray); color: var(--text-main); padding-top: 60px; }
+        .navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background-color: var(--primary-blue); color: white; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 1000; }
+        .nav-left { display: flex; align-items: center; gap: 20px; font-size: 18px; }
+        .nav-title { font-weight: 500; letter-spacing: 0.5px; }
+        .nav-right i { font-size: 18px; cursor: pointer; }
+        .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
+        .card { background-color: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; overflow: hidden; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color); }
+        .card-header h2 { font-size: 16px; font-weight: 500; color: var(--text-main); text-transform: uppercase; }
+        .btn-update { background-color: var(--primary-blue); color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.3s; }
+        .btn-update:hover { background-color: var(--primary-dark); }
+        .card-body { padding: 20px; }
+        .section-title { font-size: 14px; font-weight: 700; color: var(--text-muted); margin: 24px 0 16px 0; text-transform: uppercase; }
+        .section-title:first-child { margin-top: 0; }
+        .form-group { margin-bottom: 24px; }
+        .form-label { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+        .form-control { width: 100%; font-size: 15px; color: var(--text-main); border: none; border-bottom: 1px solid var(--border-color); padding: 8px 0; background: transparent; outline: none; transition: border-color 0.3s; }
+        .form-control:focus { border-bottom: 2px solid var(--primary-blue); }
+        select.form-control { cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="%23333" viewBox="0 0 16 16"><path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/></svg>'); background-repeat: no-repeat; background-position: right center; }
+        .checkbox-group { display: flex; align-items: center; margin-bottom: 20px; cursor: pointer; }
+        .checkbox-group input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--success-green); margin-right: 16px; cursor: pointer; }
+        .checkbox-label { font-size: 15px; color: var(--text-muted); cursor: pointer; }
+        .subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4; }
+        
+        /* Custom UI Popup Modal Styles */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: var(--card-bg); width: 90%; max-width: 350px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-header { padding: 16px 20px; color: white; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+        .modal-header.success { background-color: var(--success-green); }
+        .modal-header.error { background-color: var(--danger-red); }
+        .modal-body { padding: 24px 20px; font-size: 15px; color: var(--text-main); line-height: 1.5; text-align: center; }
+        .modal-footer { padding: 12px 20px; display: flex; justify-content: center; border-top: 1px solid var(--border-color); }
+        .btn-modal { padding: 8px 24px; border: none; border-radius: 20px; font-size: 14px; font-weight: 500; cursor: pointer; color: white; transition: opacity 0.2s; }
+        .btn-modal.success { background-color: var(--success-green); }
+        .btn-modal.error { background-color: var(--danger-red); }
+        .btn-modal:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="new.html" style="color: white; text-decoration: none;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <span class="nav-title">App 2 - Ad Manager</span>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <div class="card">
+            <div class="card-header">
+                <h2>MANAGE ADS</h2>
+                <button class="btn-update" id="btnUpdate">UPDATE</button>
+            </div>
+            
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Ad Status</label>
+                    <select class="form-control" id="adStatus">
+                        <option value="ON">ON</option>
+                        <option value="OFF">OFF</option>
+                    </select>
+                </div>
+
+                <div class="section-title">PRIMARY ADS</div>
+                <div class="form-group">
+                    <label class="form-label">Primary Ad Network</label>
+                    <select class="form-control" id="primaryAdNetwork">
+                        <option value="AdMob">AdMob</option>
+                        <option value="Facebook Audience Network">Facebook Audience Network</option>
+                    </select>
+                </div>
+
+                <!-- All AdMob Unit IDs included -->
+                <div class="form-group">
+                    <label class="form-label">AdMob Banner Ad Unit ID</label>
+                    <input type="text" class="form-control" id="adMobBannerUnitId" placeholder="Enter Banner Ad Unit ID">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">AdMob Interstitial Ad Unit ID</label>
+                    <input type="text" class="form-control" id="adMobInterstitialUnitId" placeholder="Enter Interstitial Ad Unit ID">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">AdMob Native Ad Unit ID</label>
+                    <input type="text" class="form-control" id="adMobNativeUnitId" placeholder="Enter Native Ad Unit ID">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">AdMob App Open Ad Unit ID</label>
+                    <input type="text" class="form-control" id="adMobAppOpenUnitId" placeholder="Enter App Open Ad Unit ID">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">AdMob Rewarded Video Ad Unit ID</label>
+                    <input type="text" class="form-control" id="adMobRewardedUnitId" placeholder="Enter Rewarded Video Ad Unit ID">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">AdMob Rewarded Interstitial Ad Unit ID</label>
+                    <input type="text" class="form-control" id="adMobRewardedInterstitialUnitId" placeholder="Enter Rewarded Interstitial Ad Unit ID">
+                </div>
+
+                <div class="section-title">BACKUP ADS</div>
+                <div class="form-group">
+                    <label class="form-label">Backup Ads</label>
+                    <select class="form-control" id="backupAdNetwork">
+                        <option value="None">None</option>
+                        <option value="AdMob">AdMob</option>
+                    </select>
+                </div>
+
+                <div class="section-title">GLOBAL CONFIGURATION</div>
+                <div class="form-group">
+                    <label class="form-label">Interstitial Ad Interval</label>
+                    <input type="number" class="form-control" id="interstitialAdInterval" placeholder="e.g. 3">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Native Ad Index</label>
+                    <input type="number" class="form-control" id="nativeAdIndex" placeholder="e.g. 4">
+                </div>
+                <!-- Native Styles... -->
+                <div class="form-group">
+                    <label class="form-label">Native Ad Style Post List</label>
+                    <select class="form-control" id="nativeAdStylePostList">
+                        <option value="Medium">Medium</option>
+                        <option value="Large">Large</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Native Ad Style Video List</label>
+                    <select class="form-control" id="nativeAdStyleVideoList">
+                        <option value="Large">Large</option>
+                        <option value="Medium">Medium</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Native Ad Style Post Details</label>
+                    <select class="form-control" id="nativeAdStylePostDetails">
+                        <option value="Large">Large</option>
+                        <option value="Medium">Medium</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Native Ad Style Exit Dialog</label>
+                    <select class="form-control" id="nativeAdStyleExitDialog">
+                        <option value="Medium">Medium</option>
+                        <option value="Large">Large</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header" style="border-bottom: none; padding-bottom: 0;">
+                <h2>ADS PLACEMENT</h2>
+            </div>
+            <div class="card-body">
+                <div class="subtitle">Enable or Disable Certain Ads Format Separately</div>
+                
+                <!-- Banners -->
+                <label class="checkbox-group">
+                    <input type="checkbox" id="bannerAdHomePage">
+                    <span class="checkbox-label">Banner Ad on Home Page</span>
+                </label>
+                <label class="checkbox-group">
+                    <input type="checkbox" id="bannerAdPostDetails">
+                    <span class="checkbox-label">Banner Ad on Post Details</span>
+                </label>
+                <label class="checkbox-group">
+                    <input type="checkbox" id="bannerAdCategoryDetails">
+                    <span class="checkbox-label">Banner Ad on Category Details</span>
+                </label>
+                <label class="checkbox-group">
+                    <input type="checkbox" id="bannerAdSearchPage">
+                    <span class="checkbox-label">Banner Ad on Search Page</span>
+                </label>
+                <label class="checkbox-group">
+                    <input type="checkbox" id="bannerAdCommentPage">
+                    <span class="checkbox-label">Banner Ad on Comment Page</span>
+                </label>
+
+                <!-- Interstitials -->
+                <div style="height: 10px;"></div> 
+                <label class="checkbox-group">
+                    <input type="checkbox" id="interstitialAdPostList">
+                    <span class="checkbox-label">Interstitial Ad on Post List</span>
+                </label>
+                <label class="checkbox-group">
+                    <input type="checkbox" id="interstitialAdPostDetails">
+                    <span class="checkbox-label">Interstitial on Post Details</span>
+                </label>
+
+                <!-- Natives -->
+                <div style="height: 10px;"></div> 
+                <label class="checkbox-group">
+                    <input type="checkbox" id="nativeAdPostList">
+                    <span class="checkbox-label">Native Ad on Post List</span>
+                </label>
+                <label class="checkbox-group">
+                    <input type="checkbox" id="nativeAdPostDetails">
+                    <span class="checkbox-label">Native Ad on Post Details</span>
+                </label>
+                <label class="checkbox-group">
+                    <input type="checkbox" id="nativeAdExitDialog">
+                    <span class="checkbox-label">Native Ad on Exit Dialog</span>
+                </label>
+
+                <!-- App Open -->
+                <div style="height: 10px;"></div> 
+                <label class="checkbox-group">
+                    <input type="checkbox" id="appOpenAdStart">
+                    <span class="checkbox-label">App Open Ad on Start</span>
+                </label>
+                <label class="checkbox-group">
+                    <input type="checkbox" id="appOpenAdResume">
+                    <span class="checkbox-label">App Open Ad on Resume</span>
+                </label>
+
+                <!-- Rewarded Ads (Newly Added) -->
+                <div style="height: 10px;"></div> 
+                <label class="checkbox-group">
+                    <input type="checkbox" id="rewardedAdUnlock">
+                    <span class="checkbox-label">Rewarded Video on Unlock Premium Content</span>
+                </label>
+                <label class="checkbox-group">
+                    <input type="checkbox" id="rewardedInterstitialAdAction">
+                    <span class="checkbox-label">Rewarded Interstitial on User Action (e.g. Next Level/Page)</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert Modal UI -->
+    <div class="modal-overlay" id="uiModal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalHeader">
+                <i class="fas fa-check-circle" id="modalIcon"></i>
+                <span id="modalTitle">Success</span>
+            </div>
+            <div class="modal-body" id="modalMessage">
+                Action completed successfully.
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal" id="modalBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase v9 Modular Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCqwgwiukwKb7o6gwnaLoPQSWc7BfMDuYQ",
+            authDomain: "besuad.firebaseapp.com",
+            databaseURL: "https://besuad-default-rtdb.firebaseio.com",
+            projectId: "besuad",
+            storageBucket: "besuad.firebasestorage.app",
+            messagingSenderId: "641705823615",
+            appId: "1:641705823615:web:6502b2511ff8c0f251de4a",
+            measurementId: "G-2YSX71N08Q"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        
+        const APP_ID = "app1"; 
+        const DB_PATH = `${APP_ID}/adManager`;
+
+        // UI Modal Logic
+        const uiModal = document.getElementById('uiModal');
+        const modalHeader = document.getElementById('modalHeader');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalBtn = document.getElementById('modalBtn');
+
+        function showModal(title, message, isError = false) {
+            modalTitle.innerText = title;
+            modalMessage.innerText = message;
+            
+            if (isError) {
+                modalHeader.className = "modal-header error";
+                modalBtn.className = "btn-modal error";
+                modalIcon.className = "fas fa-exclamation-circle";
+            } else {
+                modalHeader.className = "modal-header success";
+                modalBtn.className = "btn-modal success";
+                modalIcon.className = "fas fa-check-circle";
+            }
+            uiModal.style.display = 'flex';
+        }
+
+        modalBtn.addEventListener('click', () => {
+            uiModal.style.display = 'none';
+        });
+
+        // Load Ad Settings
+        function loadAdSettings() {
+            const dbRef = ref(db);
+            get(child(dbRef, DB_PATH)).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    
+                    document.getElementById('adStatus').value = data.adStatus || 'ON';
+                    document.getElementById('primaryAdNetwork').value = data.primaryAdNetwork || 'AdMob';
+                    document.getElementById('adMobBannerUnitId').value = data.adMobBannerUnitId || '';
+                    document.getElementById('adMobInterstitialUnitId').value = data.adMobInterstitialUnitId || '';
+                    document.getElementById('adMobNativeUnitId').value = data.adMobNativeUnitId || '';
+                    document.getElementById('adMobAppOpenUnitId').value = data.adMobAppOpenUnitId || '';
+                    document.getElementById('adMobRewardedUnitId').value = data.adMobRewardedUnitId || '';
+                    document.getElementById('adMobRewardedInterstitialUnitId').value = data.adMobRewardedInterstitialUnitId || '';
+                    document.getElementById('backupAdNetwork').value = data.backupAdNetwork || 'None';
+                    
+                    document.getElementById('interstitialAdInterval').value = data.interstitialAdInterval || '';
+                    document.getElementById('nativeAdIndex').value = data.nativeAdIndex || '';
+                    document.getElementById('nativeAdStylePostList').value = data.nativeAdStylePostList || 'Medium';
+                    document.getElementById('nativeAdStyleVideoList').value = data.nativeAdStyleVideoList || 'Large';
+                    document.getElementById('nativeAdStylePostDetails').value = data.nativeAdStylePostDetails || 'Large';
+                    document.getElementById('nativeAdStyleExitDialog').value = data.nativeAdStyleExitDialog || 'Medium';
+
+                    if(data.placements) {
+                        const p = data.placements;
+                        document.getElementById('bannerAdHomePage').checked = p.bannerAdHomePage ?? true;
+                        document.getElementById('bannerAdPostDetails').checked = p.bannerAdPostDetails ?? true;
+                        document.getElementById('bannerAdCategoryDetails').checked = p.bannerAdCategoryDetails ?? true;
+                        document.getElementById('bannerAdSearchPage').checked = p.bannerAdSearchPage ?? true;
+                        document.getElementById('bannerAdCommentPage').checked = p.bannerAdCommentPage ?? true;
+                        document.getElementById('interstitialAdPostList').checked = p.interstitialAdPostList ?? true;
+                        document.getElementById('interstitialAdPostDetails').checked = p.interstitialAdPostDetails ?? true;
+                        document.getElementById('nativeAdPostList').checked = p.nativeAdPostList ?? true;
+                        document.getElementById('nativeAdPostDetails').checked = p.nativeAdPostDetails ?? true;
+                        document.getElementById('nativeAdExitDialog').checked = p.nativeAdExitDialog ?? true;
+                        document.getElementById('appOpenAdStart').checked = p.appOpenAdStart ?? true;
+                        document.getElementById('appOpenAdResume').checked = p.appOpenAdResume ?? true;
+                        document.getElementById('rewardedAdUnlock').checked = p.rewardedAdUnlock ?? true;
+                        document.getElementById('rewardedInterstitialAdAction').checked = p.rewardedInterstitialAdAction ?? true;
+                    }
+                }
+            }).catch((error) => {
+                console.error("Error loading data:", error);
+            });
+        }
+
+        // Save Form values to Firebase
+        document.getElementById('btnUpdate').addEventListener('click', () => {
+            const payload = {
+                adStatus: document.getElementById('adStatus').value,
+                primaryAdNetwork: document.getElementById('primaryAdNetwork').value,
+                adMobBannerUnitId: document.getElementById('adMobBannerUnitId').value,
+                adMobInterstitialUnitId: document.getElementById('adMobInterstitialUnitId').value,
+                adMobNativeUnitId: document.getElementById('adMobNativeUnitId').value,
+                adMobAppOpenUnitId: document.getElementById('adMobAppOpenUnitId').value,
+                adMobRewardedUnitId: document.getElementById('adMobRewardedUnitId').value,
+                adMobRewardedInterstitialUnitId: document.getElementById('adMobRewardedInterstitialUnitId').value,
+                backupAdNetwork: document.getElementById('backupAdNetwork').value,
+                interstitialAdInterval: parseInt(document.getElementById('interstitialAdInterval').value) || 0,
+                nativeAdIndex: parseInt(document.getElementById('nativeAdIndex').value) || 0,
+                nativeAdStylePostList: document.getElementById('nativeAdStylePostList').value,
+                nativeAdStyleVideoList: document.getElementById('nativeAdStyleVideoList').value,
+                nativeAdStylePostDetails: document.getElementById('nativeAdStylePostDetails').value,
+                nativeAdStyleExitDialog: document.getElementById('nativeAdStyleExitDialog').value,
+                placements: {
+                    bannerAdHomePage: document.getElementById('bannerAdHomePage').checked,
+                    bannerAdPostDetails: document.getElementById('bannerAdPostDetails').checked,
+                    bannerAdCategoryDetails: document.getElementById('bannerAdCategoryDetails').checked,
+                    bannerAdSearchPage: document.getElementById('bannerAdSearchPage').checked,
+                    bannerAdCommentPage: document.getElementById('bannerAdCommentPage').checked,
+                    interstitialAdPostList: document.getElementById('interstitialAdPostList').checked,
+                    interstitialAdPostDetails: document.getElementById('interstitialAdPostDetails').checked,
+                    nativeAdPostList: document.getElementById('nativeAdPostList').checked,
+                    nativeAdPostDetails: document.getElementById('nativeAdPostDetails').checked,
+                    nativeAdExitDialog: document.getElementById('nativeAdExitDialog').checked,
+                    appOpenAdStart: document.getElementById('appOpenAdStart').checked,
+                    appOpenAdResume: document.getElementById('appOpenAdResume').checked,
+                    rewardedAdUnlock: document.getElementById('rewardedAdUnlock').checked,
+                    rewardedInterstitialAdAction: document.getElementById('rewardedInterstitialAdAction').checked
+                }
+            };
+
+            set(ref(db, DB_PATH), payload)
+                .then(() => {
+                    showModal("Success!", `Ad settings for ${APP_ID} updated successfully!`, false);
+                })
+                .catch((error) => {
+                    showModal("Update Failed", error.message, true);
+                });
+        });
+
+        // Initialize script
+        loadAdSettings();
+    </script>
+</body>
+</html>
