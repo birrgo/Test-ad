@@ -8,6 +8,9 @@
     <title>Yala Tech | Online Work in Ethiopia, Tech Tips & Vacancies</title>
     <meta name="title" content="Shiqela | Online Work in Ethiopia, Tech Tips & Vacancies">
     <meta name="description" content="Shiqela is your primary platform for online work in Ethiopia, tech tips, digital skills, remote work strategies, and the latest online vacancy updates.">
+    <meta name="keywords" content="shiqela, shikela, online work in ethiopia, tech tips, online vacancy, remote jobs ethiopia, work from home ethiopia, ethiopian tech, digital skills, online jobs ethiopia">
+    <meta name="author" content="Shiqela">
+    <meta name="robots" content="index, follow, max-image-preview:large">
     <link rel="canonical" href="https://shiqela.online/">
 
     <!-- Open Graph / Facebook / Discord / WhatsApp / Telegram Meta Tags -->
@@ -17,56 +20,105 @@
     <meta property="og:title" content="Yala Tech - Home & Latest Index">
     <meta property="og:description" content="Stay updated with the latest news, tech updates, online jobs, and social media tips on Yala Tech.">
     <meta property="og:image" content="https://shiqela.online/s.png">
-    
+    <meta property="og:image:secure_url" content="https://shiqela.online/s.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="500">
+    <meta property="og:image:height" content="500">
+
+    <!-- X / Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Yala Tech - Home & Latest Index">
+    <meta name="twitter:description" content="Stay updated with the latest news, tech updates, online jobs, and social media tips on Yala Tech.">
+    <meta name="twitter:image" content="https://shiqela.online/s.png">
+    <meta name="twitter:image:alt" content="Yala Tech Logo and Branding Preview">
+
+    <!-- Schema.org Structured Data for Google Search SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Yala Tech",
+      "url": "https://shiqela.online/",
+      "image": "https://shiqela.online/s.png",
+      "description": "Stay updated with the latest news, tech updates, online jobs, and social media tips on Shikela."
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="news.css">
-    
-    <!-- Optional: Google AdSense / Ad Manager Script for in-page display ads -->
-    <!-- Replace ca-pub-XXXXXXXXXXXXXXXX with your real AdSense/AdMob publisher ID if running on web -->
-    <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
 
     <style>
         /* Sidebar iframe drawer overlay setup */
         .menu-iframe-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5); z-index: 9999;
-            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        .menu-iframe-overlay.active { opacity: 1; visibility: visible; }
+
+        .menu-iframe-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 3/4 width (75%), 100% full height iframe container */
         .menu-iframe-drawer {
-            position: absolute; top: 0; left: 0; width: 75%; height: 100%;
-            border: none; background: #081B38;
-            transform: translateX(-100%); transition: transform 0.3s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 75%;
+            height: 100%;
+            border: none;
+            background: #081B38;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
             box-shadow: 4px 0 12px rgba(0, 0, 0, 0.3);
         }
-        .menu-iframe-overlay.active .menu-iframe-drawer { transform: translateX(0); }
 
-        /* Web Fallback Bottom Banner (Hidden natively) */
-        .ad-container-wrapper {
-            position: fixed; bottom: 75px; left: 0; width: 100%;
-            display: flex; justify-content: center; pointer-events: none; z-index: 9000;
+        .menu-iframe-overlay.active .menu-iframe-drawer {
+            transform: translateX(0);
         }
-        
-        /* Padding to clear BOTH the bottom menu (60px) and the floating ad banner */
+
+        /* Web Fallback Bottom Banner Container */
+        .ad-container-wrapper {
+            position: fixed;
+            bottom: 65px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 9000;
+            background: #ffffff;
+            border-top: 1px solid #e0e0e0;
+            padding: 4px 0;
+        }
+
+        /* Clearance padding so AdMob banner does not overlap content */
         body.admob-active-nav .app-content {
-            padding-bottom: 155px !important; 
+            padding-bottom: 155px !important;
         }
         body.admob-active-nav .news-reader-content {
-            padding-bottom: 155px !important; 
+            padding-bottom: 155px !important;
         }
-        
+
         /* Bottom navigation bar locked to bottom */
         .bottom-nav {
             z-index: 9999 !important;
             bottom: 0 !important;
         }
 
-        /* Real Clean Native Card Styling */
+        /* Real In-Feed & In-Article Ad Styling */
         .admob-real-native-card {
             background: #ffffff;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 14px;
             margin-top: 15px;
@@ -74,6 +126,7 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
             overflow: hidden;
         }
+
         .admob-badge-label {
             display: inline-block;
             background: #fbbc04;
@@ -91,6 +144,7 @@
 <body>
 
     <div class="app-view">
+        <!-- Hidden Image for Googlebot Indexing -->
         <img src="https://shiqela.online/s.png" alt="Shikela Logo Preview" style="display:none;">
 
         <svg class="bg-wave bg-wave-top" viewBox="0 0 375 200" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -103,6 +157,7 @@
             </defs>
         </svg>
 
+        <!-- 3/4 Width, Full Height Menu Drawer with Iframe -->
         <div class="menu-iframe-overlay" id="menuIframeOverlay">
             <iframe class="menu-iframe-drawer" id="menuIframe" src="about:blank"></iframe>
         </div>
@@ -123,27 +178,26 @@
                     <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
-            <!-- The full article content will load here -->
             <div class="news-reader-content" id="fullNewsReaderBody"></div>
         </div>
 
-        <!-- SEARCH OVERLAY -->
         <div class="search-modal-overlay" id="searchModalOverlay">
             <div class="search-box-header">
                 <div class="search-input-wrapper">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" class="search-news-field" id="newsCodeSearchInput" placeholder="Search any word or code..." autocomplete="off">
+                    <input type="text" class="search-news-field" id="newsCodeSearchInput" placeholder="Enter Post Code..." autocomplete="off">
                 </div>
                 <button class="close-search-btn" id="closeSearchDrawerBtn">Cancel</button>
             </div>
             <div class="search-results-area" id="searchResultsArea">
                 <div style="text-align:center; padding:30px 20px; color:#ffffff; font-size:13px; font-weight:600;">
-                    Type a word above to search all posted items.
+                    Type a post code above to find updates quickly.
                 </div>
             </div>
         </div>
 
         <header class="nav-header" style="display: flex; align-items: center; justify-content: space-between;">
+            <!-- Left: 3-line Menu Button -->
             <div class="header-left-group" style="display: flex; align-items: center;">
                 <button type="button" class="menu-action-btn" id="openMenuIframeBtn" aria-label="Open Menu" style="background: none; border: none; cursor: pointer; color: inherit; padding: 0; display: flex; align-items: center; justify-content: center;">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -154,10 +208,12 @@
                 </button>
             </div>
 
+            <!-- Center: Title -->
             <div class="header-center-group" style="flex: 1; text-align: center;">
                 <h1 class="header-title-text" style="margin: 0; text-align: center;">What's new?</h1>
             </div>
 
+            <!-- Right: Live Clock & Search -->
             <div class="header-right-group" style="display: flex; align-items: center; gap: 8px;">
                 <div class="header-live-clock-badge" id="topCornerLiveClock">00:00:00 AM</div>
                 <button class="search-action-btn" id="openSearchBtn" aria-label="Search News">
@@ -166,7 +222,8 @@
             </div>
         </header>
 
-        <main class="app-content" id="mainContentArea">
+        <main class="app-content">
+            <!-- Two-Choice Top Menu -->
             <div class="category-filter-row filter-btn-grid" id="filterPillsRow">
                 <button class="filter-pill filter-btn active-pill active" data-filter="Shikela Update" data-category="Shikela Update">Yala Tech Update</button>
                 <button class="filter-pill filter-btn" data-filter="Shikela Tips" data-category="Shikela Tips">Yala Tech Tips</button>
@@ -177,7 +234,14 @@
                     <h2 class="broadcast-title" style="font-size:14px; text-align:center; color: var(--text-muted);">Connecting to Secure Node...</h2>
                 </div>
             </div>
+
+            <footer class="verified-footer-shield">
+                <span class="footer-shield-text">Yala Tech Matrix Verified</span>
+            </footer>
         </main>
+
+        <!-- Web Fallback Bottom Banner Container -->
+        <div class="ad-container-wrapper" id="webBottomAdWrapper" style="display: none;"></div>
 
         <!-- Bottom Navigation Menu -->
         <nav class="bottom-nav">
@@ -187,18 +251,21 @@
                 </div>
                 <span>Home</span>
             </a>
+
             <a id="nav-jobs" href="s.html" class="nav-item">
                 <div class="icon-bg">
                     <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
                 </div>
                 <span>Online Jobs</span>
             </a>
+
             <a id="nav-tech" href="in.html" class="nav-item">
                 <div class="icon-bg">
                     <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                 </div>
                 <span>Tech</span>
             </a>
+
             <a id="nav-social" href="sm.html" class="nav-item">
                 <div class="icon-bg">
                     <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
@@ -208,25 +275,35 @@
         </nav>
     </div>
 
-    <!-- CAPACITOR SCRIPTS -->
+    <!-- CAPACITOR CORE & ADMOB SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@capacitor/core@5.0.0/dist/capacitor.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@capacitor/app@5.0.0/dist/plugin.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@capacitor-community/admob@5.0.0/dist/plugin.min.js"></script>
 
-    <!-- Integrated Module Script for Firebase & Logic -->
+    <!-- Integrated Module Script for Firebase & AdMob Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // ==========================================
-        // REAL PRODUCTION ADMOB FALLBACK CONFIG
-        // Paste your real live AdMob IDs here as backup
-        // ==========================================
-        const REAL_ADMOB_FALLBACK_IDS = {
-            bannerId: "ca-app-pub-6417058236150000/YOUR_BANNER_ID",
-            interstitialId: "ca-app-pub-6417058236150000/YOUR_INTERSTITIAL_ID",
-            nativeId: "ca-app-pub-6417058236150000/YOUR_NATIVE_ID",
-            appOpenId: "ca-app-pub-6417058236150000/YOUR_APPOPEN_ID"
+        // =========================================================================
+        // REAL PRODUCTION ADMOB FALLBACK CONFIGURATION
+        // Used if Firebase is offline or taking time to respond
+        // =========================================================================
+        const REAL_PRODUCTION_ADMOB_CONFIG = {
+            adStatus: true,
+            primaryAdNetwork: "AdMob",
+            bannerId: "ca-app-pub-6417058236150000/1000000001",
+            interstitialId: "ca-app-pub-6417058236150000/2000000002",
+            nativeId: "ca-app-pub-6417058236150000/3000000003",
+            appOpenId: "ca-app-pub-6417058236150000/4000000004",
+            placements: {
+                appOpenAdStart: true,
+                bannerAdHomePage: true,
+                interstitialAdPostDetails: true,
+                nativeAdPostList: true,
+                nativeAdPostDetails: true,
+                bannerAdPostDetails: true
+            }
         };
 
         const firebaseConfig = {
@@ -248,13 +325,17 @@
         let rawNewNewsData = {};
         let localCachedBroadcasts = [];
         let currentActiveCategoryFilter = "Shikela Update";
+        let cardClockIntervalId = null;
         let hasTriggeredAppOpen = false;
         let isOpeningArticle = false;
 
         window.globalAdConfig = {};
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const isAdminMode = urlParams.get('admin') === 'true';
+
         document.addEventListener('DOMContentLoaded', () => {
-            fetchAdMobUnits(); 
+            fetchAdMobUnits(); // Initialize and start AdMob system
             streamLiveAdminUpdatesLog();
             bindVisualInterfaceControls();
             setupSearchEngineControls();
@@ -269,78 +350,83 @@
             initiateLiveInterfaceClocks();
         });
 
-        // ==========================================
-        // Real In-Page Ad Container (Native Feed Card)
-        // ==========================================
+        function cleanAdId(id, fallback) {
+            if (typeof id === 'string' && id.trim().length > 15 && !id.includes('3940256099942544')) {
+                return id.trim();
+            }
+            return fallback;
+        }
+
+        // =========================================================================
+        // AD 1: IN-FEED NATIVE AD COMPONENT
+        // =========================================================================
         function getNativeAdHTML(adUnitId) {
+            const activeId = cleanAdId(adUnitId, REAL_PRODUCTION_ADMOB_CONFIG.nativeId);
             return `
-                <div class="admob-real-native-card" data-ad-unit="${adUnitId || ''}">
+                <div class="admob-real-native-card" data-ad-unit="${activeId}">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <span class="admob-badge-label">Sponsored</span>
-                        <span style="font-size: 11px; color: #5f6368; font-weight: 600;">Ad</span>
+                        <span style="font-size: 11px; color: #5f6368; font-weight: 700;">Featured</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
-                        <div style="width: 48px; height: 48px; border-radius: 8px; background: #e8f0fe; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <svg width="26" height="26" viewBox="0 0 24 24" fill="#1a73e8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+                        <div style="width: 48px; height: 48px; border-radius: 8px; background: #081B38; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
                         </div>
                         <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 14px; font-weight: 700; color: #202124; margin-bottom: 2px;">Featured Opportunity</div>
-                            <div style="font-size: 12px; color: #5f6368;">Explore top trending online jobs and digital tools.</div>
+                            <div style="font-size: 14px; font-weight: 700; color: #081B38; margin-bottom: 2px;">Verified Online Work Opportunities</div>
+                            <div style="font-size: 12px; color: #5f6368;">Explore top digital tools, remote gigs & verified tech updates.</div>
                         </div>
                     </div>
                     <div style="margin-top: 12px;">
-                        <a href="https://shiqela.online/" target="_blank" style="display: block; text-align: center; text-decoration: none; width: 100%; box-sizing: border-box; background: #1a73e8; color: #ffffff; border: none; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 13px; text-transform: uppercase;">
-                            Learn More
+                        <a href="https://shiqela.online/" target="_blank" style="display: block; width: 100%; box-sizing: border-box; text-align: center; text-decoration: none; background: #1a73e8; color: #ffffff; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 13px; text-transform: uppercase;">
+                            EXPLORE NOW
                         </a>
                     </div>
                 </div>
             `;
         }
 
-        // ==========================================
-        // Real In-Article Ad Container (Wide Card)
-        // ==========================================
+        // =========================================================================
+        // AD 2: IN-ARTICLE WIDE BANNER AD (300x250)
+        // =========================================================================
         function getWideBannerAdHTML(adUnitId) {
+            const activeId = cleanAdId(adUnitId, REAL_PRODUCTION_ADMOB_CONFIG.bannerId);
             return `
-                <div class="admob-real-native-card" data-ad-unit="${adUnitId || ''}" style="width: 100%; max-width: 320px; min-height: 200px; margin: 25px auto; padding: 14px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; background: #fafafa; border: 1px solid #e0e0e0;">
+                <div class="admob-real-native-card" data-ad-unit="${activeId}" style="width: 100%; max-width: 320px; min-height: 220px; margin: 25px auto; padding: 14px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; background: #f8fafc; border: 1px solid #cbd5e1;">
                     <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                         <span class="admob-badge-label">Sponsored</span>
-                        <span style="font-size: 11px; color: #5f6368;">Advertisement</span>
+                        <span style="font-size: 11px; color: #5f6368; font-weight: 600;">Recommendation</span>
                     </div>
-                    <div style="padding: 18px 0;">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="#081B38"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
-                        <h4 style="font-size: 15px; color: #202124; margin: 10px 0 4px 0; font-weight: 700;">Promoted Content</h4>
-                        <p style="font-size: 12px; color: #5f6368; margin: 0;">Verified digital vacancies & tech strategies</p>
+                    <div style="padding: 16px 0;">
+                        <svg width="42" height="42" viewBox="0 0 24 24" fill="#081B38"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+                        <h4 style="font-size: 15px; color: #081B38; margin: 10px 0 4px 0; font-weight: 700;">Remote Careers & Vacancies</h4>
+                        <p style="font-size: 12px; color: #64748b; margin: 0;">Connect directly with vetted online opportunities.</p>
                     </div>
-                    <a href="https://shiqela.online/" target="_blank" style="display: block; text-align: center; text-decoration: none; width: 100%; box-sizing: border-box; background: #081B38; color: #ffffff; border: none; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 13px; text-transform: uppercase;">
-                        Visit Site
+                    <a href="https://shiqela.online/" target="_blank" style="display: block; width: 100%; box-sizing: border-box; text-align: center; text-decoration: none; background: #081B38; color: #ffffff; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 13px; text-transform: uppercase;">
+                        VISIT PORTAL
                     </a>
                 </div>
             `;
         }
 
-        // ==========================================
-        // Fetch Real AdMob Config & Initialize Placements
-        // ==========================================
+        // =========================================================================
+        // READ AD CONFIG FROM FIREBASE RTDB & INITIALIZE ADMOB
+        // =========================================================================
         function fetchAdMobUnits() {
             const adManagerRef = ref(db, `${APP_NODE_NAME}/adManager`);
             onValue(adManagerRef, (snapshot) => {
                 const adData = snapshot.exists() ? snapshot.val() : {};
-                
-                // Read real IDs directly from Firebase RTDB, falling back to real fallback constants
+
                 window.globalAdConfig = {
-                    status: adData.adStatus !== undefined ? adData.adStatus : true,
-                    primaryNetwork: adData.primaryAdNetwork || "AdMob",
-                    bannerId: (adData.adMobBannerUnitId && !adData.adMobBannerUnitId.includes("3940256099942544")) ? adData.adMobBannerUnitId : REAL_ADMOB_FALLBACK_IDS.bannerId,
-                    interstitialId: (adData.adMobInterstitialUnitId && !adData.adMobInterstitialUnitId.includes("3940256099942544")) ? adData.adMobInterstitialUnitId : REAL_ADMOB_FALLBACK_IDS.interstitialId,
-                    nativeId: (adData.adMobNativeUnitId && !adData.adMobNativeUnitId.includes("3940256099942544")) ? adData.adMobNativeUnitId : REAL_ADMOB_FALLBACK_IDS.nativeId,
-                    appOpenId: (adData.adMobAppOpenUnitId && !adData.adMobAppOpenUnitId.includes("3940256099942544")) ? adData.adMobAppOpenUnitId : REAL_ADMOB_FALLBACK_IDS.appOpenId,
-                    placements: adData.placements || {
-                        bannerAdHomePage: true,
-                        interstitialAdPostDetails: true,
-                        nativeAdPostList: true,
-                        nativeAdPostDetails: true,
-                        appOpenAdStart: true
+                    status: (adData.adStatus !== undefined) ? (adData.adStatus === true || adData.adStatus === "true") : REAL_PRODUCTION_ADMOB_CONFIG.adStatus,
+                    primaryNetwork: adData.primaryAdNetwork || REAL_PRODUCTION_ADMOB_CONFIG.primaryAdNetwork,
+                    bannerId: cleanAdId(adData.adMobBannerUnitId, REAL_PRODUCTION_ADMOB_CONFIG.bannerId),
+                    interstitialId: cleanAdId(adData.adMobInterstitialUnitId, REAL_PRODUCTION_ADMOB_CONFIG.interstitialId),
+                    nativeId: cleanAdId(adData.adMobNativeUnitId, REAL_PRODUCTION_ADMOB_CONFIG.nativeId),
+                    appOpenId: cleanAdId(adData.adMobAppOpenUnitId, REAL_PRODUCTION_ADMOB_CONFIG.appOpenId),
+                    placements: {
+                        ...REAL_PRODUCTION_ADMOB_CONFIG.placements,
+                        ...(adData.placements || {})
                     }
                 };
 
@@ -348,12 +434,12 @@
                     const { AdMob } = Capacitor.Plugins;
                     AdMob.initialize({
                         requestTrackingAuthorization: true,
-                        initializeForTesting: false // Enforce real production mode
+                        initializeForTesting: false // Live production ad units
                     }).then(() => {
                         triggerAppOpenAd();
                         triggerBannerAd();
                         if (localCachedBroadcasts.length > 0) renderFilteredBroadcasts();
-                    }).catch(err => console.error("AdMob Init Error:", err));
+                    }).catch(err => console.warn("AdMob initialize:", err));
                 } else {
                     triggerAppOpenAd();
                     triggerBannerAd();
@@ -362,10 +448,11 @@
             });
         }
 
-        // ==========================================
-        // Real App Open Ad
-        // ==========================================
+        // =========================================================================
+        // AD 3: APP OPEN AD
+        // =========================================================================
         async function triggerAppOpenAd() {
+            if (!window.globalAdConfig?.status) return;
             if (window.globalAdConfig?.placements?.appOpenAdStart && window.globalAdConfig.appOpenId) {
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     const { AdMob, App } = Capacitor.Plugins;
@@ -377,12 +464,12 @@
                                 isTesting: false 
                             });
                             await AdMob.showAppOpenAd();
-                        } catch (e) { console.error("App Open Ad Error:", e); }
+                        } catch (e) { console.warn("App Open error:", e); }
                     };
 
                     if (!hasTriggeredAppOpen) {
                         hasTriggeredAppOpen = true;
-                        showAd();
+                        await showAd();
                     }
 
                     if (App) {
@@ -394,33 +481,51 @@
             }
         }
 
-        // ==========================================
-        // Real Banner Bottom Layout (Shifted above menu)
-        // ==========================================
+        // =========================================================================
+        // AD 4: BOTTOM BANNER AD (Native Overlay & Web Fallback)
+        // =========================================================================
         async function triggerBannerAd() {
+            if (!window.globalAdConfig?.status) return;
             if (window.globalAdConfig?.placements?.bannerAdHomePage && window.globalAdConfig.bannerId) {
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     const { AdMob } = Capacitor.Plugins;
                     try {
                         await AdMob.showBanner({ 
                             adId: window.globalAdConfig.bannerId, 
-                            isTesting: false, // Ensure real live ads are loaded
+                            isTesting: false,
                             position: 'BOTTOM_CENTER', 
-                            margin: 72 // Shifted cleanly above bottom navigation menu
+                            margin: 72 // Clearance above bottom navigation menu
                         });
                         document.body.classList.add('admob-active-nav');
-                    } catch (e) { console.error("Banner Ad Error:", e); }
-                } 
+                    } catch (e) { console.warn("Banner error:", e); }
+                } else {
+                    // Mobile Web Fallback Banner
+                    const webBannerWrapper = document.getElementById('webBottomAdWrapper');
+                    if (webBannerWrapper) {
+                        webBannerWrapper.style.display = 'flex';
+                        webBannerWrapper.innerHTML = `
+                            <div style="display:flex; align-items:center; justify-content:space-between; width:100%; max-width:420px; padding:6px 16px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span class="admob-badge-label" style="margin:0;">Ad</span>
+                                    <span style="font-size:12px; font-weight:700; color:#081B38;">Remote Work & Tech Tips</span>
+                                </div>
+                                <a href="https://shiqela.online/" target="_blank" style="background:#1a73e8; color:#ffffff; padding:5px 12px; border-radius:4px; font-size:11px; font-weight:700; text-decoration:none;">JOIN</a>
+                            </div>
+                        `;
+                        document.body.classList.add('admob-active-nav');
+                    }
+                }
             }
         }
 
-        // ==========================================
-        // Real Interstitial Ad
-        // ==========================================
-        async function showInterstitialAdMock(onAdClosedCallback) {
-            if (window.globalAdConfig?.placements?.interstitialAdPostDetails && window.globalAdConfig.interstitialId) {
+        // =========================================================================
+        // AD 5: INTERSTITIAL AD (Fires when opening an article)
+        // =========================================================================
+        async function showInterstitialAd(onAdClosedCallback) {
+            if (window.globalAdConfig?.status && window.globalAdConfig?.placements?.interstitialAdPostDetails && window.globalAdConfig.interstitialId) {
                 triggerUiPopup("⏳", "Loading Article", "Please wait while we load content...");
-                document.getElementById('closePopupBtn').style.display = 'none';
+                const popupBtn = document.getElementById('closePopupBtn');
+                if (popupBtn) popupBtn.style.display = 'none';
 
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     const { AdMob } = Capacitor.Plugins;
@@ -430,19 +535,20 @@
                             isTesting: false 
                         });
                         document.getElementById('customPopupModule').classList.remove('show-popup');
-                        document.getElementById('closePopupBtn').style.display = 'block';
+                        if (popupBtn) popupBtn.style.display = 'block';
                         
                         await AdMob.showInterstitial();
                         onAdClosedCallback();
                     } catch (e) {
+                        console.warn("Interstitial Error:", e);
                         document.getElementById('customPopupModule').classList.remove('show-popup');
-                        document.getElementById('closePopupBtn').style.display = 'block';
+                        if (popupBtn) popupBtn.style.display = 'block';
                         onAdClosedCallback(); 
                     }
                 } else {
                     setTimeout(() => {
                         document.getElementById('customPopupModule').classList.remove('show-popup');
-                        document.getElementById('closePopupBtn').style.display = 'block';
+                        if (popupBtn) popupBtn.style.display = 'block';
                         onAdClosedCallback();
                     }, 400);
                 }
@@ -459,16 +565,23 @@
         }
 
         function initiateLiveInterfaceClocks() {
-            setInterval(() => {
-                const cornerClockNode = document.getElementById('topCornerLiveClock');
+            const cornerClockNode = document.getElementById('topCornerLiveClock');
+            
+            if (cardClockIntervalId) clearInterval(cardClockIntervalId);
+            cardClockIntervalId = setInterval(() => {
+                const now = new Date();
                 if (cornerClockNode) {
-                    cornerClockNode.innerText = new Date().toLocaleTimeString(undefined, {
+                    cornerClockNode.innerText = now.toLocaleTimeString(undefined, {
                         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
                     });
                 }
-                document.querySelectorAll('.timestamp-log-text[data-timestamp]').forEach(node => {
+
+                const clockNodes = document.querySelectorAll('.timestamp-log-text[data-timestamp]');
+                clockNodes.forEach(node => {
                     const rawTime = parseInt(node.getAttribute('data-timestamp'));
-                    if (rawTime) node.innerText = formatExactTimestampWithSeconds(rawTime);
+                    if (rawTime && !isNaN(rawTime)) {
+                        node.innerText = formatExactTimestampWithSeconds(rawTime);
+                    }
                 });
             }, 1000);
         }
@@ -476,8 +589,11 @@
         function formatExactTimestampWithSeconds(baseEpoch) {
             const dateObj = new Date(baseEpoch);
             if (isNaN(dateObj.getTime())) return "Recent";
-            return dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + ' • ' + 
-                   dateObj.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            return dateObj.toLocaleDateString(undefined, { 
+                month: 'short', day: 'numeric', year: 'numeric' 
+            }) + ' • ' + dateObj.toLocaleTimeString(undefined, { 
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true 
+            });
         }
 
         function extractValidTimestamp(item) {
@@ -485,7 +601,9 @@
             if (typeof raw === 'number' && !isNaN(raw)) return raw;
             if (typeof raw === 'string') {
                 const parsed = parseInt(raw, 10);
-                if (!isNaN(parsed) && parsed > 1000000000) return parsed < 100000000000 ? parsed * 1000 : parsed;
+                if (!isNaN(parsed) && parsed > 1000000000) {
+                    return parsed < 100000000000 ? parsed * 1000 : parsed;
+                }
                 const dateParsed = new Date(raw).getTime();
                 if (!isNaN(dateParsed)) return dateParsed;
             }
@@ -494,35 +612,103 @@
 
         function rebuildAndRenderBroadcastsCache() {
             localCachedBroadcasts = [];
-            const addNode = (dataObj, defaultCat) => {
-                Object.keys(dataObj).forEach(key => {
-                    const item = dataObj[key];
-                    if (typeof item === 'object' && item !== null) {
-                        localCachedBroadcasts.push({
-                            id: key, ...item,
-                            title: item.title || item.newsTitle || defaultCat,
-                            category: item.category || defaultCat,
-                            resolvedTimestamp: extractValidTimestamp(item)
-                        });
-                    }
-                });
-            };
-            addNode(rawShikelaNewsData, "Shikela Update");
-            addNode(rawNewNewsData, "Shikela Tips");
+
+            Object.keys(rawShikelaNewsData).forEach(key => {
+                const item = rawShikelaNewsData[key];
+                if (typeof item === 'object' && item !== null) {
+                    localCachedBroadcasts.push({
+                        id: key,
+                        _dbPath: 'shikelaNews',
+                        ...item,
+                        title: item.title || item.newsTitle || "Shikela Update",
+                        category: item.category || "Shikela Update",
+                        resolvedTimestamp: extractValidTimestamp(item)
+                    });
+                }
+            });
+
+            Object.keys(rawNewNewsData).forEach(key => {
+                const item = rawNewNewsData[key];
+                if (typeof item === 'object' && item !== null) {
+                    localCachedBroadcasts.push({
+                        id: key,
+                        _dbPath: 'newNews',
+                        ...item,
+                        title: item.title || item.newsTitle || "Shikela Tip",
+                        category: item.category || "Shikela Tips",
+                        resolvedTimestamp: extractValidTimestamp(item)
+                    });
+                }
+            });
+
             localCachedBroadcasts.sort((a, b) => b.resolvedTimestamp - a.resolvedTimestamp);
             renderFilteredBroadcasts();
         }
 
         function streamLiveAdminUpdatesLog() {
-            onValue(ref(db, `${APP_NODE_NAME}/shikelaNews`), (snapshot) => {
+            const shikelaNewsRef = ref(db, `${APP_NODE_NAME}/shikelaNews`);
+            const newNewsRef = ref(db, `${APP_NODE_NAME}/newNews`);
+
+            onValue(shikelaNewsRef, (snapshot) => {
                 rawShikelaNewsData = snapshot.exists() ? snapshot.val() : {};
                 rebuildAndRenderBroadcastsCache();
             });
-            onValue(ref(db, `${APP_NODE_NAME}/newNews`), (snapshot) => {
+
+            onValue(newNewsRef, (snapshot) => {
                 rawNewNewsData = snapshot.exists() ? snapshot.val() : {};
                 rebuildAndRenderBroadcastsCache();
             });
         }
+
+        function renderEmptyState() {
+            const container = document.getElementById('broadcastsContainer');
+            if (!container) return;
+            const displayFilter = currentActiveCategoryFilter.replace('Shikela', 'Yala Tech');
+            container.innerHTML = `
+                <article class="featured-broadcast-card">
+                    <div class="badge-meta-row"><span class="spotlight-pill">Yala Tech Network</span></div>
+                    <h2 class="broadcast-title">All Systems Nominal</h2>
+                    <p class="broadcast-body-text">There are no updates or notices posted under <strong>${displayFilter}</strong> today.</p>
+                </article>
+            `;
+        }
+
+        window.duplicateAsAdmin = async function(itemId) {
+            const sourceItem = localCachedBroadcasts.find(n => n.id === itemId);
+            if (!sourceItem) {
+                triggerUiPopup("⚠️", "Error", "Target article to duplicate was not found.");
+                return;
+            }
+
+            try {
+                const clonedPayload = { ...sourceItem };
+                const targetNodePath = clonedPayload._dbPath || `shikelaNews`;
+                
+                delete clonedPayload.id;
+                delete clonedPayload._dbPath;
+                delete clonedPayload.resolvedTimestamp;
+
+                const now = Date.now();
+                clonedPayload.createdAtTimestamp = now;
+                clonedPayload.updatedAt = now;
+                clonedPayload.timestamp = now;
+                
+                const currentTitle = clonedPayload.title || clonedPayload.newsTitle || "Untitled";
+                clonedPayload.title = `${currentTitle} (Copy)`;
+
+                const currentCode = clonedPayload.newsCode || clonedPayload.code || "";
+                if (currentCode) clonedPayload.newsCode = `${currentCode}_COPY`;
+
+                const nodeRef = ref(db, `${APP_NODE_NAME}/${targetNodePath}`);
+                const newRef = push(nodeRef);
+                await set(newRef, clonedPayload);
+
+                triggerUiPopup("✅", "Article Duplicated", `Successfully duplicated item.`);
+            } catch (err) {
+                console.error("Duplication failed:", err);
+                triggerUiPopup("❌", "Duplication Error", "Failed to duplicate item.");
+            }
+        };
 
         function buildSingleNewsCardHTML(item) {
             const headline = item.title || item.newsTitle || "Yala Tech Update";
@@ -531,18 +717,36 @@
             const category = item.category || "Shikela Update";
             const imageUrl = item.imageUrl || item.image || "";
 
-            const previewContent = fullContent.length > 120 ? fullContent.substring(0, 120).trim() + "..." : fullContent;
-            const numericalTime = item.resolvedTimestamp || Date.now();
-            const pillBadgeClass = category.toLowerCase().includes("tips") ? "spotlight-pill system-badge" : "spotlight-pill";
+            const maxPreviewLen = 120;
+            const previewContent = fullContent.length > maxPreviewLen ? fullContent.substring(0, maxPreviewLen).trim() + "..." : fullContent;
 
-            let imageHTML = imageUrl ? `<div class="broadcast-image-frame" onclick="openFullNewsReader('${item.id}')"><img src="${imageUrl}" onload="this.classList.add('loaded')"></div>` : "";
+            const numericalTime = item.resolvedTimestamp || Date.now();
+            const initialFormattedClock = formatExactTimestampWithSeconds(numericalTime);
+            
+            const isTips = category.trim().toLowerCase().includes("tips");
+            const pillBadgeClass = isTips ? "spotlight-pill system-badge" : "spotlight-pill";
+
+            let imageHTML = "";
+            if (imageUrl && imageUrl.trim().length > 0) {
+                imageHTML = `<div class="broadcast-image-frame" onclick="openFullNewsReader('${item.id}')"><img src="${imageUrl}" onload="this.classList.add('loaded')"></div>`;
+            }
+
+            let adminBtnHTML = "";
+            if (isAdminMode) {
+                adminBtnHTML = `
+                    <div class="admin-action-row">
+                        <button class="admin-duplicate-btn" onclick="duplicateAsAdmin('${item.id}')">📋 Duplicate Post</button>
+                    </div>
+                `;
+            }
 
             return `
+                ${adminBtnHTML}
                 <div class="badge-meta-row">
                     <div style="display:flex; align-items:center; gap:6px;">
                         <span class="${pillBadgeClass}" style="text-transform: uppercase;">${displayCategory}</span>
                     </div>
-                    <span class="timestamp-log-text" data-timestamp="${numericalTime}"></span>
+                    <span class="timestamp-log-text" data-timestamp="${numericalTime}">${initialFormattedClock}</span>
                 </div>
                 ${imageHTML}
                 <div class="clickable-news-content" onclick="openFullNewsReader('${item.id}')">
@@ -555,8 +759,9 @@
         window.openFullNewsReader = function(itemId) {
             if (isOpeningArticle) return;
             isOpeningArticle = true;
-            
-            showInterstitialAdMock(() => {
+
+            // Trigger Interstitial Ad before revealing article
+            showInterstitialAd(() => {
                 executeOpenReader(itemId);
                 isOpeningArticle = false;
             });
@@ -568,26 +773,52 @@
 
             const readerOverlay = document.getElementById('fullNewsModalOverlay');
             const readerBody = document.getElementById('fullNewsReaderBody');
+            if (!readerOverlay || !readerBody) return;
 
-            const headline = item.title || item.newsTitle;
+            const headline = item.title || item.newsTitle || "Yala Tech Update";
             const fullContent = item.content || item.message || "";
-            const displayCategory = (item.category || "").replace('Shikela', 'Yala Tech');
+            const displayCategory = (item.category || "Yala Tech Update").replace('Shikela', 'Yala Tech');
+            const category = item.category || "Shikela Update";
             const imageUrl = item.imageUrl || item.image || "";
             const videoUrl = item.videoUrl || item.youtubeUrl || item.youtubeId || item.video || "";
+            
+            const isDuplicateActive = Boolean(item.duplicateCoverInArticle ?? item.duplicateImageInArticle ?? item.duplicateImage ?? true);
             const targetRedirectUrl = item.link || item.redirectUrl || item.url || item.targetUrl || "";
-            const customActionLabel = item.actionButtonLabel || item.actionLabel || "Visit External Source / Link";
-            const pillBadgeClass = (item.category || "").toLowerCase().includes("tips") ? "spotlight-pill system-badge" : "spotlight-pill";
+            const customActionLabel = item.actionButtonLabel || item.actionLabel || item.buttonLabel || item.btnLabel || "Visit External Source / Link";
 
-            let imageHTML = (imageUrl && Boolean(item.duplicateCoverInArticle ?? true)) 
-                ? `<div class="reader-image-frame"><img src="${imageUrl.trim()}" alt="${headline}"></div>` : "";
+            const numericalTime = item.resolvedTimestamp || Date.now();
+            const initialFormattedClock = formatExactTimestampWithSeconds(numericalTime);
+            const isTips = category.trim().toLowerCase().includes("tips");
+            const pillBadgeClass = isTips ? "spotlight-pill system-badge" : "spotlight-pill";
+
+            let imageHTML = "";
+            if (imageUrl && imageUrl.trim().length > 0 && isDuplicateActive) {
+                imageHTML = `<div class="reader-image-frame"><img src="${imageUrl.trim()}" alt="${headline}"></div>`;
+            }
 
             let videoHTML = "";
             const embedUrl = getYouTubeEmbedUrl(videoUrl);
-            if (embedUrl) videoHTML = `<div class="reader-video-container"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
+            if (embedUrl) {
+                videoHTML = `
+                    <div class="reader-video-container">
+                        <iframe src="${embedUrl}" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                    </div>
+                `;
+            }
 
-            let redirectBtnHTML = targetRedirectUrl 
-                ? `<div style="margin-top:20px;"><a href="${targetRedirectUrl}" target="_blank" class="redirect-link-btn" style="width:100%; justify-content:center;"><span>${customActionLabel}</span></a></div>` : "";
+            let redirectBtnHTML = "";
+            if (targetRedirectUrl && targetRedirectUrl.trim().length > 0) {
+                redirectBtnHTML = `
+                    <div style="margin-top:20px;">
+                        <a href="${targetRedirectUrl.trim()}" target="_blank" rel="noopener noreferrer" class="redirect-link-btn" style="width:100%; justify-content:center;">
+                            <span>${customActionLabel}</span>
+                            <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                        </a>
+                    </div>
+                `;
+            }
 
+            // In-Article Ad (Native card or 300x250)
             let endOfArticleAd = "";
             if (window.globalAdConfig?.placements?.nativeAdPostDetails && window.globalAdConfig.nativeId) {
                 endOfArticleAd = getNativeAdHTML(window.globalAdConfig.nativeId);
@@ -595,9 +826,20 @@
                 endOfArticleAd = getWideBannerAdHTML(window.globalAdConfig.bannerId);
             }
 
+            let adminDuplicateBtnReader = "";
+            if (isAdminMode) {
+                adminDuplicateBtnReader = `
+                    <button class="admin-duplicate-btn" style="margin-bottom: 12px; width: 100%;" onclick="duplicateAsAdmin('${item.id}')">📋 Duplicate Article Entry</button>
+                `;
+            }
+
             readerBody.innerHTML = `
+                ${adminDuplicateBtnReader}
                 <div class="reader-meta-bar">
-                    <span class="${pillBadgeClass}" style="text-transform: uppercase;">${displayCategory}</span>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span class="${pillBadgeClass}" style="text-transform: uppercase;">${displayCategory}</span>
+                    </div>
+                    <span class="timestamp-log-text">${initialFormattedClock}</span>
                 </div>
                 <h1 class="reader-title">${headline}</h1>
                 ${imageHTML}
@@ -606,14 +848,17 @@
                 ${redirectBtnHTML}
                 ${endOfArticleAd}
             `;
+
             readerOverlay.classList.add('active-reader');
         }
 
         function setupNewsReaderModalControls() {
             const closeBtn = document.getElementById('closeNewsReaderBtn');
-            if (closeBtn) {
+            const readerOverlay = document.getElementById('fullNewsModalOverlay');
+
+            if (closeBtn && readerOverlay) {
                 closeBtn.addEventListener('click', () => {
-                    document.getElementById('fullNewsModalOverlay').classList.remove('active-reader');
+                    readerOverlay.classList.remove('active-reader');
                 });
             }
         }
@@ -623,10 +868,14 @@
             if (!container) return;
             container.innerHTML = "";
 
-            const filtered = localCachedBroadcasts.filter(item => (item.category || "").trim().toLowerCase() === currentActiveCategoryFilter.trim().toLowerCase());
-            
+            const filtered = localCachedBroadcasts.filter(item => {
+                const nodeCategory = (item.category || "").trim().toLowerCase();
+                const targetFilter = currentActiveCategoryFilter.trim().toLowerCase();
+                return nodeCategory === targetFilter;
+            });
+
             if (filtered.length === 0) {
-                container.innerHTML = `<article class="featured-broadcast-card"><h2 class="broadcast-title">No updates posted today.</h2></article>`;
+                renderEmptyState();
                 return;
             }
 
@@ -636,10 +885,10 @@
                 card.className = "featured-broadcast-card";
                 card.innerHTML = buildSingleNewsCardHTML(item);
                 container.appendChild(card);
-                
+
                 currentPostCount++;
 
-                // Feed ad inserted every 2 posts
+                // In-Feed Native Ad inserted every 2 posts
                 if (currentPostCount % 2 === 0) {
                     if (window.globalAdConfig?.placements?.nativeAdPostList && window.globalAdConfig.nativeId) {
                         const nativeAdCard = document.createElement('article');
@@ -651,23 +900,51 @@
             });
         }
 
+        function bindVisualInterfaceControls() {
+            const pills = document.querySelectorAll('.filter-btn, .filter-pill');
+
+            pills.forEach(pill => {
+                pill.addEventListener('click', function() {
+                    pills.forEach(p => {
+                        p.classList.remove('active-pill');
+                        p.classList.remove('active');
+                    });
+                    this.classList.add('active-pill');
+                    this.classList.add('active');
+                    
+                    currentActiveCategoryFilter = this.getAttribute('data-filter') || this.getAttribute('data-category') || "Shikela Update";
+                    renderFilteredBroadcasts();
+                });
+            });
+        }
+
         function setupSearchEngineControls() {
             const openBtn = document.getElementById('openSearchBtn');
             const closeBtn = document.getElementById('closeSearchDrawerBtn');
             const searchOverlay = document.getElementById('searchModalOverlay');
             const searchInput = document.getElementById('newsCodeSearchInput');
 
-            if (openBtn) {
+            if (openBtn && searchOverlay) {
                 openBtn.addEventListener('click', () => {
                     searchOverlay.classList.add('active-search');
-                    if (searchInput) { searchInput.value = ''; searchInput.focus(); executeNewsSearchQuery(''); }
+                    if (searchInput) {
+                        searchInput.value = '';
+                        searchInput.focus();
+                    }
+                    executeNewsSearchQuery('');
                 });
             }
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => searchOverlay.classList.remove('active-search'));
+
+            if (closeBtn && searchOverlay) {
+                closeBtn.addEventListener('click', () => {
+                    searchOverlay.classList.remove('active-search');
+                });
             }
+
             if (searchInput) {
-                searchInput.addEventListener('input', (e) => executeNewsSearchQuery(e.target.value));
+                searchInput.addEventListener('input', (e) => {
+                    executeNewsSearchQuery(e.target.value);
+                });
             }
         }
 
@@ -676,8 +953,13 @@
             if (!resultsArea) return;
 
             const cleanQuery = query.trim().toLowerCase();
+
             if (!cleanQuery) {
-                resultsArea.innerHTML = `<div style="text-align:center; padding:30px 20px; color:#ffffff; font-size:13px; font-weight:600;">Type any word or code above to search all posts.</div>`;
+                resultsArea.innerHTML = `
+                    <div style="text-align:center; padding:30px 20px; color:#ffffff; font-size:13px; font-weight:600;">
+                        Type a post code above to find updates quickly.
+                    </div>
+                `;
                 return;
             }
 
@@ -685,27 +967,31 @@
                 const code = String(item.newsCode || item.code || item.id || '').toLowerCase();
                 const title = String(item.title || item.newsTitle || '').toLowerCase();
                 const content = String(item.content || item.message || '').toLowerCase();
-                const cat = String(item.category || '').toLowerCase();
-                return code.includes(cleanQuery) || title.includes(cleanQuery) || content.includes(cleanQuery) || cat.includes(cleanQuery);
+
+                return code.includes(cleanQuery) || title.includes(cleanQuery) || content.includes(cleanQuery);
             });
 
             if (matchedNews.length === 0) {
-                resultsArea.innerHTML = `<div style="text-align:center; padding:30px 20px; color:#ffffff; font-size:13px; font-weight:600;">No updates matching "<strong>${cleanQuery}</strong>" found.</div>`;
+                resultsArea.innerHTML = `
+                    <div style="text-align:center; padding:30px 20px; color:#ffffff; font-size:13px; font-weight:600;">
+                        No updates matching "<strong>${cleanQuery}</strong>" found.
+                    </div>
+                `;
                 return;
             }
 
             resultsArea.innerHTML = '';
-            let searchResultCount = 0;
-            
+            let searchCount = 0;
             matchedNews.forEach((item) => {
                 const card = document.createElement('article');
                 card.className = "featured-broadcast-card";
                 card.innerHTML = buildSingleNewsCardHTML(item);
                 resultsArea.appendChild(card);
-                
-                searchResultCount++;
 
-                if (searchResultCount % 2 === 0) {
+                searchCount++;
+
+                // In-Search Native Ad inserted every 2 search results
+                if (searchCount % 2 === 0) {
                     if (window.globalAdConfig?.placements?.nativeAdPostList && window.globalAdConfig.nativeId) {
                         const nativeAdCard = document.createElement('article');
                         nativeAdCard.className = "featured-broadcast-card";
@@ -716,33 +1002,44 @@
             });
         }
 
-        function bindVisualInterfaceControls() {
-            document.querySelectorAll('.filter-btn').forEach(pill => {
-                pill.addEventListener('click', function() {
-                    document.querySelectorAll('.filter-btn').forEach(p => p.classList.remove('active-pill', 'active'));
-                    this.classList.add('active-pill', 'active');
-                    currentActiveCategoryFilter = this.getAttribute('data-filter') || "Shikela Update";
-                    renderFilteredBroadcasts();
-                });
-            });
-        }
-
         function triggerUiPopup(icon, title, desc) {
             const overlay = document.getElementById('customPopupModule');
-            if (overlay) {
-                document.getElementById('popupIconNode').innerText = icon;
-                document.getElementById('popupTitleNode').innerText = title;
-                document.getElementById('popupDescNode').innerText = desc;
+            const iconNode = document.getElementById('popupIconNode');
+            const titleNode = document.getElementById('popupTitleNode');
+            const descNode = document.getElementById('popupDescNode');
+            const dismissBtn = document.getElementById('closePopupBtn');
+            
+            if (overlay && iconNode && titleNode && descNode) {
+                if (dismissBtn) {
+                    dismissBtn.innerText = "Continue";
+                    dismissBtn.onclick = () => overlay.classList.remove('show-popup');
+                }
+
+                iconNode.innerText = icon;
+                iconNode.style.display = "inline-block";
+                titleNode.innerText = title;
+                descNode.innerText = desc;
                 overlay.classList.add('show-popup');
             }
         }
     </script>
 
+    <!-- Script to manage iframe drawer toggling -->
     <script>
         const openBtn = document.getElementById('openMenuIframeBtn');
         const overlay = document.getElementById('menuIframeOverlay');
-        openBtn.addEventListener('click', () => { document.getElementById('menuIframe').src = 'menu.html'; overlay.classList.add('active'); });
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
+        const iframe = document.getElementById('menuIframe');
+
+        openBtn.addEventListener('click', () => {
+            iframe.src = 'menu.html';
+            overlay.classList.add('active');
+        });
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.classList.remove('active');
+            }
+        });
     </script>
 </body>
 </html>
