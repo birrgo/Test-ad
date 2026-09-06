@@ -59,7 +59,7 @@
             transform: translateX(0);
         }
 
-        /* Floating Bottom Banner Ad - Positioned directly above Menu Bar */
+        /* Floating Bottom Banner Ad - Always placed cleanly above Bottom Navigation Bar */
         :root {
             --bottom-nav-height: 65px;
         }
@@ -133,6 +133,21 @@
             width: 100%;
             margin-top: 10px;
             text-align: center;
+        }
+
+        /* In-Article Bottom Banner Container */
+        .article-bottom-banner-card {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 14px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        /* Ensure modal content scrolls above the bottom banner */
+        .news-reader-content {
+            padding-bottom: 130px !important;
         }
 
         /* Full Screen Interstitial Ad Modal */
@@ -309,7 +324,7 @@
             </footer>
         </main>
 
-        <!-- Bottom Banner Placement (Placed directly above Menu Bar) -->
+        <!-- Bottom Banner Placement (Stays Always Visible Above Menu Bar) -->
         <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;">
             <div class="admob-banner-container" id="admobBannerNode">
                 <div style="display:flex; align-items:center; gap:8px;">
@@ -378,7 +393,7 @@
         let localCachedBroadcasts = [];
         let currentActiveCategoryFilter = "Shikela Update";
         let hasTriggeredAppOpen = false;
-        let pendingArticleToOpen = null;
+        let isBannerInitialized = false;
 
         window.globalAdConfig = {
             status: false,
@@ -444,8 +459,6 @@
                 }
 
                 const adData = snapshot.val();
-
-                // Check for "ON" from adman.html or boolean true
                 const isStatusOn = (adData.adStatus === "ON" || adData.adStatus === true || adData.adStatus === "true" || adData.adStatus === 1);
 
                 window.globalAdConfig = {
@@ -458,7 +471,7 @@
                     isTesting: (adData.adMobBannerUnitId || "").includes("3940256099942544")
                 };
 
-                // Initialize AdMob in Capacitor or Browser Preview
+                // Initialize AdMob
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     const { AdMob } = Capacitor.Plugins;
                     AdMob.initialize({
@@ -470,7 +483,6 @@
                         if (localCachedBroadcasts.length > 0) renderFilteredBroadcasts();
                     }).catch(e => console.error("AdMob Init Error:", e));
                 } else {
-                    // Browser / Web Preview
                     triggerAppOpenAd();
                     triggerBannerAd();
                     if (localCachedBroadcasts.length > 0) renderFilteredBroadcasts();
@@ -498,7 +510,6 @@
                     console.warn("Native App Open Ad Failed:", e);
                 }
             } else {
-                // Show App Open Ad simulator in browser
                 const modal = document.getElementById('appOpenAdModal');
                 const unitText = document.getElementById('appOpenUnitDisplay');
                 if (modal && unitText) {
@@ -509,7 +520,7 @@
         }
 
         // ==========================================
-        // Bottom Banner Ad (Always Above Menu Bar)
+        // Bottom Banner Ad (Never Disappears)
         // ==========================================
         async function triggerBannerAd() {
             const adWrapper = document.getElementById('adContainerWrapper');
@@ -522,20 +533,22 @@
 
             if (!shouldShowBanner) {
                 if (adWrapper) adWrapper.style.display = 'none';
-                if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                    Capacitor.Plugins.AdMob.hideBanner().catch(() => {});
-                }
                 return;
             }
 
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                 const { AdMob } = Capacitor.Plugins;
                 try {
-                    await AdMob.showBanner({
-                        adId: window.globalAdConfig.bannerId,
-                        position: 'BOTTOM_CENTER',
-                        margin: navHeight // Offsets above the bottom navigation menu
-                    });
+                    if (isBannerInitialized) {
+                        await AdMob.resumeBanner().catch(() => {});
+                    } else {
+                        await AdMob.showBanner({
+                            adId: window.globalAdConfig.bannerId,
+                            position: 'BOTTOM_CENTER',
+                            margin: navHeight
+                        });
+                        isBannerInitialized = true;
+                    }
                 } catch (e) {
                     console.error("Banner Show Error:", e);
                 }
@@ -573,12 +586,11 @@
                     })
                     .then(() => onAdClosedCallback())
                     .catch((err) => {
-                        console.warn("Interstitial display bypassed:", err);
+                        console.warn("Interstitial bypassed:", err);
                         document.getElementById('customPopupModule').classList.remove('show-popup');
                         onAdClosedCallback();
                     });
             } else {
-                // Browser Preview: Open custom interstitial preview modal
                 window._onInterstitialFinished = onAdClosedCallback;
                 const modal = document.getElementById('interstitialAdModal');
                 const unitDisp = document.getElementById('interstitialUnitDisplay');
@@ -727,10 +739,9 @@
         }
 
         // ==========================================
-        // Article Reader Controller with Interstitial Trigger
+        // Article Reader Controller
         // ==========================================
         window.openFullNewsReader = function(itemId) {
-            // Trigger the Interstitial Ad on article tap
             showInterstitialAd(() => {
                 executeOpenReader(itemId);
             });
@@ -742,12 +753,8 @@
 
             const readerOverlay = document.getElementById('fullNewsModalOverlay');
             const readerBody = document.getElementById('fullNewsReaderBody');
-            
-            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                Capacitor.Plugins.AdMob.hideBanner().catch(() => {});
-            } else {
-                document.getElementById('adContainerWrapper').style.display = 'none';
-            }
+
+            // Bottom banner stays visible; we do not hide it
 
             const headline = item.title || item.newsTitle;
             const fullContent = item.content || item.message || "";
@@ -768,10 +775,29 @@
             let redirectBtnHTML = targetRedirectUrl 
                 ? `<div style="margin-top:20px;"><a href="${targetRedirectUrl}" target="_blank" class="redirect-link-btn" style="width:100%; justify-content:center;"><span>${customActionLabel}</span></a></div>` : "";
 
-            // Article Details Native Ad
-            let endOfArticleAd = "";
+            // Ad 1: Inside Article - Native Ad
+            let endOfArticleNativeAd = "";
             if (window.globalAdConfig.status && (window.globalAdConfig.placements?.nativeAdPostDetails !== false) && window.globalAdConfig.nativeId) {
-                endOfArticleAd = getNativeAdHTML(window.globalAdConfig.nativeId);
+                endOfArticleNativeAd = getNativeAdHTML(window.globalAdConfig.nativeId);
+            }
+
+            // Ad 2: Inside Article - Bottom Banner Card
+            let endOfArticleBannerAd = "";
+            if (window.globalAdConfig.status && (window.globalAdConfig.placements?.bannerAdPostDetails !== false) && window.globalAdConfig.bannerId) {
+                endOfArticleBannerAd = `
+                    <div class="article-bottom-banner-card" data-admob-id="${window.globalAdConfig.bannerId}">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                            <span class="ad-badge">Ad</span>
+                            <span style="font-size:11px; color:#5f6368;">Sponsored Article Banner</span>
+                        </div>
+                        <div style="background:#ffffff; border:1px dashed #d1d5db; border-radius:8px; padding:16px;">
+                            <div style="font-size:22px; margin-bottom:4px;">📢</div>
+                            <strong style="font-size:13px; color:#111827;">Google AdMob In-Article Ad</strong>
+                            <div style="font-size:11px; color:#6b7280; margin-top:4px;">ID: ${window.globalAdConfig.bannerId}</div>
+                        </div>
+                        <button class="admob-native-cta-btn" onclick="window.open('https://google.com', '_blank')">LEARN MORE</button>
+                    </div>
+                `;
             }
 
             readerBody.innerHTML = `
@@ -783,7 +809,9 @@
                 ${videoHTML}
                 <div class="reader-full-body">${fullContent}</div>
                 ${redirectBtnHTML}
-                ${endOfArticleAd}
+                <!-- 2 Ads Inside Full Article -->
+                ${endOfArticleNativeAd}
+                ${endOfArticleBannerAd}
             `;
             readerOverlay.classList.add('active-reader');
         }
@@ -793,6 +821,7 @@
             if (closeBtn) {
                 closeBtn.addEventListener('click', () => {
                     document.getElementById('fullNewsModalOverlay').classList.remove('active-reader');
+                    // Ensure the floating bottom banner remains visible
                     triggerBannerAd();
                 });
             }
@@ -828,8 +857,6 @@
                         const nativeAdCard = document.createElement('article');
                         nativeAdCard.className = "featured-broadcast-card";
                         nativeAdCard.innerHTML = getNativeAdHTML(window.globalAdConfig.nativeId);
-                        container.appendChild(nativeAdCard);
-NativeAdHTML(window.globalAdConfig.nativeId);
                         container.appendChild(nativeAdCard);
                     }
                 }
