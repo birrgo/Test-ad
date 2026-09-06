@@ -85,6 +85,15 @@
         .clickable-news-card {
             cursor: pointer;
         }
+        .inline-feed-ad {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 14px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
     </style>
 </head>
 <body>
@@ -160,7 +169,7 @@
             </footer>
         </main>
 
-        <!-- Bottom Banner Placement (Web Simulator) -->
+        <!-- Bottom Banner Placement -->
         <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;">
             <div class="admob-banner-container" id="admobBannerNode">
                 <div style="display:flex; align-items:center; gap:8px;">
@@ -200,7 +209,6 @@
         </nav>
     </div>
 
-    <!-- Capacitor & AdMob -->
     <script src="https://cdn.jsdelivr.net/npm/@capacitor/core@5.0.0/dist/capacitor.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@capacitor-community/admob@5.0.0/dist/plugin.min.js"></script>
 
@@ -308,14 +316,15 @@
             }
 
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                const { AdMob } = Capacitor.Plugins;
+                const { AdMob, BannerAdSize, BannerAdPosition } = Capacitor.Plugins;
                 try {
                     if (isBannerInitialized) {
                         await AdMob.resumeBanner().catch(() => {});
                     } else {
                         await AdMob.showBanner({
                             adId: window.globalAdConfig.bannerId,
-                            position: 'BOTTOM_CENTER',
+                            adSize: BannerAdSize.ADAPTIVE_BANNER || BannerAdSize.BANNER,
+                            position: BannerAdPosition.BOTTOM_CENTER || 'BOTTOM_CENTER',
                             margin: navHeight
                         });
                         isBannerInitialized = true;
@@ -331,6 +340,29 @@
                 }
             }
         }
+
+        // 🚨 Critical Fix: Destroys banner ad completely before leaving the index page
+        window.navigateToFull = async function(itemId, nodeName) {
+            const targetUrl = `full.html?id=${encodeURIComponent(itemId)}&node=${encodeURIComponent(nodeName || 'shikelaNews')}`;
+            
+            // 1. Instantly hide visual HTML element
+            const adWrapper = document.getElementById('adContainerWrapper');
+            if (adWrapper) adWrapper.style.display = 'none';
+
+            // 2. Kill the native Capacitor AdMob instance so it doesn't float over full.html
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                const { AdMob } = Capacitor.Plugins;
+                try {
+                    await AdMob.hideBanner().catch(() => {});
+                    await AdMob.removeBanner().catch(() => {});
+                } catch (e) {
+                    console.warn("Banner cleanup warning:", e);
+                }
+            }
+
+            // 3. Execute redirect
+            window.location.href = targetUrl;
+        };
 
         function extractValidTimestamp(item) {
             const raw = item.timestamp || item.updatedAt || item.createdAtTimestamp || item.createdAt || item.date;
@@ -378,11 +410,6 @@
             });
         }
 
-        // Direct navigation to full.html with query parameters
-        window.navigateToFull = function(itemId, nodeName) {
-            window.location.href = `full.html?id=${encodeURIComponent(itemId)}&node=${encodeURIComponent(nodeName || 'shikelaNews')}`;
-        };
-
         function buildSingleNewsCardHTML(item) {
             const headline = item.title || item.newsTitle || "Yala Tech Update";
             const fullContent = item.content || item.message || "";
@@ -413,6 +440,23 @@
             `;
         }
 
+        // Returns a safe Inline Feed Native Ad UI Block
+        function getInlineNativeAdHTML() {
+            if (!window.globalAdConfig.status) return "";
+            return `
+                <div class="inline-feed-ad">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                        <span class="ad-badge">Ad</span>
+                        <span style="font-size:11px; color:#64748b; font-weight:600;">Sponsored Content</span>
+                    </div>
+                    <div style="font-size:32px; margin-bottom:8px;">💡</div>
+                    <strong style="font-size:15px; color:#1e293b; display:block;">Promoted Opportunities</strong>
+                    <span style="font-size:13px; color:#64748b; display:block; margin: 4px 0 14px 0;">In-feed content placement directly embedded in stream.</span>
+                    <button style="background:#2563eb; color:#fff; border:none; padding:12px 18px; border-radius:8px; font-size:13px; font-weight:700; width:100%; cursor:pointer; box-shadow: 0 2px 8px rgba(37,99,235,0.25);">LEARN MORE</button>
+                </div>
+            `;
+        }
+
         function renderFilteredBroadcasts() {
             const container = document.getElementById('broadcastsContainer');
             if (!container) return;
@@ -425,11 +469,23 @@
                 return;
             }
 
+            let currentPostCount = 0;
             filtered.forEach((item) => {
                 const card = document.createElement('article');
                 card.className = "featured-broadcast-card";
                 card.innerHTML = buildSingleNewsCardHTML(item);
                 container.appendChild(card);
+                
+                currentPostCount++;
+
+                // 🚨 Inline Ad Logic: Inject Native Ad styling every 2 posts
+                if (currentPostCount % 2 === 0) {
+                    if (window.globalAdConfig.status && window.globalAdConfig.placements?.nativeAdPostList !== false) {
+                        const inlineAdWrapper = document.createElement('div');
+                        inlineAdWrapper.innerHTML = getInlineNativeAdHTML();
+                        container.appendChild(inlineAdWrapper);
+                    }
+                }
             });
         }
 
@@ -477,11 +533,21 @@
             }
 
             resultsArea.innerHTML = '';
+            let searchPostCount = 0;
             matchedNews.forEach((item) => {
                 const card = document.createElement('article');
                 card.className = "featured-broadcast-card";
                 card.innerHTML = buildSingleNewsCardHTML(item);
                 resultsArea.appendChild(card);
+                
+                searchPostCount++;
+                if (searchPostCount % 2 === 0) {
+                    if (window.globalAdConfig.status && window.globalAdConfig.placements?.nativeAdPostList !== false) {
+                        const inlineAdWrapper = document.createElement('div');
+                        inlineAdWrapper.innerHTML = getInlineNativeAdHTML();
+                        resultsArea.appendChild(inlineAdWrapper);
+                    }
+                }
             });
         }
 
