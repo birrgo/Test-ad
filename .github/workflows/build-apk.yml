@@ -26,7 +26,7 @@ jobs:
       - name: Bundle Web Files
         run: |
           mkdir -p www
-          rsync -av --exclude='.git' --exclude='.github' --exclude='www' --exclude='android' ./ www/
+          rsync -av --exclude='.git' --exclude='.github' --exclude='www' --exclude='android' --exclude='node_modules' --exclude='package*.json' ./ www/
           # Ensure index.html exists
           if [ ! -f www/index.html ]; then
             first_html=$(find www/ -maxdepth 1 -name "*.html" | head -n 1)
@@ -61,9 +61,7 @@ jobs:
 
       - name: Configure AdMob App ID & Advertising Permissions in AndroidManifest
         run: |
-          # If you have your real AdMob App ID from your AdMob console, put it here:
-          # Format must strictly be numbers: ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
-          REAL_APP_ID="ca-app-pub-3940256099942544~3347511713"
+          ADMOB_APP_ID="ca-app-pub-3940256099942544~3347511713"
 
           python3 - <<EOF
           import xml.etree.ElementTree as ET
@@ -72,32 +70,27 @@ jobs:
           ET.register_namespace('android', 'http://schemas.android.com/apk/res/android')
           tree = ET.parse(manifest_path)
           root = tree.getroot()
-          ns = {'android': 'http://schemas.android.com/apk/res/android'}
+          ns_android = 'http://schemas.android.com/apk/res/android'
 
-          # 1. Add AD_ID permission
-          perm_exists = False
-          for perm in root.findall('uses-permission'):
-              if perm.attrib.get('{http://schemas.android.com/apk/res/android}name') == 'com.google.android.gms.permission.AD_ID':
-                  perm_exists = True
-                  break
-          if not perm_exists:
+          # 1. Add AD_ID permission if not present
+          has_ad_id = any(p.attrib.get(f'{{{ns_android}}}name') == 'com.google.android.gms.permission.AD_ID' for p in root.findall('uses-permission'))
+          if not has_ad_id:
               new_perm = ET.Element('uses-permission')
-              new_perm.set('{http://schemas.android.com/apk/res/android}name', 'com.google.android.gms.permission.AD_ID')
+              new_perm.set(f'{{{ns_android}}}name', 'com.google.android.gms.permission.AD_ID')
               root.insert(0, new_perm)
 
-          # 2. Add AdMob APPLICATION_ID metadata inside <application>
+          # 2. Add or update AdMob APPLICATION_ID metadata
           app_elem = root.find('application')
           if app_elem is not None:
-              meta_exists = False
+              meta_elem = None
               for meta in app_elem.findall('meta-data'):
-                  if meta.attrib.get('{http://schemas.android.com/apk/res/android}name') == 'com.google.android.gms.ads.APPLICATION_ID':
-                      meta.set('{http://schemas.android.com/apk/res/android}value', '$REAL_APP_ID')
-                      meta_exists = True
+                  if meta.attrib.get(f'{{{ns_android}}}name') == 'com.google.android.gms.ads.APPLICATION_ID':
+                      meta_elem = meta
                       break
-              if not meta_exists:
-                  new_meta = ET.SubElement(app_elem, 'meta-data')
-                  new_meta.set('{http://schemas.android.com/apk/res/android}name', 'com.google.android.gms.ads.APPLICATION_ID')
-                  new_meta.set('{http://schemas.android.com/apk/res/android}value', '$REAL_APP_ID')
+              if meta_elem is None:
+                  meta_elem = ET.SubElement(app_elem, 'meta-data')
+                  meta_elem.set(f'{{{ns_android}}}name', 'com.google.android.gms.ads.APPLICATION_ID')
+              meta_elem.set(f'{{{ns_android}}}value', "$ADMOB_APP_ID")
 
           tree.write(manifest_path, encoding='utf-8', xml_declaration=True)
           EOF
@@ -108,10 +101,8 @@ jobs:
             sed -i 's/targetSdkVersion = .*/targetSdkVersion = 34/' android/variables.gradle
             sed -i 's/compileSdkVersion = .*/compileSdkVersion = 34/' android/variables.gradle
           fi
-          sed -i 's/targetSdkVersion .*/targetSdkVersion 34/' android/app/build.gradle
-          sed -i 's/compileSdkVersion .*/compileSdkVersion 34/' android/app/build.gradle
 
-      - name: Set Version Code
+      - name: Set Version Code & Name
         run: |
           sed -i 's/versionCode .*/versionCode 3/' android/app/build.gradle
           sed -i 's/versionName .*/versionName "3.0"/' android/app/build.gradle
