@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Article Details | Yala Tech</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="news.css">
+    
+    <style>
+        :root {
+            --bottom-nav-height: 65px;
+            --header-navy: #081B38;
+            --content-bg: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+        }
+
+        body {
+            background-color: var(--content-bg);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Top Header: Dark Blue Accent */
+        .details-header {
+            position: sticky;
+            top: 0;
+            background: var(--header-navy);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .back-nav-btn {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .back-nav-btn:active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .header-status-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #e2e8f0;
+            letter-spacing: 0.3px;
+        }
+
+        /* Clean White Reading Canvas */
+        .article-main-container {
+            background-color: var(--content-bg);
+            padding: 24px 18px 130px 18px;
+            max-width: 720px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        .category-badge {
+            display: inline-block;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .article-title-heading {
+            font-size: 24px;
+            font-weight: 800;
+            line-height: 1.35;
+            color: var(--text-primary);
+            margin: 0 0 16px 0;
+            letter-spacing: -0.3px;
+        }
+
+        .article-image-box {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 16px 0 20px 0;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .article-image-box img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+
+        .article-video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            margin: 20px 0;
+            background: #000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .article-video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* High-Legibility Typography */
+        .article-body-text {
+            font-size: 16px;
+            line-height: 1.75;
+            color: var(--text-secondary);
+            white-space: pre-line;
+            word-break: break-word;
+            font-weight: 400;
+        }
+
+        .action-link-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #081B38;
+            color: #ffffff;
+            text-align: center;
+            text-decoration: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 15px;
+            margin-top: 28px;
+            box-shadow: 0 4px 14px rgba(8, 27, 56, 0.25);
+            transition: transform 0.15s ease, background 0.2s ease;
+        }
+        .action-link-btn:active {
+            transform: scale(0.98);
+            background: #0f2c59;
+        }
+
+        .loading-state-container {
+            text-align: center;
+            padding: 80px 20px;
+            color: #6b7280;
+        }
+        .loading-state-container h2 {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        /* Floating Bottom Banner Placement */
+        .ad-container-wrapper {
+            position: fixed;
+            bottom: 12px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 990;
+            pointer-events: none;
+        }
+
+        .admob-banner-container {
+            width: 320px;
+            height: 50px;
+            background: #ffffff;
+            color: #202124;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            pointer-events: auto;
+        }
+
+        .ad-badge {
+            background: #fbbc04;
+            color: #202124;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Dark Blue Header Bar -->
+    <header class="details-header">
+        <button class="back-nav-btn" onclick="window.history.back()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back
+        </button>
+        <span class="header-status-label">Article Details</span>
+    </header>
+
+    <!-- Clean White Reading Area -->
+    <main class="article-main-container" id="articleMainContainer">
+        <div class="loading-state-container" id="loadingPlaceholder">
+            <h2>Loading article details...</h2>
+        </div>
+    </main>
+
+    <!-- Bottom Ad Banner Container -->
+    <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;">
+        <div class="admob-banner-container">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="ad-badge">Ad</span>
+                <span style="font-size:12px; font-weight:600; color:#374151;" id="bannerAdLabel">AdMob Banner</span>
+            </div>
+            <button style="background:#1a73e8; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:11px; font-weight:700; cursor:pointer;">LEARN MORE</button>
+        </div>
+    </div>
+
+    <!-- Capacitor AdMob Integration Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@capacitor/core@5.0.0/dist/capacitor.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@capacitor-community/admob@5.0.0/dist/plugin.min.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCqwgwiukwKb7o6gwnaLoPQSWc7BfMDuYQ",
+            authDomain: "besuad.firebaseapp.com",
+            databaseURL: "https://besuad-default-rtdb.firebaseio.com",
+            projectId: "besuad",
+            storageBucket: "besuad.firebasestorage.app",
+            messagingSenderId: "641705823615",
+            appId: "1:641705823615:web:6502b2511ff8c0f251de4a",
+            measurementId: "G-2YSX71N08Q"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const APP_NODE_NAME = "app1";
+
+        function getYouTubeEmbedUrl(url) {
+            if (!url) return null;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = String(url).trim().match(regExp);
+            return (match && match.length === 11) ? `https://www.youtube.com/embed/${match}` : null;
+        }
+
+        async function loadArticle() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleId = urlParams.get('id');
+            const sourceNode = urlParams.get('node') || 'shikelaNews';
+
+            if (!articleId) {
+                document.getElementById('articleMainContainer').innerHTML = `
+                    <div class="loading-state-container">
+                        <h2>No article selected.</h2>
+                        <a href="index.html" class="action-link-btn" style="max-width:200px; margin:20px auto;">Return Home</a>
+                    </div>`;
+                return;
+            }
+
+            try {
+                // Fetch dynamic ads configuration
+                const adSnap = await get(ref(db, `${APP_NODE_NAME}/adManager`));
+                if (adSnap.exists()) {
+                    handleAdDelivery(adSnap.val());
+                }
+
+                // Query node directly
+                let itemSnap = await get(ref(db, `${APP_NODE_NAME}/${sourceNode}/${articleId}`));
+                
+                // Secondary check across alternate node
+                if (!itemSnap.exists()) {
+                    const fallbackNode = sourceNode === 'shikelaNews' ? 'newNews' : 'shikelaNews';
+                    itemSnap = await get(ref(db, `${APP_NODE_NAME}/${fallbackNode}/${articleId}`));
+                }
+
+                if (!itemSnap.exists()) {
+                    document.getElementById('articleMainContainer').innerHTML = `
+                        <div class="loading-state-container">
+                            <h2>Article not found or has been removed.</h2>
+                            <a href="index.html" class="action-link-btn" style="max-width:200px; margin:20px auto;">Back to Home</a>
+                        </div>`;
+                    return;
+                }
+
+                const item = itemSnap.val();
+                renderArticleContent(item);
+
+            } catch (err) {
+                console.error("Error retrieving article:", err);
+                document.getElementById('articleMainContainer').innerHTML = `
+                    <div class="loading-state-container">
+                        <h2>Error loading content. Please check connection.</h2>
+                        <a href="index.html" class="action-link-btn" style="max-width:200px; margin:20px auto;">Back to Home</a>
+                    </div>`;
+            }
+        }
+
+        function renderArticleContent(item) {
+            const headline = item.title || item.newsTitle || "Yala Tech Article";
+            const fullContent = item.content || item.message || "";
+            const category = (item.category || "Yala Tech Update").replace('Shikela', 'Yala Tech');
+            const imageUrl = item.imageUrl || item.image || "";
+            const videoUrl = item.videoUrl || item.youtubeUrl || item.youtubeId || item.video || "";
+            const targetRedirectUrl = item.link || item.redirectUrl || item.url || item.targetUrl || "";
+            const actionLabel = item.actionButtonLabel || item.actionLabel || "Open Link / Resource";
+
+            let imageHTML = (imageUrl && Boolean(item.duplicateCoverInArticle ?? true))
+                ? `<div class="article-image-box"><img src="${imageUrl.trim()}" alt="${headline}"></div>` : "";
+
+            let videoHTML = "";
+            const embedUrl = getYouTubeEmbedUrl(videoUrl);
+            if (embedUrl) {
+                videoHTML = `<div class="article-video-wrapper"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
+            }
+
+            let redirectBtnHTML = targetRedirectUrl
+                ? `<a href="${targetRedirectUrl}" target="_blank" class="action-link-btn">${actionLabel}</a>` : "";
+
+            const container = document.getElementById('articleMainContainer');
+            container.innerHTML = `
+                <div>
+                    <span class="category-badge">${category}</span>
+                </div>
+                <h1 class="article-title-heading">${headline}</h1>
+                ${imageHTML}
+                ${videoHTML}
+                <div class="article-body-text">${fullContent}</div>
+                ${redirectBtnHTML}
+            `;
+        }
+
+        async function handleAdDelivery(adData) {
+            const isStatusOn = (adData.adStatus === "ON" || adData.adStatus === true || adData.adStatus === "true" || adData.adStatus === 1);
+            if (!isStatusOn) return;
+
+            const bannerId = (adData.adMobBannerUnitId || "ca-app-pub-3940256099942544/6300978111").trim();
+            const interstitialId = (adData.adMobInterstitialUnitId || "ca-app-pub-3940256099942544/1033173712").trim();
+
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                const { AdMob } = Capacitor.Plugins;
+                try {
+                    if (adData.placements?.interstitialAdPostDetails !== false && interstitialId) {
+                        await AdMob.prepareInterstitial({ adId: interstitialId });
+                        await AdMob.showInterstitial();
+                    }
+
+                    if (adData.placements?.bannerAdPostDetails !== false && bannerId) {
+                        await AdMob.showBanner({
+                            adId: bannerId,
+                            position: 'BOTTOM_CENTER',
+                            margin: 0
+                        });
+                    }
+                } catch (e) {
+                    console.warn("AdMob execution bypassed:", e);
+                }
+            } else {
+                const wrapper = document.getElementById('adContainerWrapper');
+                if (wrapper && adData.placements?.bannerAdPostDetails !== false) {
+                    wrapper.style.display = 'flex';
+                    const label = document.getElementById('bannerAdLabel');
+                    if (label) label.innerText = `Banner: ${bannerId.slice(-8)}`;
+                }
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadArticle);
+        } else {
+            loadArticle();
+        }
+    </script>
+</body>
+</html>
