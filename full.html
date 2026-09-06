@@ -27,7 +27,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Top Header: Dark Blue Accent (No Back Button) */
+        /* Top Header */
         .details-header {
             position: sticky;
             top: 0;
@@ -48,10 +48,10 @@
             text-transform: uppercase;
         }
 
-        /* Main Reading Area */
+        /* Main Content */
         .article-main-container {
             background-color: var(--content-bg);
-            padding: 20px 16px 140px 16px;
+            padding: 20px 16px 110px 16px;
             max-width: 720px;
             margin: 0 auto;
             box-sizing: border-box;
@@ -122,7 +122,7 @@
             word-break: break-word;
         }
 
-        /* 300x250 Medium Rectangle Ad Banner */
+        /* Wider Responsive In-Article Ad Box */
         .mrec-ad-wrapper {
             width: 100%;
             display: flex;
@@ -131,16 +131,17 @@
         }
 
         .mrec-ad-box {
-            width: 300px;
-            height: 250px;
+            width: 100%;
+            max-width: 100%;
+            min-height: 220px;
             background: #f8fafc;
             border: 1px solid #cbd5e1;
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            padding: 12px;
+            padding: 16px;
             box-sizing: border-box;
             text-align: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
@@ -189,22 +190,24 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Bottom Sticky Banner Ad: Shifted Downward */
+        /* Bottom Fixed Ad */
         .ad-container-wrapper {
             position: fixed;
-            bottom: 0px;
+            bottom: 0px !important;
             left: 0;
             width: 100%;
             display: flex;
             justify-content: center;
             z-index: 990;
-            background: rgba(255, 255, 255, 0.95);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
+            background: #ffffff;
             border-top: 1px solid #e5e7eb;
+            padding: 0;
+            margin: 0;
         }
 
         .admob-banner-container {
-            width: 320px;
+            width: 100%;
+            max-width: 320px;
             height: 50px;
             background: #ffffff;
             color: #202124;
@@ -215,7 +218,7 @@
             box-sizing: border-box;
         }
 
-        /* Web Interstitial Preview Modal */
+        /* Interstitial Simulator Modal */
         .interstitial-ad-overlay {
             position: fixed;
             top: 0;
@@ -244,7 +247,6 @@
 </head>
 <body>
 
-    <!-- Web Interstitial Modal Simulator -->
     <div class="interstitial-ad-overlay" id="interstitialAdModal">
         <div class="interstitial-ad-box">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #f3f4f6; border-bottom: 1px solid #e5e7eb;">
@@ -254,18 +256,16 @@
             <div style="padding: 24px; text-align: center;">
                 <div style="font-size: 32px; margin-bottom: 8px;">📢</div>
                 <strong style="font-size: 15px; color: #111827;">Full Screen Interstitial Ad</strong>
-                <p style="font-size: 12px; color: #6b7280; margin: 8px 0 16px 0;" id="interstitialUnitDisplay">Unit ID</p>
+                <p style="font-size: 12px; color: #6b7280; margin: 8px 0 16px 0;" id="interstitialUnitDisplay">Loading Unit...</p>
                 <button class="action-link-btn" style="margin: 0;" onclick="window.finishInterstitialAd()">CONTINUE TO ARTICLE</button>
             </div>
         </div>
     </div>
 
-    <!-- Top Clean Header (No Back Button) -->
     <header class="details-header">
         <span class="header-status-label">Article View</span>
     </header>
 
-    <!-- Reading Canvas -->
     <main class="article-main-container" id="articleMainContainer">
         <div class="loading-state-container" id="loadingPlaceholder">
             <div class="spinner-loader"></div>
@@ -273,7 +273,6 @@
         </div>
     </main>
 
-    <!-- Shifted-Down Bottom Sticky Banner -->
     <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;">
         <div class="admob-banner-container">
             <div style="display:flex; align-items:center; gap:8px;">
@@ -322,23 +321,16 @@
             const sourceNode = urlParams.get('node') || 'shikelaNews';
 
             if (!articleId) {
-                document.getElementById('articleMainContainer').innerHTML = `
-                    <div class="loading-state-container">
-                        <h2>No article selected.</h2>
-                    </div>`;
+                document.getElementById('articleMainContainer').innerHTML = `<div class="loading-state-container"><h2>No article selected.</h2></div>`;
                 return;
             }
 
-            // Bind web skip action
             const closeInterBtn = document.getElementById('closeInterstitialBtn');
             if (closeInterBtn) {
                 closeInterBtn.addEventListener('click', () => window.finishInterstitialAd());
             }
 
-            // 1. Fetch Article Data in the background
             fetchArticleData(articleId, sourceNode);
-
-            // 2. Fetch Ad Config & Enforce Interstitial Gate
             fetchAdAndTriggerGate();
         }
 
@@ -356,7 +348,6 @@
                     pendingArticleData = "NOT_FOUND";
                 }
 
-                // If ad already completed, render right away
                 if (isAdComplete) {
                     finalizeArticleRender();
                 }
@@ -377,15 +368,24 @@
 
                 const adData = adSnap.val();
                 const isStatusOn = (adData.adStatus === "ON" || adData.adStatus === true || adData.adStatus === "true" || adData.adStatus === 1);
-                const interstitialId = (adData.adMobInterstitialUnitId || "ca-app-pub-3940256099942544/1033173712").trim();
-                const bannerId = (adData.adMobBannerUnitId || "ca-app-pub-3940256099942544/6300978111").trim();
+                
+                const interstitialId = (adData.adMobInterstitialUnitId || "").trim();
+                const bannerId = (adData.adMobBannerUnitId || "").trim();
 
-                // Setup bottom sticky banner
+                if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                    const { AdMob } = Capacitor.Plugins;
+                    const isTestId = bannerId.includes("3940256099942544") || interstitialId.includes("3940256099942544");
+                    
+                    await AdMob.initialize({
+                        requestTrackingAuthorization: true,
+                        initializeForTesting: isTestId
+                    }).catch(e => console.warn("Init warning:", e));
+                }
+
                 if (isStatusOn && adData.placements?.bannerAdPostDetails !== false && bannerId) {
                     mountBottomBanner(bannerId);
                 }
 
-                // Gate article behind interstitial
                 if (isStatusOn && adData.placements?.interstitialAdPostDetails !== false && interstitialId) {
                     showGatedInterstitial(interstitialId);
                 } else {
@@ -404,11 +404,10 @@
                     .then(() => AdMob.showInterstitial())
                     .then(() => window.finishInterstitialAd())
                     .catch((err) => {
-                        console.warn("Native Interstitial skipped/failed:", err);
+                        console.warn("Native Interstitial skipped:", err);
                         window.finishInterstitialAd();
                     });
             } else {
-                // Web Browser Simulator
                 const modal = document.getElementById('interstitialAdModal');
                 const unitDisp = document.getElementById('interstitialUnitDisplay');
                 if (modal && unitDisp) {
@@ -461,20 +460,20 @@
                 videoHTML = `<div class="article-video-wrapper"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
             }
 
-            // In-Page 300x250 Ad Slot Above Button
-            const mediumRectangleAdHTML = `
+            // Wider In-Article Ad Slot
+            const wideRectangleAdHTML = `
                 <div class="mrec-ad-wrapper">
                     <div class="mrec-ad-box">
-                        <div style="display:flex; justify-content:space-between; width:100%;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
                             <span class="ad-badge">Ad</span>
-                            <span style="font-size:11px; color:#64748b;">300x250 Placement</span>
+                            <span style="font-size:11px; color:#64748b; font-weight:600;">Sponsored Recommendation</span>
                         </div>
-                        <div>
-                            <div style="font-size:28px; margin-bottom:4px;">📊</div>
-                            <strong style="font-size:13px; color:#1e293b;">AdMob Medium Rectangle</strong>
-                            <div style="font-size:11px; color:#64748b; margin-top:4px;">In-Article Content</div>
+                        <div style="margin: 14px 0;">
+                            <div style="font-size:32px; margin-bottom:6px;">📊</div>
+                            <strong style="font-size:14px; color:#1e293b;">Google AdMob In-Feed Unit</strong>
+                            <div style="font-size:12px; color:#64748b; margin-top:4px;">In-Article Responsive Placement</div>
                         </div>
-                        <button style="background:#2563eb; color:#fff; border:none; padding:6px 14px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">LEARN MORE</button>
+                        <button style="background:#2563eb; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-size:12px; font-weight:700; width:100%; max-width:280px; cursor:pointer;">LEARN MORE</button>
                     </div>
                 </div>
             `;
@@ -490,19 +489,21 @@
                 ${imageHTML}
                 ${videoHTML}
                 <div class="article-body-text">${fullContent}</div>
-                ${mediumRectangleAdHTML}
+                ${wideRectangleAdHTML}
                 ${redirectBtnHTML}
             `;
         }
 
         async function mountBottomBanner(bannerId) {
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                const { AdMob } = Capacitor.Plugins;
+                const { AdMob, BannerAdSize, BannerAdPosition } = Capacitor.Plugins;
                 try {
                     await AdMob.showBanner({
                         adId: bannerId,
-                        position: 'BOTTOM_CENTER',
-                        margin: 0
+                        adSize: BannerAdSize.ADAPTIVE_BANNER || BannerAdSize.BANNER,
+                        position: BannerAdPosition.BOTTOM_CENTER || 'BOTTOM_CENTER',
+                        margin: 0,
+                        isTesting: bannerId.includes("3940256099942544")
                     });
                 } catch (e) {
                     console.warn("Banner error:", e);
