@@ -38,21 +38,28 @@
         }
         .menu-iframe-overlay.active .menu-iframe-drawer { transform: translateX(0); }
 
-        /* Floating Bottom Banner Ad - Web Fallback */
+        /* Web Fallback Bottom Banner (Hidden natively) */
         .ad-container-wrapper {
-            position: fixed; bottom: 70px; left: 0; width: 100%;
+            position: fixed; bottom: 60px; left: 0; width: 100%;
             display: flex; justify-content: center; pointer-events: none; z-index: 9000;
         }
         
         /* AdMob Active Nav Push - Triggers when Native AdMob Banner is shown */
-        body.admob-active-nav .bottom-nav {
-            bottom: 60px !important; /* Pushes the menu up so the banner fits underneath */
-        }
+        /* Padding increased to 130px to clear BOTH the 60px menu and 50px banner */
         body.admob-active-nav .app-content {
-            padding-bottom: 140px !important; /* Gives extra scroll space */
+            padding-bottom: 130px !important; 
+        }
+        body.admob-active-nav .news-reader-content {
+            padding-bottom: 130px !important; 
+        }
+        
+        /* Ensure bottom nav stays below the Ad */
+        .bottom-nav {
+            z-index: 9999 !important;
+            bottom: 0 !important;
         }
 
-        /* Simulated Google Test Ad for Native / Inline Slots */
+        /* Test Ads for Inline/Detail (Preview mode) */
         .mock-test-ad-block {
             background: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px;
             padding: 15px; text-align: center; margin-top: 15px; display: flex;
@@ -232,38 +239,26 @@
         });
 
         // ==========================================
-        // Fixed Native/Inline Ads
-        // Capacitor cannot render AdMob native ads inside the DOM structure.
-        // It hides them completely on Android to prevent blank spaces/raw IDs.
+        // Mock Native/Inline Ads Restored
+        // Draws preview placeholders containing the DB Ad ID
         // ==========================================
         function getNativeAdHTML(adUnitId) {
-            if (window.Capacitor && window.Capacitor.isNativePlatform()) return '';
-            
             return `
-                <div class="mock-test-ad-block" style="padding: 10px; margin-top: 15px; background: #fff; border: 1px solid #e0e0e0; text-align: center; border-radius: 8px;">
-                    <span style="font-size: 10px; color: #777; text-transform: uppercase;">Advertisement</span>
-                    <ins class="adsbygoogle"
-                         style="display:block; text-align:center;"
-                         data-ad-layout="in-article"
-                         data-ad-format="fluid"
-                         data-ad-client="ca-pub-3940256099942544" 
-                         data-ad-slot="${adUnitId}"></ins>
-                    <script>(adsbygoogle = window.adsbygoogle || []).push({});<\/script>
+                <div class="mock-test-ad-block" style="padding: 15px; margin-top: 15px; background: #fff; border: 1px solid #e0e0e0; text-align: center; border-radius: 8px;">
+                    <span style="font-size: 10px; color: #1a73e8; font-weight: bold; text-transform: uppercase;">AdMob Native Preview</span>
+                    <div style="font-size: 12px; color: #555; margin-top: 8px; word-break: break-all;">ID: ${adUnitId || 'Loading...'}</div>
+                    <button style="margin-top:12px; width:100%; background:#1a73e8; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold;">OPEN LINK</button>
                 </div>
             `;
         }
 
+        // Updated to 300x250 Medium Rectangle size per request
         function getWideBannerAdHTML(adUnitId) {
-            if (window.Capacitor && window.Capacitor.isNativePlatform()) return '';
-
             return `
-                <div class="mock-test-ad-block" style="padding: 10px; margin-top: 20px; background: #f8f9fa; border: 1px solid #e0e0e0; text-align: center;">
-                    <span style="font-size: 10px; color: #777; text-transform: uppercase;">Advertisement</span>
-                    <ins class="adsbygoogle"
-                         style="display:inline-block;width:300px;height:250px"
-                         data-ad-client="ca-pub-3940256099942544"
-                         data-ad-slot="${adUnitId}"></ins>
-                    <script>(adsbygoogle = window.adsbygoogle || []).push({});<\/script>
+                <div class="mock-test-ad-block" style="width: 300px; height: 250px; margin: 20px auto; background: #f8f9fa; border: 1px solid #e0e0e0; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px;">
+                    <span style="font-size: 11px; color: #1a73e8; font-weight: bold; text-transform: uppercase;">AdMob Detail Banner</span>
+                    <span style="font-size: 12px; color: #555; margin-top: 10px; padding: 0 10px; word-break: break-all;">ID: ${adUnitId || 'Loading...'}</span>
+                    <span style="font-size: 10px; color: #999; margin-top: 15px;">Size: 300 x 250</span>
                 </div>
             `;
         }
@@ -306,7 +301,7 @@
         }
 
         // ==========================================
-        // Fixed App Open Ad
+        // App Open Ad
         // ==========================================
         async function triggerAppOpenAd() {
             if (window.globalAdConfig?.placements?.appOpenAdStart && window.globalAdConfig.appOpenId) {
@@ -335,7 +330,8 @@
         }
 
         // ==========================================
-        // Fixed Banner Bottom Navigation Push Logic
+        // Banner Bottom Swapped logic
+        // Pushes Native Banner UP by 60px so it sits OVER the bottom nav
         // ==========================================
         async function triggerBannerAd() {
             if (window.globalAdConfig?.placements?.bannerAdHomePage && window.globalAdConfig.bannerId) {
@@ -345,9 +341,9 @@
                         await AdMob.showBanner({ 
                             adId: window.globalAdConfig.bannerId, 
                             position: 'BOTTOM_CENTER', 
-                            margin: 0 
+                            margin: 60 // PUSHES BANNER EXACTLY ON TOP OF THE BOTTOM MENU BAR
                         });
-                        // Triggers the CSS rule to push the HTML bottom-nav ABOVE the banner
+                        // This triggers CSS padding to ensure text content doesn't get hidden behind them
                         document.body.classList.add('admob-active-nav');
                     } catch (e) { console.error(e); }
                 } 
@@ -503,9 +499,7 @@
             const readerOverlay = document.getElementById('fullNewsModalOverlay');
             const readerBody = document.getElementById('fullNewsReaderBody');
             
-            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                Capacitor.Plugins.AdMob.hideBanner().catch(e => console.log(e));
-            } 
+            // REMOVED AdMob.hideBanner() HERE - Banner will stay active
 
             const headline = item.title || item.newsTitle;
             const fullContent = item.content || item.message || "";
@@ -553,9 +547,7 @@
             if (closeBtn) {
                 closeBtn.addEventListener('click', () => {
                     document.getElementById('fullNewsModalOverlay').classList.remove('active-reader');
-                    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                        Capacitor.Plugins.AdMob.resumeBanner().catch(e => console.log(e));
-                    }
+                    // REMOVED AdMob.resumeBanner() HERE because it was never hidden
                 });
             }
         }
@@ -581,6 +573,7 @@
                 
                 currentPostCount++;
 
+                // Inline Ad Every 2 Items - Fixed to display mock Ad
                 if (currentPostCount % 2 === 0) {
                     if (window.globalAdConfig?.placements?.nativeAdPostList && window.globalAdConfig.nativeId) {
                         const nativeAdCard = document.createElement('article');
