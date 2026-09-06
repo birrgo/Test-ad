@@ -62,7 +62,7 @@
         /* Floating Bottom Banner Ad */
         .ad-container-wrapper {
             position: fixed;
-            bottom: 70px;
+            bottom: 85px; /* Increased from 70px to clear bottom menu */
             left: 0;
             width: 100%;
             display: flex;
@@ -165,7 +165,6 @@
                     <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
-            <!-- The full article content will load here -->
             <div class="news-reader-content" id="fullNewsReaderBody"></div>
         </div>
 
@@ -263,12 +262,13 @@
 
     <!-- CAPACITOR SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@capacitor/core@5.0.0/dist/capacitor.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@capacitor/app@5.0.0/dist/plugin.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@capacitor-community/admob@5.0.0/dist/plugin.min.js"></script>
 
     <!-- Integrated Module Script for Firebase & Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCqwgwiukwKb7o6gwnaLoPQSWc7BfMDuYQ",
@@ -289,13 +289,10 @@
         let rawNewNewsData = {};
         let localCachedBroadcasts = [];
         let currentActiveCategoryFilter = "Shikela Update";
-        let cardClockIntervalId = null;
         let hasTriggeredAppOpen = false;
         let isOpeningArticle = false;
 
         window.globalAdConfig = {};
-        const urlParams = new URLSearchParams(window.location.search);
-        const isAdminMode = urlParams.get('admin') === 'true';
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchAdMobUnits(); 
@@ -314,40 +311,38 @@
         });
 
         // ==========================================
-        // Real AdMob Generators (Reads DB IDs dynamically)
+        // Fixed Native/Inline Ads (Hides in App)
         // ==========================================
         function getNativeAdHTML(adUnitId) {
+            // Capacitor AdMob cannot place ads inside the DOM. We hide this in the Native app.
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) return '';
+            
             return `
-                <div class="mock-test-ad-block" data-admob-id="${adUnitId}" style="padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; text-align: left; background: #ffffff; min-height: auto; margin-top: 15px; position: relative; overflow: hidden; display: block;">
-                    <span class="mock-test-ad-label" style="background: #4285f4; color: #fff; font-size: 10px; padding: 4px 8px; position: absolute; top: 0; left: 0; border-bottom-right-radius: 8px; z-index: 2;">AdMob Native</span>
-                    <div style="display: flex; align-items: center; padding: 15px 15px 10px 15px; gap: 12px; margin-top: 10px;">
-                        <div style="width: 50px; height: 50px; background: #f1f3f4; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="#9aa0a6"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 15px; font-weight: 700; color: #202124; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sponsored Content</div>
-                            <div style="font-size: 12px; color: #5f6368; line-height: 1.3;">ID: ${adUnitId || 'Loading DB ID...'}</div>
-                        </div>
-                    </div>
-                    <div style="padding: 0 15px 15px 15px;">
-                        <button style="width: 100%; background: #1a73e8; color: #ffffff; border: none; padding: 10px; border-radius: 4px; font-weight: 600; font-size: 14px; cursor: pointer;">INSTALL / OPEN</button>
-                    </div>
+                <div class="mock-test-ad-block" style="padding: 10px; margin-top: 15px; background: #fff; border: 1px solid #e0e0e0; text-align: center; border-radius: 8px;">
+                    <span style="font-size: 10px; color: #777; text-transform: uppercase;">Advertisement</span>
+                    <ins class="adsbygoogle"
+                         style="display:block; text-align:center;"
+                         data-ad-layout="in-article"
+                         data-ad-format="fluid"
+                         data-ad-client="ca-pub-XXXXXXXXXX" 
+                         data-ad-slot="${adUnitId}"></ins>
+                    <script>(adsbygoogle = window.adsbygoogle || []).push({});<\/script>
                 </div>
             `;
         }
 
         function getWideBannerAdHTML(adUnitId) {
+            // Capacitor AdMob cannot place ads inside the DOM. We hide this in the Native app.
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) return '';
+
             return `
-                <div class="mock-test-ad-block" data-admob-id="${adUnitId}" style="margin-top: 30px; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; background: #f8f9fa; min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
-                    <span class="mock-test-ad-label" style="background: #4285f4; color: #fff; font-size: 10px; padding: 4px 8px; position: absolute; top: 0; left: 0; border-bottom-right-radius: 8px;">AdMob MREC / Banner</span>
-                    <div style="text-align: center; padding: 20px;">
-                        <h3 style="font-size: 18px; color: #1a73e8; margin: 0 0 10px 0; font-weight: 700;">Sponsored Content</h3>
-                        <p style="font-size: 12px; color: #5f6368; margin: 0 0 20px 0;">Unit ID: ${adUnitId || 'Loading DB ID...'}</p>
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="#fbbc04"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
-                            <span style="font-size: 14px; font-weight: 600; color: #5f6368;">AdMob Network Verified</span>
-                        </div>
-                    </div>
+                <div class="mock-test-ad-block" style="padding: 10px; margin-top: 20px; background: #f8f9fa; border: 1px solid #e0e0e0; text-align: center;">
+                    <span style="font-size: 10px; color: #777; text-transform: uppercase;">Advertisement</span>
+                    <ins class="adsbygoogle"
+                         style="display:inline-block;width:300px;height:250px"
+                         data-ad-client="ca-pub-XXXXXXXXXX"
+                         data-ad-slot="${adUnitId}"></ins>
+                    <script>(adsbygoogle = window.adsbygoogle || []).push({});<\/script>
                 </div>
             `;
         }
@@ -389,31 +384,52 @@
             });
         }
 
+        // ==========================================
+        // Fixed App Open Ad (Triggers on start & resume)
+        // ==========================================
         async function triggerAppOpenAd() {
-            if (hasTriggeredAppOpen) return; 
             if (window.globalAdConfig?.placements?.appOpenAdStart && window.globalAdConfig.appOpenId) {
-                hasTriggeredAppOpen = true;
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                    const { AdMob } = Capacitor.Plugins;
-                    try {
-                        await AdMob.prepareAppOpenAd({ adId: window.globalAdConfig.appOpenId });
-                        await AdMob.showAppOpenAd();
-                    } catch (e) { console.error(e); }
+                    const { AdMob, App } = Capacitor.Plugins;
+                    
+                    const showAd = async () => {
+                        try {
+                            await AdMob.prepareAppOpenAd({ adId: window.globalAdConfig.appOpenId });
+                            await AdMob.showAppOpenAd();
+                        } catch (e) { console.error("App Open Ad Error:", e); }
+                    };
+
+                    // Show on first initialization
+                    if (!hasTriggeredAppOpen) {
+                        hasTriggeredAppOpen = true;
+                        showAd();
+                    }
+
+                    // Show whenever user returns to the app from the background
+                    if (App) {
+                        App.addListener('appStateChange', ({ isActive }) => {
+                            if (isActive) showAd();
+                        });
+                    }
                 }
             }
         }
 
+        // ==========================================
+        // Fixed Bottom Banner Ad Margin
+        // ==========================================
         async function triggerBannerAd() {
             const adWrapper = document.getElementById('adContainerWrapper');
             if (window.globalAdConfig?.placements?.bannerAdHomePage && window.globalAdConfig.bannerId) {
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     const { AdMob } = Capacitor.Plugins;
                     try {
-                        await AdMob.showBanner({ adId: window.globalAdConfig.bannerId, position: 'BOTTOM_CENTER', margin: 70 });
+                        // Margin increased to 85 to sit above the navigation menu
+                        await AdMob.showBanner({ adId: window.globalAdConfig.bannerId, position: 'BOTTOM_CENTER', margin: 85 });
                     } catch (e) { console.error(e); }
                 } else {
                     adWrapper.style.display = 'flex';
-                    document.getElementById('mainContentArea').style.paddingBottom = '130px';
+                    document.getElementById('mainContentArea').style.paddingBottom = '145px';
                 }
             } else {
                 adWrapper.style.display = 'none';
@@ -553,7 +569,7 @@
         }
 
         // ==========================================
-        // Full Article Reader Controller (Ad Logic updated)
+        // Full Article Reader Controller
         // ==========================================
         window.openFullNewsReader = function(itemId) {
             if (isOpeningArticle) return;
@@ -597,10 +613,8 @@
             let redirectBtnHTML = targetRedirectUrl 
                 ? `<div style="margin-top:20px;"><a href="${targetRedirectUrl}" target="_blank" class="redirect-link-btn" style="width:100%; justify-content:center;"><span>${customActionLabel}</span></a></div>` : "";
 
-            // ** NATIVE / BANNER DB AD FETCH LOGIC **
             let endOfArticleAd = "";
             
-            // Prioritize displaying the Native Ad for Post Details, if not found fallback to regular Details Banner
             if (window.globalAdConfig?.placements?.nativeAdPostDetails && window.globalAdConfig.nativeId) {
                 endOfArticleAd = getNativeAdHTML(window.globalAdConfig.nativeId);
             } else if (window.globalAdConfig?.placements?.bannerAdPostDetails && window.globalAdConfig.bannerId) {
@@ -638,9 +652,6 @@
             }
         }
 
-        // ==========================================
-        // In-Feed Ads Injection
-        // ==========================================
         function renderFilteredBroadcasts() {
             const container = document.getElementById('broadcastsContainer');
             if (!container) return;
@@ -662,7 +673,6 @@
                 
                 currentPostCount++;
 
-                // Inject Native Ads within the post list dynamically
                 if (currentPostCount % 2 === 0) {
                     if (window.globalAdConfig?.placements?.nativeAdPostList && window.globalAdConfig.nativeId) {
                         const nativeAdCard = document.createElement('article');
@@ -674,9 +684,6 @@
             });
         }
 
-        // ==========================================
-        // Search Engine & Search Result Ads
-        // ==========================================
         function setupSearchEngineControls() {
             const openBtn = document.getElementById('openSearchBtn');
             const closeBtn = document.getElementById('closeSearchDrawerBtn');
