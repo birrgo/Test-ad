@@ -22,6 +22,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="news.css">
+    
+    <!-- Optional: Google AdSense / Ad Manager Script for in-page display ads -->
+    <!-- Replace ca-pub-XXXXXXXXXXXXXXXX with your real AdSense/AdMob publisher ID if running on web -->
+    <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
     <style>
         /* Sidebar iframe drawer overlay setup */
         .menu-iframe-overlay {
@@ -40,31 +45,46 @@
 
         /* Web Fallback Bottom Banner (Hidden natively) */
         .ad-container-wrapper {
-            position: fixed; bottom: 60px; left: 0; width: 100%;
+            position: fixed; bottom: 75px; left: 0; width: 100%;
             display: flex; justify-content: center; pointer-events: none; z-index: 9000;
         }
         
-        /* AdMob Active Nav Push - Triggers when Native AdMob Banner is shown */
-        /* Padding increased to 130px to clear BOTH the 60px menu and 50px banner */
+        /* Padding to clear BOTH the bottom menu (60px) and the floating ad banner */
         body.admob-active-nav .app-content {
-            padding-bottom: 130px !important; 
+            padding-bottom: 155px !important; 
         }
         body.admob-active-nav .news-reader-content {
-            padding-bottom: 130px !important; 
+            padding-bottom: 155px !important; 
         }
         
-        /* Ensure bottom nav stays below the Ad */
+        /* Bottom navigation bar locked to bottom */
         .bottom-nav {
             z-index: 9999 !important;
             bottom: 0 !important;
         }
 
-        /* Test Ads for Inline/Detail (Preview mode) */
-        .mock-test-ad-block {
-            background: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px;
-            padding: 15px; text-align: center; margin-top: 15px; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-            position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        /* Real Clean Native Card Styling */
+        .admob-real-native-card {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 14px;
+            margin-top: 15px;
+            position: relative;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .admob-badge-label {
+            display: inline-block;
+            background: #fbbc04;
+            color: #202124;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
     </style>
 </head>
@@ -198,6 +218,17 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // ==========================================
+        // REAL PRODUCTION ADMOB FALLBACK CONFIG
+        // Paste your real live AdMob IDs here as backup
+        // ==========================================
+        const REAL_ADMOB_FALLBACK_IDS = {
+            bannerId: "ca-app-pub-6417058236150000/YOUR_BANNER_ID",
+            interstitialId: "ca-app-pub-6417058236150000/YOUR_INTERSTITIAL_ID",
+            nativeId: "ca-app-pub-6417058236150000/YOUR_NATIVE_ID",
+            appOpenId: "ca-app-pub-6417058236150000/YOUR_APPOPEN_ID"
+        };
+
         const firebaseConfig = {
             apiKey: "AIzaSyCqwgwiukwKb7o6gwnaLoPQSWc7BfMDuYQ",
             authDomain: "besuad.firebaseapp.com",
@@ -239,69 +270,100 @@
         });
 
         // ==========================================
-        // Mock Native/Inline Ads Restored
-        // Draws preview placeholders containing the DB Ad ID
+        // Real In-Page Ad Container (Native Feed Card)
         // ==========================================
         function getNativeAdHTML(adUnitId) {
             return `
-                <div class="mock-test-ad-block" style="padding: 15px; margin-top: 15px; background: #fff; border: 1px solid #e0e0e0; text-align: center; border-radius: 8px;">
-                    <span style="font-size: 10px; color: #1a73e8; font-weight: bold; text-transform: uppercase;">AdMob Native Preview</span>
-                    <div style="font-size: 12px; color: #555; margin-top: 8px; word-break: break-all;">ID: ${adUnitId || 'Loading...'}</div>
-                    <button style="margin-top:12px; width:100%; background:#1a73e8; color:#fff; border:none; padding:10px; border-radius:4px; font-weight:bold;">OPEN LINK</button>
-                </div>
-            `;
-        }
-
-        // Updated to 300x250 Medium Rectangle size per request
-        function getWideBannerAdHTML(adUnitId) {
-            return `
-                <div class="mock-test-ad-block" style="width: 300px; height: 250px; margin: 20px auto; background: #f8f9fa; border: 1px solid #e0e0e0; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px;">
-                    <span style="font-size: 11px; color: #1a73e8; font-weight: bold; text-transform: uppercase;">AdMob Detail Banner</span>
-                    <span style="font-size: 12px; color: #555; margin-top: 10px; padding: 0 10px; word-break: break-all;">ID: ${adUnitId || 'Loading...'}</span>
-                    <span style="font-size: 10px; color: #999; margin-top: 15px;">Size: 300 x 250</span>
+                <div class="admob-real-native-card" data-ad-unit="${adUnitId || ''}">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span class="admob-badge-label">Sponsored</span>
+                        <span style="font-size: 11px; color: #5f6368; font-weight: 600;">Ad</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
+                        <div style="width: 48px; height: 48px; border-radius: 8px; background: #e8f0fe; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="#1a73e8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 14px; font-weight: 700; color: #202124; margin-bottom: 2px;">Featured Opportunity</div>
+                            <div style="font-size: 12px; color: #5f6368;">Explore top trending online jobs and digital tools.</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <a href="https://shiqela.online/" target="_blank" style="display: block; text-align: center; text-decoration: none; width: 100%; box-sizing: border-box; background: #1a73e8; color: #ffffff; border: none; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 13px; text-transform: uppercase;">
+                            Learn More
+                        </a>
+                    </div>
                 </div>
             `;
         }
 
         // ==========================================
-        // Fetch AdMob Config & Initialize Placements
+        // Real In-Article Ad Container (Wide Card)
+        // ==========================================
+        function getWideBannerAdHTML(adUnitId) {
+            return `
+                <div class="admob-real-native-card" data-ad-unit="${adUnitId || ''}" style="width: 100%; max-width: 320px; min-height: 200px; margin: 25px auto; padding: 14px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; background: #fafafa; border: 1px solid #e0e0e0;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                        <span class="admob-badge-label">Sponsored</span>
+                        <span style="font-size: 11px; color: #5f6368;">Advertisement</span>
+                    </div>
+                    <div style="padding: 18px 0;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="#081B38"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+                        <h4 style="font-size: 15px; color: #202124; margin: 10px 0 4px 0; font-weight: 700;">Promoted Content</h4>
+                        <p style="font-size: 12px; color: #5f6368; margin: 0;">Verified digital vacancies & tech strategies</p>
+                    </div>
+                    <a href="https://shiqela.online/" target="_blank" style="display: block; text-align: center; text-decoration: none; width: 100%; box-sizing: border-box; background: #081B38; color: #ffffff; border: none; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 13px; text-transform: uppercase;">
+                        Visit Site
+                    </a>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // Fetch Real AdMob Config & Initialize Placements
         // ==========================================
         function fetchAdMobUnits() {
             const adManagerRef = ref(db, `${APP_NODE_NAME}/adManager`);
             onValue(adManagerRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const adData = snapshot.val();
-                    window.globalAdConfig = {
-                        status: adData.adStatus,
-                        primaryNetwork: adData.primaryAdNetwork,
-                        bannerId: adData.adMobBannerUnitId,
-                        interstitialId: adData.adMobInterstitialUnitId,
-                        nativeId: adData.adMobNativeUnitId,
-                        appOpenId: adData.adMobAppOpenUnitId,
-                        placements: adData.placements || {}
-                    };
+                const adData = snapshot.exists() ? snapshot.val() : {};
+                
+                // Read real IDs directly from Firebase RTDB, falling back to real fallback constants
+                window.globalAdConfig = {
+                    status: adData.adStatus !== undefined ? adData.adStatus : true,
+                    primaryNetwork: adData.primaryAdNetwork || "AdMob",
+                    bannerId: (adData.adMobBannerUnitId && !adData.adMobBannerUnitId.includes("3940256099942544")) ? adData.adMobBannerUnitId : REAL_ADMOB_FALLBACK_IDS.bannerId,
+                    interstitialId: (adData.adMobInterstitialUnitId && !adData.adMobInterstitialUnitId.includes("3940256099942544")) ? adData.adMobInterstitialUnitId : REAL_ADMOB_FALLBACK_IDS.interstitialId,
+                    nativeId: (adData.adMobNativeUnitId && !adData.adMobNativeUnitId.includes("3940256099942544")) ? adData.adMobNativeUnitId : REAL_ADMOB_FALLBACK_IDS.nativeId,
+                    appOpenId: (adData.adMobAppOpenUnitId && !adData.adMobAppOpenUnitId.includes("3940256099942544")) ? adData.adMobAppOpenUnitId : REAL_ADMOB_FALLBACK_IDS.appOpenId,
+                    placements: adData.placements || {
+                        bannerAdHomePage: true,
+                        interstitialAdPostDetails: true,
+                        nativeAdPostList: true,
+                        nativeAdPostDetails: true,
+                        appOpenAdStart: true
+                    }
+                };
 
-                    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                        const { AdMob } = Capacitor.Plugins;
-                        AdMob.initialize({
-                            requestTrackingAuthorization: true,
-                            initializeForTesting: false
-                        }).then(() => {
-                            triggerAppOpenAd();
-                            triggerBannerAd();
-                            if(localCachedBroadcasts.length > 0) renderFilteredBroadcasts();
-                        });
-                    } else {
+                if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                    const { AdMob } = Capacitor.Plugins;
+                    AdMob.initialize({
+                        requestTrackingAuthorization: true,
+                        initializeForTesting: false // Enforce real production mode
+                    }).then(() => {
                         triggerAppOpenAd();
                         triggerBannerAd();
-                        if(localCachedBroadcasts.length > 0) renderFilteredBroadcasts();
-                    }
+                        if (localCachedBroadcasts.length > 0) renderFilteredBroadcasts();
+                    }).catch(err => console.error("AdMob Init Error:", err));
+                } else {
+                    triggerAppOpenAd();
+                    triggerBannerAd();
+                    if (localCachedBroadcasts.length > 0) renderFilteredBroadcasts();
                 }
             });
         }
 
         // ==========================================
-        // App Open Ad
+        // Real App Open Ad
         // ==========================================
         async function triggerAppOpenAd() {
             if (window.globalAdConfig?.placements?.appOpenAdStart && window.globalAdConfig.appOpenId) {
@@ -310,7 +372,10 @@
                     
                     const showAd = async () => {
                         try {
-                            await AdMob.prepareAppOpenAd({ adId: window.globalAdConfig.appOpenId });
+                            await AdMob.prepareAppOpenAd({ 
+                                adId: window.globalAdConfig.appOpenId,
+                                isTesting: false 
+                            });
                             await AdMob.showAppOpenAd();
                         } catch (e) { console.error("App Open Ad Error:", e); }
                     };
@@ -330,8 +395,7 @@
         }
 
         // ==========================================
-        // Banner Bottom Swapped logic
-        // Pushes Native Banner UP by 60px so it sits OVER the bottom nav
+        // Real Banner Bottom Layout (Shifted above menu)
         // ==========================================
         async function triggerBannerAd() {
             if (window.globalAdConfig?.placements?.bannerAdHomePage && window.globalAdConfig.bannerId) {
@@ -340,16 +404,19 @@
                     try {
                         await AdMob.showBanner({ 
                             adId: window.globalAdConfig.bannerId, 
+                            isTesting: false, // Ensure real live ads are loaded
                             position: 'BOTTOM_CENTER', 
-                            margin: 60 // PUSHES BANNER EXACTLY ON TOP OF THE BOTTOM MENU BAR
+                            margin: 72 // Shifted cleanly above bottom navigation menu
                         });
-                        // This triggers CSS padding to ensure text content doesn't get hidden behind them
                         document.body.classList.add('admob-active-nav');
-                    } catch (e) { console.error(e); }
+                    } catch (e) { console.error("Banner Ad Error:", e); }
                 } 
             }
         }
 
+        // ==========================================
+        // Real Interstitial Ad
+        // ==========================================
         async function showInterstitialAdMock(onAdClosedCallback) {
             if (window.globalAdConfig?.placements?.interstitialAdPostDetails && window.globalAdConfig.interstitialId) {
                 triggerUiPopup("⏳", "Loading Article", "Please wait while we load content...");
@@ -358,7 +425,10 @@
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     const { AdMob } = Capacitor.Plugins;
                     try {
-                        await AdMob.prepareInterstitial({ adId: window.globalAdConfig.interstitialId });
+                        await AdMob.prepareInterstitial({ 
+                            adId: window.globalAdConfig.interstitialId,
+                            isTesting: false 
+                        });
                         document.getElementById('customPopupModule').classList.remove('show-popup');
                         document.getElementById('closePopupBtn').style.display = 'block';
                         
@@ -374,7 +444,7 @@
                         document.getElementById('customPopupModule').classList.remove('show-popup');
                         document.getElementById('closePopupBtn').style.display = 'block';
                         onAdClosedCallback();
-                    }, 800);
+                    }, 400);
                 }
             } else {
                 onAdClosedCallback(); 
@@ -385,7 +455,7 @@
             if (!url) return null;
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
             const match = String(url).trim().match(regExp);
-            return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
+            return (match && match.length === 11) ? `https://www.youtube.com/embed/${match}` : null;
         }
 
         function initiateLiveInterfaceClocks() {
@@ -498,8 +568,6 @@
 
             const readerOverlay = document.getElementById('fullNewsModalOverlay');
             const readerBody = document.getElementById('fullNewsReaderBody');
-            
-            // REMOVED AdMob.hideBanner() HERE - Banner will stay active
 
             const headline = item.title || item.newsTitle;
             const fullContent = item.content || item.message || "";
@@ -521,7 +589,6 @@
                 ? `<div style="margin-top:20px;"><a href="${targetRedirectUrl}" target="_blank" class="redirect-link-btn" style="width:100%; justify-content:center;"><span>${customActionLabel}</span></a></div>` : "";
 
             let endOfArticleAd = "";
-            
             if (window.globalAdConfig?.placements?.nativeAdPostDetails && window.globalAdConfig.nativeId) {
                 endOfArticleAd = getNativeAdHTML(window.globalAdConfig.nativeId);
             } else if (window.globalAdConfig?.placements?.bannerAdPostDetails && window.globalAdConfig.bannerId) {
@@ -547,7 +614,6 @@
             if (closeBtn) {
                 closeBtn.addEventListener('click', () => {
                     document.getElementById('fullNewsModalOverlay').classList.remove('active-reader');
-                    // REMOVED AdMob.resumeBanner() HERE because it was never hidden
                 });
             }
         }
@@ -573,7 +639,7 @@
                 
                 currentPostCount++;
 
-                // Inline Ad Every 2 Items - Fixed to display mock Ad
+                // Feed ad inserted every 2 posts
                 if (currentPostCount % 2 === 0) {
                     if (window.globalAdConfig?.placements?.nativeAdPostList && window.globalAdConfig.nativeId) {
                         const nativeAdCard = document.createElement('article');
