@@ -21,12 +21,19 @@ jobs:
       - name: Install Capacitor, Splash Screen, App & AdMob Plugins
         run: |
           npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/splash-screen @capacitor/app @capacitor-community/admob
+          npm install @capacitor/core@5 @capacitor/cli@5 @capacitor/android@5 @capacitor/splash-screen@5 @capacitor/app@5 @capacitor-community/admob@5
 
       - name: Bundle Web Files
         run: |
-          mkdir www
-          rsync -av --exclude='.git' --exclude='.github' --exclude='www' ./ www/
+          mkdir -p www
+          rsync -av --exclude='.git' --exclude='.github' --exclude='www' --exclude='android' ./ www/
+          # Ensure index.html exists
+          if [ ! -f www/index.html ]; then
+            first_html=$(find www/ -maxdepth 1 -name "*.html" | head -n 1)
+            if [ -n "$first_html" ]; then
+              cp "$first_html" www/index.html
+            fi
+          fi
 
       - name: Create Capacitor Config Safely
         run: |
@@ -38,13 +45,9 @@ jobs:
             "bundledWebRuntime": false,
             "plugins": {
               "SplashScreen": {
-                "launchShowDuration": 3000,
+                "launchShowDuration": 2000,
                 "launchAutoHide": true,
                 "backgroundColor": "#001a66",
-                "androidSplashResourceName": "splash",
-                "androidScaleType": "CENTER_CROP",
-                "splashFullScreen": true,
-                "splashImmersive": true,
                 "showSpinner": false
               }
             }
@@ -56,82 +59,86 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Configure Real AdMob App ID & Advertising Permissions
+      - name: Configure AdMob App ID & Advertising Permissions in AndroidManifest
         run: |
-          # REPLACE WITH YOUR REAL ADMOB APP ID FROM ADMOB CONSOLE (has a '~')
-          REAL_APP_ID="ca-app-pub-6417058236150000~XXXXXXXXXX"
-          
-          sed -i "/<\/application>/i \        <meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"$REAL_APP_ID\"/>" android/app/src/main/AndroidManifest.xml
-          sed -i '/<application/i \    <uses-permission android:name="com.google.android.gms.permission.AD_ID" \/>' android/app/src/main/AndroidManifest.xml
+          # If you have your real AdMob App ID from your AdMob console, put it here:
+          # Format must strictly be numbers: ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
+          REAL_APP_ID="ca-app-pub-3940256099942544~3347511713"
 
-      - name: Target API Level 35 (Google Play Standard)
-        run: |
-          if [ -f android/variables.gradle ]; then
-            sed -i 's/targetSdkVersion = .*/targetSdkVersion = 35/' android/variables.gradle
-            sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/' android/variables.gradle
-          fi
-          sed -i 's/targetSdkVersion .*/targetSdkVersion 35/' android/app/build.gradle
-          sed -i 's/compileSdkVersion .*/compileSdkVersion 35/' android/app/build.gradle
+          python3 - <<EOF
+          import xml.etree.ElementTree as ET
 
-      - name: Set Version Code to 3
-        run: |
-          sed -i 's/versionCode 1/versionCode 3/' android/app/build.gradle
-          sed -i 's/versionCode 2/versionCode 3/' android/app/build.gradle
-          sed -i 's/versionName "1.0"/versionName "3.0"/' android/app/build.gradle
-          sed -i 's/versionName "2.0"/versionName "3.0"/' android/app/build.gradle
+          manifest_path = "android/app/src/main/AndroidManifest.xml"
+          ET.register_namespace('android', 'http://schemas.android.com/apk/res/android')
+          tree = ET.parse(manifest_path)
+          root = tree.getroot()
+          ns = {'android': 'http://schemas.android.com/apk/res/android'}
 
-      - name: Fix Android Hardware Back Button
-        run: |
-          mkdir -p android/app/src/main/java/com/firapro/app
-          cat << 'EOF' > android/app/src/main/java/com/firapro/app/MainActivity.java
-          package com.firapro.app;
+          # 1. Add AD_ID permission
+          perm_exists = False
+          for perm in root.findall('uses-permission'):
+              if perm.attrib.get('{http://schemas.android.com/apk/res/android}name') == 'com.google.android.gms.permission.AD_ID':
+                  perm_exists = True
+                  break
+          if not perm_exists:
+              new_perm = ET.Element('uses-permission')
+              new_perm.set('{http://schemas.android.com/apk/res/android}name', 'com.google.android.gms.permission.AD_ID')
+              root.insert(0, new_perm)
 
-          import com.getcapacitor.BridgeActivity;
+          # 2. Add AdMob APPLICATION_ID metadata inside <application>
+          app_elem = root.find('application')
+          if app_elem is not None:
+              meta_exists = False
+              for meta in app_elem.findall('meta-data'):
+                  if meta.attrib.get('{http://schemas.android.com/apk/res/android}name') == 'com.google.android.gms.ads.APPLICATION_ID':
+                      meta.set('{http://schemas.android.com/apk/res/android}value', '$REAL_APP_ID')
+                      meta_exists = True
+                      break
+              if not meta_exists:
+                  new_meta = ET.SubElement(app_elem, 'meta-data')
+                  new_meta.set('{http://schemas.android.com/apk/res/android}name', 'com.google.android.gms.ads.APPLICATION_ID')
+                  new_meta.set('{http://schemas.android.com/apk/res/android}value', '$REAL_APP_ID')
 
-          public class MainActivity extends BridgeActivity {
-              @Override
-              public void onBackPressed() {
-                  if (this.bridge != null && this.bridge.getWebView() != null && this.bridge.getWebView().canGoBack()) {
-                      this.bridge.getWebView().goBack();
-                  } else {
-                      super.onBackPressed();
-                  }
-              }
-          }
+          tree.write(manifest_path, encoding='utf-8', xml_declaration=True)
           EOF
 
-      - name: Setup App Icon
+      - name: Target Stable API Level 34
         run: |
+          if [ -f android/variables.gradle ]; then
+            sed -i 's/targetSdkVersion = .*/targetSdkVersion = 34/' android/variables.gradle
+            sed -i 's/compileSdkVersion = .*/compileSdkVersion = 34/' android/variables.gradle
+          fi
+          sed -i 's/targetSdkVersion .*/targetSdkVersion 34/' android/app/build.gradle
+          sed -i 's/compileSdkVersion .*/compileSdkVersion 34/' android/app/build.gradle
+
+      - name: Set Version Code
+        run: |
+          sed -i 's/versionCode .*/versionCode 3/' android/app/build.gradle
+          sed -i 's/versionName .*/versionName "3.0"/' android/app/build.gradle
+
+      - name: Clean & Setup App Icons and Splash Drawables
+        run: |
+          sudo apt-get update && sudo apt-get install -y imagemagick
+          mkdir -p android/app/src/main/res/drawable
+
           if [ -f s.png ]; then
-            sudo apt-get update
-            sudo apt-get install -y imagemagick
-            
             convert s.png -strip s_valid.png
             
+            # Setup Launcher Icons
             rm -rf android/app/src/main/res/mipmap-anydpi-v26
-            find android/app/src/main/res -name "ic_launcher*" -type f -delete
-            
             for dir in android/app/src/main/res/mipmap-*/; do
               cp -f s_valid.png "${dir}ic_launcher.png" 2>/dev/null || true
               cp -f s_valid.png "${dir}ic_launcher_round.png" 2>/dev/null || true
             done
+            
+            # Setup Splash Screen Drawable
+            cp -f s_valid.png android/app/src/main/res/drawable/splash.png
           fi
 
-      - name: Fix Kotlin Clashes
-        run: |
-          echo "" >> android/app/build.gradle
-          echo "configurations.all {" >> android/app/build.gradle
-          echo "    resolutionStrategy {" >> android/app/build.gradle
-          echo "        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'" >> android/app/build.gradle
-          echo "        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'" >> android/app/build.gradle
-          echo "        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'" >> android/app/build.gradle
-          echo "    }" >> android/app/build.gradle
-          echo "}" >> android/app/build.gradle
-
-      - name: Set up JDK 21
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
