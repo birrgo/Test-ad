@@ -18,10 +18,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Capacitor, Splash Screen & AdMob Plugins
+      - name: Install Capacitor, Splash Screen, App & AdMob Plugins
         run: |
           npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/splash-screen @capacitor-community/admob
+          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/splash-screen @capacitor/app @capacitor-community/admob
 
       - name: Bundle Web Files
         run: |
