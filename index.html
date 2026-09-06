@@ -94,6 +94,30 @@
             text-align: center;
             box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
+        
+        /* Automatic Loader UI */
+        .feed-loader-box {
+            text-align: center;
+            padding: 20px;
+            margin: 15px 20px;
+            color: #9ca3af;
+            font-size: 14px;
+            font-weight: 700;
+            display: none;
+            transition: all 0.2s ease;
+        }
+        .loader-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(156, 163, 175, 0.3);
+            border-top-color: #9ca3af;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -159,9 +183,13 @@
             </div>
 
             <div class="broadcasts-container" id="broadcastsContainer">
-                <div class="featured-broadcast-card">
-                    <h2 class="broadcast-title" style="font-size:14px; text-align:center; color: var(--text-muted);">Loading updates...</h2>
-                </div>
+                <!-- Content will load here -->
+            </div>
+
+            <!-- Auto-Loader Target Box -->
+            <div class="feed-loader-box" id="feedLoaderBox">
+                <span class="loader-spinner" id="loaderSpinner" style="display:none;"></span>
+                <span id="loaderText">Loading...</span>
             </div>
 
             <footer class="verified-footer-shield">
@@ -169,7 +197,7 @@
             </footer>
         </main>
 
-        <!-- Bottom Banner Placement -->
+        <!-- Bottom Banner Placement (Web Simulator) -->
         <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;">
             <div class="admob-banner-container" id="admobBannerNode">
                 <div style="display:flex; align-items:center; gap:8px;">
@@ -209,6 +237,7 @@
         </nav>
     </div>
 
+    <!-- Capacitor & AdMob -->
     <script src="https://cdn.jsdelivr.net/npm/@capacitor/core@5.0.0/dist/capacitor.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@capacitor-community/admob@5.0.0/dist/plugin.min.js"></script>
 
@@ -237,10 +266,16 @@
         let currentActiveCategoryFilter = "Shikela Update";
         let isBannerInitialized = false;
 
+        // Lazy Loading & Pagination State
+        let currentVisibleFeedCount = 0;
+        let isFetchingMore = false;
+        const FEED_BATCH_SIZE = 3;
+
         window.globalAdConfig = {
             status: false,
-            bannerId: "ca-app-pub-3940256099942544/6300978111",
-            interstitialId: "ca-app-pub-3940256099942544/1033173712",
+            bannerId: "",
+            interstitialId: "",
+            nativeId: "",
             interstitialInterval: 3,
             placements: {}
         };
@@ -252,12 +287,81 @@
             bindVisualInterfaceControls();
             setupSearchEngineControls();
             initiateLiveInterfaceClocks();
+            setupIntersectionObserver();
         }
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initApp);
         } else {
             initApp();
+        }
+
+        // Automatic Infinite Scroll using Intersection Observer
+        function setupIntersectionObserver() {
+            const loaderBox = document.getElementById('feedLoaderBox');
+            if (!loaderBox) return;
+
+            const options = {
+                root: null,
+                rootMargin: '400px', // Triggers loading 400px before the user actually reaches the bottom
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !document.getElementById('searchModalOverlay').classList.contains('active-search')) {
+                        executeLoadMoreBatch();
+                    }
+                });
+            }, options);
+
+            observer.observe(loaderBox);
+        }
+
+        function executeLoadMoreBatch() {
+            if (isFetchingMore) return;
+            
+            const filtered = localCachedBroadcasts.filter(item => (item.category || "").trim().toLowerCase() === currentActiveCategoryFilter.trim().toLowerCase());
+            if (currentVisibleFeedCount >= filtered.length) return;
+
+            isFetchingMore = true;
+            
+            const loaderSpinner = document.getElementById('loaderSpinner');
+            const loaderText = document.getElementById('loaderText');
+            
+            if (loaderSpinner) loaderSpinner.style.display = 'inline-block';
+            if (loaderText) loaderText.innerText = 'Loading...';
+
+            setTimeout(() => {
+                renderFilteredBroadcasts(false); // Append next 3 automatically
+                isFetchingMore = false;
+            }, 300); // Small visual delay to show it's working
+        }
+
+        function updateLoaderUI() {
+            const loaderBox = document.getElementById('feedLoaderBox');
+            const loaderSpinner = document.getElementById('loaderSpinner');
+            const loaderText = document.getElementById('loaderText');
+            
+            if (!loaderBox) return;
+
+            const filtered = localCachedBroadcasts.filter(item => (item.category || "").trim().toLowerCase() === currentActiveCategoryFilter.trim().toLowerCase());
+
+            loaderBox.style.display = 'block';
+
+            if (currentVisibleFeedCount >= filtered.length) {
+                // Database fully loaded
+                if (filtered.length > 0) {
+                    if (loaderSpinner) loaderSpinner.style.display = 'none';
+                    if (loaderText) loaderText.innerText = 'All updates loaded ✅';
+                } else {
+                    loaderBox.style.display = 'none';
+                }
+            } else {
+                // More items exist, reset to generic loading state
+                if (loaderSpinner) loaderSpinner.style.display = 'none';
+                if (loaderText) loaderText.innerText = 'Loading...';
+            }
         }
 
         function adjustBottomNavigationOffsets() {
@@ -282,6 +386,7 @@
                     status: isStatusOn,
                     bannerId: (adData.adMobBannerUnitId || "ca-app-pub-3940256099942544/6300978111").trim(),
                     interstitialId: (adData.adMobInterstitialUnitId || "ca-app-pub-3940256099942544/1033173712").trim(),
+                    nativeId: (adData.adMobNativeUnitId || "ca-app-pub-3940256099942544/2247696110").trim(),
                     interstitialInterval: parseInt(adData.interstitialAdInterval, 10) || 3,
                     placements: adData.placements || {},
                     isTesting: (adData.adMobBannerUnitId || "").includes("3940256099942544")
@@ -292,12 +397,14 @@
                     AdMob.initialize({
                         requestTrackingAuthorization: true,
                         initializeForTesting: window.globalAdConfig.isTesting
-                    }).then(() => {
+                    }).finally(() => {
                         triggerBannerAd();
-                    }).catch(e => console.error("AdMob Init:", e));
+                    });
                 } else {
                     triggerBannerAd();
                 }
+                
+                if (localCachedBroadcasts.length > 0) renderFilteredBroadcasts(true);
             });
         }
 
@@ -341,15 +448,12 @@
             }
         }
 
-        // 🚨 Critical Fix: Destroys banner ad completely before leaving the index page
         window.navigateToFull = async function(itemId, nodeName) {
             const targetUrl = `full.html?id=${encodeURIComponent(itemId)}&node=${encodeURIComponent(nodeName || 'shikelaNews')}`;
             
-            // 1. Instantly hide visual HTML element
             const adWrapper = document.getElementById('adContainerWrapper');
             if (adWrapper) adWrapper.style.display = 'none';
 
-            // 2. Kill the native Capacitor AdMob instance so it doesn't float over full.html
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                 const { AdMob } = Capacitor.Plugins;
                 try {
@@ -360,7 +464,6 @@
                 }
             }
 
-            // 3. Execute redirect
             window.location.href = targetUrl;
         };
 
@@ -396,7 +499,8 @@
             addNode(rawShikelaNewsData, "Shikela Update", "shikelaNews");
             addNode(rawNewNewsData, "Shikela Tips", "newNews");
             localCachedBroadcasts.sort((a, b) => b.resolvedTimestamp - a.resolvedTimestamp);
-            renderFilteredBroadcasts();
+            
+            renderFilteredBroadcasts(true);
         }
 
         function streamLiveAdminUpdatesLog() {
@@ -440,9 +544,11 @@
             `;
         }
 
-        // Returns a safe Inline Feed Native Ad UI Block
         function getInlineNativeAdHTML() {
             if (!window.globalAdConfig.status) return "";
+            
+            const nativeId = window.globalAdConfig.nativeId || "ca-app-pub-3940256099942544/2247696110";
+            
             return `
                 <div class="inline-feed-ad">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
@@ -451,35 +557,45 @@
                     </div>
                     <div style="font-size:32px; margin-bottom:8px;">💡</div>
                     <strong style="font-size:15px; color:#1e293b; display:block;">Promoted Opportunities</strong>
-                    <span style="font-size:13px; color:#64748b; display:block; margin: 4px 0 14px 0;">In-feed content placement directly embedded in stream.</span>
+                    <span style="font-size:13px; color:#64748b; display:block; margin: 4px 0 2px 0;">In-feed content placement directly embedded in stream.</span>
+                    <span style="font-size:10px; color:#9ca3af; display:block; margin-bottom: 12px; word-break: break-all;">ID: ${nativeId}</span>
                     <button style="background:#2563eb; color:#fff; border:none; padding:12px 18px; border-radius:8px; font-size:13px; font-weight:700; width:100%; cursor:pointer; box-shadow: 0 2px 8px rgba(37,99,235,0.25);">LEARN MORE</button>
                 </div>
             `;
         }
 
-        function renderFilteredBroadcasts() {
+        function renderFilteredBroadcasts(reset = false) {
             const container = document.getElementById('broadcastsContainer');
             if (!container) return;
-            container.innerHTML = "";
 
             const filtered = localCachedBroadcasts.filter(item => (item.category || "").trim().toLowerCase() === currentActiveCategoryFilter.trim().toLowerCase());
             
+            if (reset) {
+                container.innerHTML = "";
+                currentVisibleFeedCount = 0;
+            }
+
             if (filtered.length === 0) {
-                container.innerHTML = `<article class="featured-broadcast-card"><h2 class="broadcast-title">No updates posted today.</h2></article>`;
+                if (reset) container.innerHTML = `<article class="featured-broadcast-card"><h2 class="broadcast-title">No updates posted today.</h2></article>`;
+                updateLoaderUI();
                 return;
             }
 
-            let currentPostCount = 0;
-            filtered.forEach((item) => {
+            const nextBatch = filtered.slice(currentVisibleFeedCount, currentVisibleFeedCount + FEED_BATCH_SIZE);
+            if (nextBatch.length === 0) {
+                updateLoaderUI();
+                return; 
+            }
+
+            nextBatch.forEach((item) => {
                 const card = document.createElement('article');
                 card.className = "featured-broadcast-card";
                 card.innerHTML = buildSingleNewsCardHTML(item);
                 container.appendChild(card);
                 
-                currentPostCount++;
+                currentVisibleFeedCount++;
 
-                // 🚨 Inline Ad Logic: Inject Native Ad styling every 2 posts
-                if (currentPostCount % 2 === 0) {
+                if (currentVisibleFeedCount % 2 === 0) {
                     if (window.globalAdConfig.status && window.globalAdConfig.placements?.nativeAdPostList !== false) {
                         const inlineAdWrapper = document.createElement('div');
                         inlineAdWrapper.innerHTML = getInlineNativeAdHTML();
@@ -487,6 +603,8 @@
                     }
                 }
             });
+
+            updateLoaderUI();
         }
 
         function setupSearchEngineControls() {
@@ -557,7 +675,7 @@
                     document.querySelectorAll('.filter-btn').forEach(p => p.classList.remove('active-pill', 'active'));
                     this.classList.add('active-pill', 'active');
                     currentActiveCategoryFilter = this.getAttribute('data-filter') || "Shikela Update";
-                    renderFilteredBroadcasts();
+                    renderFilteredBroadcasts(true); 
                 });
             });
         }
