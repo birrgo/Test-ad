@@ -1,81 +1,233 @@
-name: Convert PWA to Installable APK
+name: Build Fira Pro APK
 
 on:
+
+  workflow_dispatch:
+
   push:
     branches:
       - main
-  workflow_dispatch:
+
 
 jobs:
+
   build:
+
     runs-on: ubuntu-latest
+
 
     steps:
 
-      # 1. Checkout repository
-      - name: Checkout Code
+      # --------------------------------------------------
+      # 1. Checkout
+      # --------------------------------------------------
+
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js
+
+      # --------------------------------------------------
+      # 2. Setup Node
+      # --------------------------------------------------
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 20
+          cache: npm
 
-      # 3. Install Capacitor
-      - name: Install Capacitor
+
+      # --------------------------------------------------
+      # 3. Setup Java
+      # --------------------------------------------------
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+
+      # --------------------------------------------------
+      # 4. Install dependencies
+      # --------------------------------------------------
+
+      - name: Install Dependencies
         run: |
-          npm install \
-            @capacitor/core@5 \
-            @capacitor/cli@5 \
-            @capacitor/android@5 \
-            @capacitor/splash-screen@5 \
-            @capacitor/app@5 \
-            @capacitor-community/admob@5
 
-      # 4. Prepare web files
-      - name: Bundle Web Files
+          npm install
+
+
+      # --------------------------------------------------
+      # 5. Install Capacitor CLI
+      # --------------------------------------------------
+
+      - name: Check Capacitor
         run: |
-          rm -rf www
-          mkdir -p www
 
-          rsync -av \
-            --exclude=".git" \
-            --exclude=".github" \
-            --exclude="www" \
-            --exclude="android" \
-            --exclude="node_modules" \
-            --exclude="package.json" \
-            --exclude="package-lock.json" \
-            ./ www/
+          npx cap --version
 
-          if [ ! -f www/index.html ]; then
 
-            first_html=$(find www \
-              -maxdepth 1 \
-              -type f \
-              -name "*.html" \
-              | head -n 1)
+      # --------------------------------------------------
+      # 6. Create Android project
+      # --------------------------------------------------
 
-            if [ -n "$first_html" ]; then
-              cp "$first_html" www/index.html
-              echo "Created www/index.html"
-            else
-              echo "ERROR: No HTML file found."
-              exit 1
-            fi
+      - name: Create Android Project
+        run: |
+
+          if [ ! -d "android" ]; then
+
+            npx cap add android
+
+          else
+
+            echo "Android project already exists."
 
           fi
 
-          echo "=============================="
-          echo "WEB FILES"
-          echo "=============================="
 
-          find www -maxdepth 2 -type f | sort
+      # --------------------------------------------------
+      # 7. Prepare web directory
+      # --------------------------------------------------
 
-      # 5. Create Capacitor configuration
-      - name: Create Capacitor Config
+      - name: Prepare Web Files
         run: |
+
+          mkdir -p www
+
+          cp -f *.html www/ 2>/dev/null || true
+          cp -f *.css www/ 2>/dev/null || true
+          cp -f *.js www/ 2>/dev/null || true
+          cp -f *.json www/ 2>/dev/null || true
+          cp -f *.png www/ 2>/dev/null || true
+          cp -f *.jpg www/ 2>/dev/null || true
+          cp -f *.jpeg www/ 2>/dev/null || true
+          cp -f *.webp www/ 2>/dev/null || true
+          cp -f *.svg www/ 2>/dev/null || true
+
+          echo "Web files prepared."
+
+          ls -la www
+
+
+      # --------------------------------------------------
+      # 8. Verify required images
+      # --------------------------------------------------
+
+      - name: Verify App Images
+        run: |
+
+          echo "Checking application images..."
+
+          if [ ! -f "s.png" ]; then
+
+            echo "ERROR: s.png was not found."
+
+            exit 1
+
+          fi
+
+          if [ ! -f "s1.png" ]; then
+
+            echo "ERROR: s1.png was not found."
+
+            exit 1
+
+          fi
+
+          echo "s.png found."
+          echo "s1.png found."
+
+
+      # --------------------------------------------------
+      # 9. Copy startup image to www
+      # --------------------------------------------------
+
+      - name: Install Welcome Image
+        run: |
+
+          cp -f s1.png www/s1.png
+
+          echo "Welcome image installed."
+
+
+      # --------------------------------------------------
+      # 10. Prepare launcher icon
+      # --------------------------------------------------
+
+      - name: Prepare App Icon
+        run: |
+
+          cp -f s.png s_valid.png
+
+          echo "Application icon prepared."
+
+          file s_valid.png
+
+
+      # --------------------------------------------------
+      # 11. Install launcher icons
+      #
+      # IMPORTANT:
+      # Do NOT copy icons into mipmap-anydpi-v26.
+      # That was the cause of the duplicate resource
+      # problem in the previous build.
+      # --------------------------------------------------
+
+      - name: Install Android App Icon
+        run: |
+
+          for dir in \
+            android/app/src/main/res/mipmap-mdpi \
+            android/app/src/main/res/mipmap-hdpi \
+            android/app/src/main/res/mipmap-xhdpi \
+            android/app/src/main/res/mipmap-xxhdpi \
+            android/app/src/main/res/mipmap-xxxhdpi
+          do
+
+            if [ -d "$dir" ]; then
+
+              cp -f \
+                s_valid.png \
+                "$dir/ic_launcher.png"
+
+              cp -f \
+                s_valid.png \
+                "$dir/ic_launcher_round.png"
+
+              echo "Updated icon: $dir"
+
+            fi
+
+          done
+
+
+      # --------------------------------------------------
+      # 12. Setup splash image
+      #
+      # s1.png = welcome image
+      # --------------------------------------------------
+
+      - name: Setup Splash Screen
+        run: |
+
+          mkdir -p \
+            android/app/src/main/res/drawable
+
+          cp -f \
+            s1.png \
+            android/app/src/main/res/drawable/splash.png
+
+          echo "s1.png installed as splash.png."
+
+
+      # --------------------------------------------------
+      # 13. Configure Capacitor
+      # --------------------------------------------------
+
+      - name: Write Capacitor Configuration
+        run: |
+
           cat > capacitor.config.json <<'EOF'
           {
             "appId": "com.firapro.app",
@@ -84,7 +236,7 @@ jobs:
             "bundledWebRuntime": false,
             "plugins": {
               "SplashScreen": {
-                "launchShowDuration": 2000,
+                "launchShowDuration": 1500,
                 "launchAutoHide": true,
                 "backgroundColor": "#001a66",
                 "showSpinner": false
@@ -93,266 +245,44 @@ jobs:
           }
           EOF
 
-      # 6. Create Android project
-      - name: Create Android Project
-        run: |
-          rm -rf android
+          echo "Capacitor configuration created."
 
-          npx cap add android
 
-          npx cap sync android
-
-      # 7. Configure Android SDK
-      - name: Configure Android SDK
-        run: |
-          if [ -f android/variables.gradle ]; then
-
-            sed -i \
-              's/compileSdkVersion = .*/compileSdkVersion = 34/' \
-              android/variables.gradle
-
-            sed -i \
-              's/targetSdkVersion = .*/targetSdkVersion = 34/' \
-              android/variables.gradle
-
-            sed -i \
-              's/minSdkVersion = .*/minSdkVersion = 22/' \
-              android/variables.gradle
-
-          fi
-
-      # 8. Configure AdMob TEST App ID
-      #
-      # GOOGLE TEST APP ID
-      #
-      # Keep this while developing.
-      #
-      # Later replace ONLY this value with your real
-      # AdMob App ID.
-      #
-      - name: Configure AdMob Test App ID
-        run: |
-          python3 - <<'PY'
-          import xml.etree.ElementTree as ET
-
-          manifest_path = "android/app/src/main/AndroidManifest.xml"
-
-          ANDROID_NS = "http://schemas.android.com/apk/res/android"
-
-          ET.register_namespace("android", ANDROID_NS)
-
-          tree = ET.parse(manifest_path)
-          root = tree.getroot()
-
-          # ==========================================
-          # Advertising ID permission
-          # ==========================================
-
-          permission_name = "com.google.android.gms.permission.AD_ID"
-
-          exists = False
-
-          for permission in root.findall("uses-permission"):
-
-              if permission.get(
-                  f"{{{ANDROID_NS}}}name"
-              ) == permission_name:
-
-                  exists = True
-                  break
-
-          if not exists:
-
-              permission = ET.Element("uses-permission")
-
-              permission.set(
-                  f"{{{ANDROID_NS}}}name",
-                  permission_name
-              )
-
-              root.insert(0, permission)
-
-          # ==========================================
-          # AdMob Application ID
-          # ==========================================
-
-          application = root.find("application")
-
-          if application is None:
-              raise RuntimeError(
-                  "AndroidManifest.xml has no application element."
-              )
-
-          admob_name = (
-              "com.google.android.gms.ads.APPLICATION_ID"
-          )
-
-          admob_meta = None
-
-          for meta in application.findall("meta-data"):
-
-              if meta.get(
-                  f"{{{ANDROID_NS}}}name"
-              ) == admob_name:
-
-                  admob_meta = meta
-                  break
-
-          if admob_meta is None:
-
-              admob_meta = ET.SubElement(
-                  application,
-                  "meta-data"
-              )
-
-          admob_meta.set(
-              f"{{{ANDROID_NS}}}name",
-              admob_name
-          )
-
-          # GOOGLE TEST APP ID
-          admob_meta.set(
-              f"{{{ANDROID_NS}}}value",
-              "ca-app-pub-3940256099942544~3347511713"
-          )
-
-          tree.write(
-              manifest_path,
-              encoding="utf-8",
-              xml_declaration=True
-          )
-
-          print("AdMob TEST App ID configured.")
-          PY
-
-      # 9. Set app version
-      - name: Set App Version
-        run: |
-          python3 - <<'PY'
-          import re
-
-          path = "android/app/build.gradle"
-
-          with open(path, "r", encoding="utf-8") as f:
-              text = f.read()
-
-          text = re.sub(
-              r'versionCode\s+\d+',
-              'versionCode 3',
-              text
-          )
-
-          text = re.sub(
-              r'versionName\s+"[^"]*"',
-              'versionName "3.0"',
-              text
-          )
-
-          with open(path, "w", encoding="utf-8") as f:
-              f.write(text)
-
-          print("Version: 3.0")
-          print("Version code: 3")
-          PY
-
-      # 10. Setup Java 17
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: "17"
-          distribution: "temurin"
-          cache: gradle
-
-      # 11. Install ImageMagick
-      - name: Install ImageMagick
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y imagemagick
-
-      # 12. Setup app icon WITHOUT creating duplicate resources
-      - name: Setup App Icon
-        run: |
-
-          if [ -f s.png ]; then
-
-            echo "Found s.png"
-
-            convert s.png \
-              -strip \
-              s_valid.png
-
-            # IMPORTANT:
-            # Do NOT copy into mipmap-anydpi-v26.
-            #
-            # Capacitor already creates:
-            #
-            # mipmap-anydpi-v26/ic_launcher.xml
-            # mipmap-anydpi-v26/ic_launcher_round.xml
-            #
-            # Copying PNG files there creates duplicate
-            # Android resources.
-
-            for dir in \
-              android/app/src/main/res/mipmap-mdpi \
-              android/app/src/main/res/mipmap-hdpi \
-              android/app/src/main/res/mipmap-xhdpi \
-              android/app/src/main/res/mipmap-xxhdpi \
-              android/app/src/main/res/mipmap-xxxhdpi
-            do
-
-              if [ -d "$dir" ]; then
-
-                cp -f \
-                  s_valid.png \
-                  "$dir/ic_launcher.png"
-
-                cp -f \
-                  s_valid.png \
-                  "$dir/ic_launcher_round.png"
-
-                echo "Updated icon: $dir"
-
-              fi
-
-            done
-
-          else
-
-            echo "s.png not found."
-            echo "Using Capacitor default icon."
-
-          fi
-
-      # 13. Setup splash image
-      - name: Setup Splash Screen
-        run: |
-
-          if [ -f s_valid.png ]; then
-
-            mkdir -p \
-              android/app/src/main/res/drawable
-
-            cp -f \
-              s_valid.png \
-              android/app/src/main/res/drawable/splash.png
-
-            echo "Splash image installed."
-
-          fi
-
+      # --------------------------------------------------
       # 14. Sync Capacitor
+      #
+      # This also runs:
+      #
+      # admob-manifest.js
+      # admob-native.js
+      #
+      # so Native Ads are installed.
+      # --------------------------------------------------
+
       - name: Sync Capacitor
         run: |
+
           npx cap sync android
 
-      # 15. Build installable DEBUG APK
-      #
-      # This is intentionally DEBUG while the app
-      # is still being developed.
-      #
-      # Gradle automatically signs the debug APK
-      # with the Android debug key.
-      #
+
+      # --------------------------------------------------
+      # 15. Verify Android
+      # --------------------------------------------------
+
+      - name: Verify Android Project
+        run: |
+
+          echo "Android project ready."
+
+          test -d android/app
+
+          echo "Android application directory found."
+
+
+      # --------------------------------------------------
+      # 16. Build DEBUG APK
+      # --------------------------------------------------
+
       - name: Build Installable Debug APK
         run: |
 
@@ -364,7 +294,11 @@ jobs:
 
           ./gradlew assembleDebug --stacktrace
 
-      # 16. Find APK
+
+      # --------------------------------------------------
+      # 17. Find APK
+      # --------------------------------------------------
+
       - name: Prepare APK
         run: |
 
@@ -374,6 +308,7 @@ jobs:
             -name "*.apk" \
             | head -n 1)
 
+
           if [ -z "$APK" ]; then
 
             echo "ERROR: APK was not created."
@@ -382,18 +317,28 @@ jobs:
 
           fi
 
+
           cp "$APK" fira-pro.apk
 
-          echo "=============================="
+
+          echo "================================"
           echo "FIRA PRO APK CREATED"
-          echo "=============================="
+          echo "================================"
 
           ls -lh fira-pro.apk
 
-      # 17. Upload APK
+
+      # --------------------------------------------------
+      # 18. Upload APK
+      # --------------------------------------------------
+
       - name: Upload Installable APK
         uses: actions/upload-artifact@v4
+
         with:
+
           name: fira-pro-apk
+
           path: fira-pro.apk
+
           if-no-files-found: error
