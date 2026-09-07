@@ -585,68 +585,80 @@
             `;
         }
         
-        // DYNAMIC NATIVE AD CONTAINER HTML
+        // DYNAMIC NATIVE AD CONTAINER WITH FULL NATIVE CARD UI
         function getInlineNativeAdHTML(adContainerId) {
             if (!window.globalAdConfig.status) return "";
 
-            // Web Fallback Layout
-            if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
-                const nativeId = window.globalAdConfig.nativeId || "ca-app-pub-3940256099942544/2247696110";
-                return `
-                    <div class="inline-feed-ad">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
-                            <span class="ad-badge">AdMob Native</span>
-                            <span style="font-size:11px; color:#64748b; font-weight:600;">Sponsored Content</span>
-                        </div>
-                        <div style="font-size:32px; margin-bottom:8px;">💡</div>
-                        <strong style="font-size:15px; color:#1e293b; display:block;">Promoted Opportunities</strong>
-                        <span style="font-size:13px; color:#64748b; display:block; margin: 4px 0 2px 0;">AdMob Native Placement Preview.</span>
-                        <span style="font-size:10px; color:#9ca3af; display:block; margin-bottom: 12px; word-break: break-all;">ID: ${nativeId}</span>
-                        <button style="background:#2563eb; color:#fff; border:none; padding:12px 18px; border-radius:8px; font-size:13px; font-weight:700; width:100%; cursor:pointer;">LEARN MORE</button>
-                    </div>
-                `;
-            }
+            const nativeId = window.globalAdConfig.nativeId || "ca-app-pub-3940256099942544/2247696110";
 
-            // Native Android Active Ad Element
             return `
-                <div class="inline-feed-ad" style="min-height: 120px; padding: 0; overflow: hidden; background: #ffffff;">
-                    <div id="${adContainerId}" style="width: 100%; height: 120px;"></div>
+                <div class="inline-feed-ad" id="${adContainerId}" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-top: 14px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.04);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="ad-badge" style="background:#fbbc04; color:#202124; font-size:10px; font-weight:700; padding:2px 6px; border-radius:3px; text-transform:uppercase;">Test Ad</span>
+                            <span style="font-size:11px; color:#64748b; font-weight:600;">Sponsored Update</span>
+                        </div>
+                        <span style="font-size:10px; color:#9ca3af;">AdMob Native</span>
+                    </div>
+
+                    <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+                        <div style="width:44px; height:44px; background:#1e293b; color:#ffffff; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; flex-shrink:0;">
+                            📢
+                        </div>
+                        <div>
+                            <h4 style="margin:0; font-size:14px; color:#0f172a; font-weight:700; line-height:1.2;">Featured Opportunity</h4>
+                            <p style="margin:3px 0 0 0; font-size:12px; color:#64748b; line-height:1.3;">Explore top remote jobs, tech tips, and verified updates.</p>
+                        </div>
+                    </div>
+
+                    <!-- AD CONTAINER SLOT -->
+                    <div id="${adContainerId}-slot" style="min-height:60px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:8px; margin-bottom:12px; text-align:center;">
+                        <span style="font-size:11px; color:#64748b; font-weight:600;">
+                            AdMob Native Unit: ${nativeId.slice(-10)}
+                        </span>
+                    </div>
+
+                    <button style="background:#2563eb; color:#ffffff; border:none; padding:10px 14px; border-radius:8px; font-size:13px; font-weight:700; width:100%; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px;">
+                        Install / Learn More
+                    </button>
                 </div>
             `;
         }
 
-        // LOADS REAL NATIVE AD VIA @admob-plus/capacitor
+        // LOAD NATIVE AD OR FALLBACK SAFELY
         async function loadNativeAdForElement(elementId) {
-            if (!window.Capacitor || !window.Capacitor.isNativePlatform() || !window.globalAdConfig.status) return;
+            if (!window.globalAdConfig.status) return;
 
             const el = document.getElementById(elementId);
             if (!el) return;
 
-            const rect = el.getBoundingClientRect();
             const nativeAdUnitId = window.globalAdConfig.nativeId || "ca-app-pub-3940256099942544/2247696110";
 
-            try {
-                let NativeAd;
-                if (window.admobPlus && window.admobPlus.NativeAd) {
-                    NativeAd = window.admobPlus.NativeAd;
-                } else {
-                    const module = await import('@admob-plus/capacitor');
-                    NativeAd = module.NativeAd;
+            // Attempt native plugin load if available on device
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                try {
+                    let NativeAd;
+                    if (window.admobPlus && window.admobPlus.NativeAd) {
+                        NativeAd = window.admobPlus.NativeAd;
+                    } else {
+                        const module = await import('@admob-plus/capacitor');
+                        NativeAd = module.NativeAd;
+                    }
+
+                    if (NativeAd) {
+                        const rect = el.getBoundingClientRect();
+                        const ad = new NativeAd({ adUnitId: nativeAdUnitId });
+                        await ad.load();
+                        await ad.show({
+                            x: Math.round(rect.left),
+                            y: Math.round(rect.top),
+                            width: Math.round(rect.width),
+                            height: Math.round(rect.height)
+                        });
+                    }
+                } catch (err) {
+                    console.warn("Native Ad plugin fallback active:", err);
                 }
-
-                const ad = new NativeAd({
-                    adUnitId: nativeAdUnitId
-                });
-
-                await ad.load();
-                await ad.show({
-                    x: Math.round(rect.left),
-                    y: Math.round(rect.top),
-                    width: Math.round(rect.width),
-                    height: Math.round(rect.height)
-                });
-            } catch (err) {
-                console.warn("Native Ad Load Error:", err);
             }
         }
 
