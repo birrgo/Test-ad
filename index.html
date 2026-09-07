@@ -58,10 +58,8 @@
             padding-bottom: 140px !important;
         }
 
-        /* UPDATED AD CONTAINER CSS */
         .ad-container-wrapper {
             position: fixed;
-            /* Removed the extra gap so it sits flush on the bottom nav */
             bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
             left: 0;
             width: 100%;
@@ -70,8 +68,10 @@
             pointer-events: none; 
             z-index: 99999 !important;
         }
+        
+        /* Web fallback for the banner ad */
         .admob-banner-container {
-            width: 100%; /* Forces ad to fit full width */
+            width: 100%; 
             height: auto;
             min-height: 50px;
             background: #ffffff;
@@ -80,11 +80,10 @@
             align-items: center;
             justify-content: space-between;
             padding: 4px 12px;
-            border-top: 1px solid #dadce0; /* Top border only for seamless look */
-            box-shadow: 0px -4px 12px rgba(0, 0, 0, 0.1); /* Upward shadow */
+            border-top: 1px solid #dadce0; 
+            box-shadow: 0px -4px 12px rgba(0, 0, 0, 0.1); 
             pointer-events: auto;
         }
-        /* END UPDATED AD CONTAINER CSS */
 
         .ad-badge {
             background: #fbbc04;
@@ -97,15 +96,6 @@
         }
         .clickable-news-card {
             cursor: pointer;
-        }
-        .inline-feed-ad {
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 14px;
-            text-align: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
         
         .feed-loader-box {
@@ -183,7 +173,6 @@
             </div>
         </div>
 
-        <!-- UPDATED HEADER WITH "WHAT'S NEW" -->
         <header class="nav-header" style="display: flex; align-items: center; justify-content: space-between; padding-left: 16px; padding-right: 16px; gap: 14px;">
             <div class="header-left-group" style="display: flex; align-items: center; gap: 12px;">
                 <button type="button" class="menu-action-btn" id="openMenuIframeBtn" aria-label="Open Menu" style="background: none; border: none; cursor: pointer; color: #ffffff; padding: 0; display: flex; align-items: center; justify-content: center;">
@@ -268,7 +257,6 @@
         </nav>
     </div>
 
-    <!-- Capacitor & AdMob -->
     <script src="https://cdn.jsdelivr.net/npm/@capacitor/core@5.0.0/dist/capacitor.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@capacitor-community/admob@5.0.0/dist/plugin.min.js"></script>
 
@@ -295,7 +283,9 @@
         let rawNewNewsData = {};
         let localCachedBroadcasts = [];
         let currentActiveCategoryFilter = "Shikela Update";
+        
         let isBannerInitialized = false;
+        let articleClickCount = 0; // Tracks clicks for Interstitial Ad
 
         let currentVisibleFeedCount = 0;
         let isFetchingMore = false;
@@ -305,9 +295,9 @@
             status: false,
             bannerId: "",
             interstitialId: "",
-            nativeId: "",
             interstitialInterval: 3,
-            placements: {}
+            placements: {},
+            isTesting: true
         };
 
         function initApp() {
@@ -327,9 +317,7 @@
 
         window.addEventListener('pageshow', (event) => {
             if (event.persisted && window.globalAdConfig.status) {
-                setTimeout(() => {
-                    triggerBannerAd();
-                }, 300);
+                setTimeout(() => { triggerBannerAd(); }, 300);
             }
         });
 
@@ -337,12 +325,7 @@
             const loaderBox = document.getElementById('feedLoaderBox');
             if (!loaderBox) return;
 
-            const options = {
-                root: null,
-                rootMargin: '400px',
-                threshold: 0
-            };
-
+            const options = { root: null, rootMargin: '400px', threshold: 0 };
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && !document.getElementById('searchModalOverlay').classList.contains('active-search')) {
@@ -350,18 +333,15 @@
                     }
                 });
             }, options);
-
             observer.observe(loaderBox);
         }
 
         function executeLoadMoreBatch() {
             if (isFetchingMore) return;
-            
             const filtered = localCachedBroadcasts.filter(item => (item.category || "").trim().toLowerCase() === currentActiveCategoryFilter.trim().toLowerCase());
             if (currentVisibleFeedCount >= filtered.length) return;
 
             isFetchingMore = true;
-            
             const loaderSpinner = document.getElementById('loaderSpinner');
             const loaderText = document.getElementById('loaderText');
             
@@ -382,7 +362,6 @@
             if (!loaderBox) return;
 
             const filtered = localCachedBroadcasts.filter(item => (item.category || "").trim().toLowerCase() === currentActiveCategoryFilter.trim().toLowerCase());
-
             loaderBox.style.display = 'block';
 
             if (currentVisibleFeedCount >= filtered.length) {
@@ -420,7 +399,6 @@
                     status: isStatusOn,
                     bannerId: (adData.adMobBannerUnitId || "ca-app-pub-3940256099942544/6300978111").trim(),
                     interstitialId: (adData.adMobInterstitialUnitId || "ca-app-pub-3940256099942544/1033173712").trim(),
-                    nativeId: (adData.adMobNativeUnitId || "ca-app-pub-3940256099942544/2247696110").trim(),
                     interstitialInterval: parseInt(adData.interstitialAdInterval, 10) || 3,
                     placements: adData.placements || {},
                     isTesting: (adData.adMobBannerUnitId || "").includes("3940256099942544")
@@ -433,7 +411,12 @@
                         initializeForTesting: window.globalAdConfig.isTesting
                     }).then(() => {
                         setTimeout(triggerBannerAd, 500);
-                    }).catch(e => console.warn("AdMob Init:", e));
+                        
+                        // PRELOAD Interstitial Ad for production readiness
+                        if (window.globalAdConfig.status && window.globalAdConfig.interstitialId) {
+                            AdMob.prepareInterstitial({ adId: window.globalAdConfig.interstitialId }).catch(e => console.warn(e));
+                        }
+                    }).catch(e => console.warn("AdMob Init Error:", e));
                 } else {
                     triggerBannerAd();
                 }
@@ -457,14 +440,15 @@
             }
 
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                const { AdMob, BannerAdSize, BannerAdPosition } = Capacitor.Plugins;
+                const { AdMob } = Capacitor.Plugins;
                 try {
                     if (isBannerInitialized) {
                         await AdMob.resumeBanner().catch(() => {});
                     } else {
+                        // CRITICAL FIX: Changed to SMART_BANNER to force 100% full width stretch
                         await AdMob.showBanner({
                             adId: window.globalAdConfig.bannerId,
-                            adSize: 'BANNER',
+                            adSize: 'SMART_BANNER',
                             position: 'BOTTOM_CENTER',
                             margin: navHeight
                         });
@@ -483,13 +467,23 @@
         }
 
         window.navigateToFull = async function(itemId, nodeName) {
+            articleClickCount++;
             const targetUrl = `full.html?id=${encodeURIComponent(itemId)}&node=${encodeURIComponent(nodeName || 'shikelaNews')}`;
             
-            const adWrapper = document.getElementById('adContainerWrapper');
-            if (adWrapper) adWrapper.style.display = 'none';
-
-            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+            if (window.Capacitor && window.Capacitor.isNativePlatform() && window.globalAdConfig.status) {
                 const { AdMob } = Capacitor.Plugins;
+                
+                // CRITICAL FIX: Trigger Interstitial Ad based on click interval (Production ready)
+                if (articleClickCount % window.globalAdConfig.interstitialInterval === 0 && window.globalAdConfig.interstitialId) {
+                    try {
+                        await AdMob.showInterstitial();
+                        // Preload the next ad in the background after showing
+                        await AdMob.prepareInterstitial({ adId: window.globalAdConfig.interstitialId });
+                    } catch (e) {
+                        console.warn("Interstitial display skipped:", e);
+                    }
+                }
+
                 try {
                     await AdMob.hideBanner().catch(() => {});
                     await AdMob.removeBanner().catch(() => {});
@@ -498,7 +492,6 @@
                     console.warn("Banner cleanup warning:", e);
                 }
             }
-
             window.location.href = targetUrl;
         };
 
@@ -579,26 +572,6 @@
             `;
         }
 
-        function getInlineNativeAdHTML() {
-            if (!window.globalAdConfig.status) return "";
-            
-            const nativeId = window.globalAdConfig.nativeId || "ca-app-pub-3940256099942544/2247696110";
-            
-            return `
-                <div class="inline-feed-ad">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
-                        <span class="ad-badge">Ad</span>
-                        <span style="font-size:11px; color:#64748b; font-weight:600;">Sponsored Content</span>
-                    </div>
-                    <div style="font-size:32px; margin-bottom:8px;">💡</div>
-                    <strong style="font-size:15px; color:#1e293b; display:block;">Promoted Opportunities</strong>
-                    <span style="font-size:13px; color:#64748b; display:block; margin: 4px 0 2px 0;">In-feed content placement directly embedded in stream.</span>
-                    <span style="font-size:10px; color:#9ca3af; display:block; margin-bottom: 12px; word-break: break-all;">ID: ${nativeId}</span>
-                    <button style="background:#2563eb; color:#fff; border:none; padding:12px 18px; border-radius:8px; font-size:13px; font-weight:700; width:100%; cursor:pointer; box-shadow: 0 2px 8px rgba(37,99,235,0.25);">LEARN MORE</button>
-                </div>
-            `;
-        }
-
         function renderFilteredBroadcasts(reset = false) {
             const container = document.getElementById('broadcastsContainer');
             if (!container) return;
@@ -627,17 +600,10 @@
                 card.className = "featured-broadcast-card";
                 card.innerHTML = buildSingleNewsCardHTML(item);
                 container.appendChild(card);
-                
                 currentVisibleFeedCount++;
-
-                if (currentVisibleFeedCount % 2 === 0) {
-                    if (window.globalAdConfig.status && window.globalAdConfig.placements?.nativeAdPostList !== false) {
-                        const inlineAdWrapper = document.createElement('div');
-                        inlineAdWrapper.innerHTML = getInlineNativeAdHTML();
-                        container.appendChild(inlineAdWrapper);
-                    }
-                }
             });
+
+            // Note: Fake native ad injection logic has been entirely removed here for production
 
             updateLoaderUI();
         }
