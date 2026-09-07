@@ -1,4 +1,4 @@
-name: Convert PWA to Installable APK 
+name: Convert PWA to Installable APK
 
 on:
   push:
@@ -9,34 +9,65 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
+
+      # 1. Checkout repository
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
-      - name: Install Capacitor, Splash Screen, App & Both AdMob Plugins
+      # 3. Install Capacitor
+      - name: Install Capacitor
         run: |
-          npm init -y
-          npm install @capacitor/core@5 @capacitor/cli@5 @capacitor/android@5 @capacitor/splash-screen@5 @capacitor/app@5 @capacitor-community/admob@5 @admob-plus/capacitor
+          npm install \
+            @capacitor/core@5 \
+            @capacitor/cli@5 \
+            @capacitor/android@5 \
+            @capacitor/splash-screen@5 \
+            @capacitor/app@5 \
+            @capacitor-community/admob@5
 
+      # 4. Prepare www folder
       - name: Bundle Web Files
         run: |
+          rm -rf www
           mkdir -p www
-          rsync -av --exclude='.git' --exclude='.github' --exclude='www' --exclude='android' --exclude='node_modules' --exclude='package*.json' ./ www/
+
+          rsync -av \
+            --exclude=".git" \
+            --exclude=".github" \
+            --exclude="www" \
+            --exclude="android" \
+            --exclude="node_modules" \
+            --exclude="package.json" \
+            --exclude="package-lock.json" \
+            ./ www/
+
           if [ ! -f www/index.html ]; then
-            first_html=$(find www/ -maxdepth 1 -name "*.html" | head -n 1)
+            first_html=$(find www -maxdepth 1 -type f -name "*.html" | head -n 1)
+
             if [ -n "$first_html" ]; then
               cp "$first_html" www/index.html
+              echo "Created www/index.html"
+            else
+              echo "ERROR: No HTML file found."
+              exit 1
             fi
           fi
 
-      - name: Create Capacitor Config Safely
+          echo "Website files:"
+          find www -maxdepth 2 -type f | sort
+
+      # 5. Create Capacitor configuration
+      - name: Create Capacitor Config
         run: |
-          cat << 'EOF' > capacitor.config.json
+          cat > capacitor.config.json <<'EOF'
           {
             "appId": "com.firapro.app",
             "appName": "Fira Pro",
@@ -53,97 +84,241 @@ jobs:
           }
           EOF
 
-      - name: Initialize & Sync Android Project
+      # 6. Create Android project
+      - name: Create Android Project
         run: |
+          rm -rf android
           npx cap add android
           npx cap sync android
 
-      - name: Inject Kotlin Plugin for AdMob Plus
-        run: |
-          # Add Kotlin classpath to root build.gradle
-          sed -i '/dependencies {/a \        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.20"' android/build.gradle
-
-      - name: Target Stable API Level 34 & Fix SDK Variables
+      # 7. Configure Android SDK
+      - name: Configure Android SDK
         run: |
           if [ -f android/variables.gradle ]; then
-            sed -i 's/targetSdkVersion = .*/targetSdkVersion = 34/' android/variables.gradle
             sed -i 's/compileSdkVersion = .*/compileSdkVersion = 34/' android/variables.gradle
+            sed -i 's/targetSdkVersion = .*/targetSdkVersion = 34/' android/variables.gradle
+            sed -i 's/minSdkVersion = .*/minSdkVersion = 22/' android/variables.gradle
           fi
 
-      - name: Configure AdMob App ID & Advertising Permissions in AndroidManifest
+      # 8. Configure AdMob TEST App ID
+      #
+      # GOOGLE TEST APP ID
+      #
+      # Replace this later with YOUR real AdMob App ID.
+      #
+      - name: Configure AdMob Test App ID
         run: |
-          ADMOB_APP_ID="ca-app-pub-3940256099942544~3347511713"
-
-          python3 - <<EOF
+          python3 - <<'PY'
           import xml.etree.ElementTree as ET
 
           manifest_path = "android/app/src/main/AndroidManifest.xml"
-          ET.register_namespace('android', 'http://schemas.android.com/apk/res/android')
+
+          ANDROID_NS = "http://schemas.android.com/apk/res/android"
+
+          ET.register_namespace("android", ANDROID_NS)
+
           tree = ET.parse(manifest_path)
           root = tree.getroot()
-          ns_android = 'http://schemas.android.com/apk/res/android'
 
-          has_ad_id = any(p.attrib.get(f'{{{ns_android}}}name') == 'com.google.android.gms.permission.AD_ID' for p in root.findall('uses-permission'))
-          if not has_ad_id:
-              new_perm = ET.Element('uses-permission')
-              new_perm.set(f'{{{ns_android}}}name', 'com.google.android.gms.permission.AD_ID')
-              root.insert(0, new_perm)
+          # -----------------------------
+          # Advertising ID permission
+          # -----------------------------
 
-          app_elem = root.find('application')
-          if app_elem is not None:
-              meta_elem = None
-              for meta in app_elem.findall('meta-data'):
-                  if meta.attrib.get(f'{{{ns_android}}}name') == 'com.google.android.gms.ads.APPLICATION_ID':
-                      meta_elem = meta
-                      break
-              if meta_elem is None:
-                  meta_elem = ET.SubElement(app_elem, 'meta-data')
-                  meta_elem.set(f'{{{ns_android}}}name', 'com.google.android.gms.ads.APPLICATION_ID')
-              meta_elem.set(f'{{{ns_android}}}value', "$ADMOB_APP_ID")
+          permission_name = "com.google.android.gms.permission.AD_ID"
 
-          tree.write(manifest_path, encoding='utf-8', xml_declaration=True)
-          EOF
+          exists = False
 
-      - name: Set Version Code & Name
+          for permission in root.findall("uses-permission"):
+              if permission.get(
+                  f"{{{ANDROID_NS}}}name"
+              ) == permission_name:
+                  exists = True
+                  break
+
+          if not exists:
+              permission = ET.Element("uses-permission")
+              permission.set(
+                  f"{{{ANDROID_NS}}}name",
+                  permission_name
+              )
+              root.insert(0, permission)
+
+          # -----------------------------
+          # AdMob Application ID
+          # -----------------------------
+
+          application = root.find("application")
+
+          if application is None:
+              raise RuntimeError(
+                  "AndroidManifest.xml has no application element."
+              )
+
+          admob_name = (
+              "com.google.android.gms.ads.APPLICATION_ID"
+          )
+
+          admob_meta = None
+
+          for meta in application.findall("meta-data"):
+              if meta.get(
+                  f"{{{ANDROID_NS}}}name"
+              ) == admob_name:
+                  admob_meta = meta
+                  break
+
+          if admob_meta is None:
+              admob_meta = ET.SubElement(
+                  application,
+                  "meta-data"
+              )
+
+          # GOOGLE TEST APP ID
+          admob_meta.set(
+              f"{{{ANDROID_NS}}}name",
+              admob_name
+          )
+
+          admob_meta.set(
+              f"{{{ANDROID_NS}}}value",
+              "ca-app-pub-3940256099942544~3347511713"
+          )
+
+          tree.write(
+              manifest_path,
+              encoding="utf-8",
+              xml_declaration=True
+          )
+
+          print("AdMob test App ID configured.")
+          PY
+
+      # 9. Set application version
+      - name: Set App Version
         run: |
-          sed -i 's/versionCode .*/versionCode 3/' android/app/build.gradle
-          sed -i 's/versionName .*/versionName "3.0"/' android/app/build.gradle
+          python3 - <<'PY'
+          import re
 
-      - name: Clean & Setup App Icons and Splash Drawables
-        run: |
-          sudo apt-get update && sudo apt-get install -y imagemagick
-          mkdir -p android/app/src/main/res/drawable
+          path = "android/app/build.gradle"
 
-          if [ -f s.png ]; then
-            convert s.png -strip s_valid.png
-            
-            rm -rf android/app/src/main/res/mipmap-anydpi-v26
-            for dir in android/app/src/main/res/mipmap-*/; do
-              cp -f s_valid.png "${dir}ic_launcher.png" 2>/dev/null || true
-              cp -f s_valid.png "${dir}ic_launcher_round.png" 2>/dev/null || true
-            done
-            
-            cp -f s_valid.png android/app/src/main/res/drawable/splash.png
-          fi
+          with open(path, "r", encoding="utf-8") as f:
+              text = f.read()
 
-      - name: Set up JDK 17
+          text = re.sub(
+              r'versionCode\s+\d+',
+              'versionCode 3',
+              text
+          )
+
+          text = re.sub(
+              r'versionName\s+"[^"]*"',
+              'versionName "3.0"',
+              text
+          )
+
+          with open(path, "w", encoding="utf-8") as f:
+              f.write(text)
+
+          print("Version set to 3.0 / code 3.")
+          PY
+
+      # 10. Setup Java 17
+      - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: "17"
+          distribution: "temurin"
           cache: gradle
 
-      - name: Build Auto-Signed Debug APK
+      # 11. Install ImageMagick
+      - name: Install ImageMagick
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
+      # 12. Setup app icon
+      - name: Setup App Icon
+        run: |
+          if [ -f s.png ]; then
+
+            echo "Found s.png"
+
+            convert s.png -strip s_valid.png
+
+            for dir in android/app/src/main/res/mipmap-*/; do
+              if [ -d "$dir" ]; then
+
+                cp -f s_valid.png \
+                  "$dir/ic_launcher.png" || true
+
+                cp -f s_valid.png \
+                  "$dir/ic_launcher_round.png" || true
+
+              fi
+            done
+
+          else
+
+            echo "s.png not found."
+            echo "Using Capacitor default icon."
+
+          fi
+
+      # 13. Setup splash
+      - name: Setup Splash Screen
+        run: |
+          if [ -f s_valid.png ]; then
+
+            mkdir -p \
+              android/app/src/main/res/drawable
+
+            cp -f s_valid.png \
+              android/app/src/main/res/drawable/splash.png
+
+          fi
+
+      # 14. Sync Capacitor
+      - name: Sync Capacitor
+        run: |
+          npx cap sync android
+
+      # 15. Build Debug APK
+      - name: Build Debug APK
         run: |
           cd android
+
           chmod +x ./gradlew
-          ./gradlew assembleDebug
 
-      - name: Move & Rename APK Output
-        run: mv android/app/build/outputs/apk/debug/*.apk fira-pro.apk
+          ./gradlew clean
 
-      - name: Upload Installable APK Artifact
+          ./gradlew assembleDebug --stacktrace
+
+      # 16. Find and rename APK
+      - name: Prepare APK
+        run: |
+          APK=$(find \
+            android/app/build/outputs/apk/debug \
+            -type f \
+            -name "*.apk" \
+            | head -n 1)
+
+          if [ -z "$APK" ]; then
+            echo "ERROR: APK was not created."
+            exit 1
+          fi
+
+          cp "$APK" fira-pro.apk
+
+          echo "=============================="
+          echo "FIRA PRO APK CREATED"
+          echo "=============================="
+
+          ls -lh fira-pro.apk
+
+      # 17. Upload APK
+      - name: Upload Installable APK
         uses: actions/upload-artifact@v4
         with:
           name: fira-pro-apk
           path: fira-pro.apk
+          if-no-files-found: error
