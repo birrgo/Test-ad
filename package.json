@@ -4,23 +4,26 @@
   "private": true,
   "description": "Fira Pro Android application",
   "main": "index.js",
+
   "scripts": {
     "capacitor:sync:after": "node node_modules/capacitor-admob-nextgen/scripts/admob-manifest.js && node node_modules/capacitor-admob-nextgen/scripts/admob-native.js"
   },
+
   "dependencies": {
     "@capacitor/android": "^8.0.0",
     "@capacitor/core": "^8.0.0",
     "capacitor-admob-nextgen": "1.2.9"
   },
+
   "devDependencies": {
     "@capacitor/cli": "^8.0.0"
   },
+
   "admob": {
     "androidAppId": "ca-app-pub-3940256099942544~3347511713",
-    "iosAppId": "ca-app-pub-3940256099942544~3347511713",
+
     "enableNativeAds": {
-      "android": true,
-      "ios": true
+      "android": true
     }
   }
 }
