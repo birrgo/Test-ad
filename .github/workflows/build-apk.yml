@@ -1,13 +1,11 @@
 name: Build Fira Pro APK
 
 on:
-
   workflow_dispatch:
 
   push:
     branches:
       - main
-
 
 jobs:
 
@@ -15,67 +13,107 @@ jobs:
 
     runs-on: ubuntu-latest
 
-
     steps:
 
-      # --------------------------------------------------
-      # 1. Checkout
-      # --------------------------------------------------
+      # ==================================================
+      # 1. Checkout repository
+      # ==================================================
 
       - name: Checkout Repository
         uses: actions/checkout@v4
 
 
-      # --------------------------------------------------
-      # 2. Setup Node
-      # --------------------------------------------------
+      # ==================================================
+      # 2. Setup Node.js
+      #
+      # Capacitor 8 requires Node.js 22+
+      # No npm cache because repository has no lock file.
+      # ==================================================
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 22
 
 
-      # --------------------------------------------------
+      # ==================================================
       # 3. Setup Java
-      # --------------------------------------------------
+      #
+      # Capacitor 8 Android build uses Java 21.
+      # ==================================================
 
-      - name: Setup Java 17
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
 
-      # --------------------------------------------------
-      # 4. Install dependencies
-      # --------------------------------------------------
+      # ==================================================
+      # 4. Show versions
+      # ==================================================
+
+      - name: Show Build Versions
+        run: |
+          echo "=============================="
+          echo "NODE"
+          echo "=============================="
+          node --version
+
+          echo "=============================="
+          echo "NPM"
+          echo "=============================="
+          npm --version
+
+          echo "=============================="
+          echo "JAVA"
+          echo "=============================="
+          java -version
+
+          echo "=============================="
+          echo "JAVA HOME"
+          echo "=============================="
+          echo "$JAVA_HOME"
+
+
+      # ==================================================
+      # 5. Install npm dependencies
+      # ==================================================
 
       - name: Install Dependencies
         run: |
-
           npm install
 
 
-      # --------------------------------------------------
-      # 5. Install Capacitor CLI
-      # --------------------------------------------------
+      # ==================================================
+      # 6. Check Capacitor
+      # ==================================================
 
       - name: Check Capacitor
         run: |
-
           npx cap --version
 
 
-      # --------------------------------------------------
-      # 6. Create Android project
-      # --------------------------------------------------
+      # ==================================================
+      # 7. Check package
+      # ==================================================
+
+      - name: Check AdMob Plugin
+        run: |
+          npm list capacitor-admob-nextgen || true
+
+
+      # ==================================================
+      # 8. Create Android project
+      # ==================================================
 
       - name: Create Android Project
         run: |
 
           if [ ! -d "android" ]; then
+
+            echo "Android project does not exist."
+            echo "Creating Android project..."
 
             npx cap add android
 
@@ -86,38 +124,61 @@ jobs:
           fi
 
 
-      # --------------------------------------------------
-      # 7. Prepare web directory
-      # --------------------------------------------------
+      # ==================================================
+      # 9. Prepare www directory
+      # ==================================================
 
       - name: Prepare Web Files
         run: |
 
           mkdir -p www
 
+          echo "Copying HTML files..."
           cp -f *.html www/ 2>/dev/null || true
+
+          echo "Copying CSS files..."
           cp -f *.css www/ 2>/dev/null || true
+
+          echo "Copying JavaScript files..."
           cp -f *.js www/ 2>/dev/null || true
+
+          echo "Copying JSON files..."
           cp -f *.json www/ 2>/dev/null || true
+
+          echo "Copying PNG files..."
           cp -f *.png www/ 2>/dev/null || true
+
+          echo "Copying JPG files..."
           cp -f *.jpg www/ 2>/dev/null || true
+
+          echo "Copying JPEG files..."
           cp -f *.jpeg www/ 2>/dev/null || true
+
+          echo "Copying WEBP files..."
           cp -f *.webp www/ 2>/dev/null || true
+
+          echo "Copying SVG files..."
           cp -f *.svg www/ 2>/dev/null || true
 
-          echo "Web files prepared."
+          echo ""
+          echo "=============================="
+          echo "WWW CONTENT"
+          echo "=============================="
 
-          ls -la www
+          ls -lah www
 
 
-      # --------------------------------------------------
-      # 8. Verify required images
-      # --------------------------------------------------
+      # ==================================================
+      # 10. Verify required images
+      #
+      # s.png  = application icon
+      # s1.png = welcome/startup image
+      # ==================================================
 
       - name: Verify App Images
         run: |
 
-          echo "Checking application images..."
+          echo "Checking required images..."
 
           if [ ! -f "s.png" ]; then
 
@@ -135,25 +196,30 @@ jobs:
 
           fi
 
-          echo "s.png found."
-          echo "s1.png found."
+          echo ""
+          echo "s.png found:"
+          ls -lh s.png
+
+          echo ""
+          echo "s1.png found:"
+          ls -lh s1.png
 
 
-      # --------------------------------------------------
-      # 9. Copy startup image to www
-      # --------------------------------------------------
+      # ==================================================
+      # 11. Install welcome image
+      # ==================================================
 
       - name: Install Welcome Image
         run: |
 
           cp -f s1.png www/s1.png
 
-          echo "Welcome image installed."
+          echo "s1.png copied to www."
 
 
-      # --------------------------------------------------
-      # 10. Prepare launcher icon
-      # --------------------------------------------------
+      # ==================================================
+      # 12. Prepare launcher icon
+      # ==================================================
 
       - name: Prepare App Icon
         run: |
@@ -165,14 +231,17 @@ jobs:
           file s_valid.png
 
 
-      # --------------------------------------------------
-      # 11. Install launcher icons
+      # ==================================================
+      # 13. Install launcher icons
       #
       # IMPORTANT:
-      # Do NOT copy icons into mipmap-anydpi-v26.
-      # That was the cause of the duplicate resource
-      # problem in the previous build.
-      # --------------------------------------------------
+      #
+      # Do NOT copy to:
+      #
+      # mipmap-anydpi-v26
+      #
+      # This prevents the duplicate resource error.
+      # ==================================================
 
       - name: Install Android App Icon
         run: |
@@ -195,18 +264,19 @@ jobs:
                 s_valid.png \
                 "$dir/ic_launcher_round.png"
 
-              echo "Updated icon: $dir"
+              echo "Updated icon:"
+              echo "$dir"
 
             fi
 
           done
 
 
-      # --------------------------------------------------
-      # 12. Setup splash image
+      # ==================================================
+      # 14. Setup splash image
       #
-      # s1.png = welcome image
-      # --------------------------------------------------
+      # s1.png is used as the native splash image.
+      # ==================================================
 
       - name: Setup Splash Screen
         run: |
@@ -221,9 +291,9 @@ jobs:
           echo "s1.png installed as splash.png."
 
 
-      # --------------------------------------------------
-      # 13. Configure Capacitor
-      # --------------------------------------------------
+      # ==================================================
+      # 15. Configure Capacitor
+      # ==================================================
 
       - name: Write Capacitor Configuration
         run: |
@@ -245,19 +315,16 @@ jobs:
           }
           EOF
 
-          echo "Capacitor configuration created."
+          echo "Capacitor configuration:"
+          cat capacitor.config.json
 
 
-      # --------------------------------------------------
-      # 14. Sync Capacitor
+      # ==================================================
+      # 16. Sync Capacitor
       #
-      # This also runs:
-      #
-      # admob-manifest.js
-      # admob-native.js
-      #
-      # so Native Ads are installed.
-      # --------------------------------------------------
+      # This installs Capacitor plugins and runs the
+      # AdMob NextGen setup scripts defined in package.json.
+      # ==================================================
 
       - name: Sync Capacitor
         run: |
@@ -265,25 +332,53 @@ jobs:
           npx cap sync android
 
 
-      # --------------------------------------------------
-      # 15. Verify Android
-      # --------------------------------------------------
+      # ==================================================
+      # 17. Verify Android project
+      # ==================================================
 
       - name: Verify Android Project
         run: |
 
-          echo "Android project ready."
+          echo "Checking Android project..."
 
-          test -d android/app
+          if [ ! -d "android/app" ]; then
 
-          echo "Android application directory found."
+            echo "ERROR: android/app does not exist."
+
+            exit 1
+
+          fi
+
+          if [ ! -f "android/gradlew" ]; then
+
+            echo "ERROR: android/gradlew does not exist."
+
+            exit 1
+
+          fi
+
+          echo "Android project is ready."
 
 
-      # --------------------------------------------------
-      # 16. Build DEBUG APK
-      # --------------------------------------------------
+      # ==================================================
+      # 18. Show Android tool versions
+      # ==================================================
 
-      - name: Build Installable Debug APK
+      - name: Check Gradle
+        run: |
+
+          cd android
+
+          chmod +x ./gradlew
+
+          ./gradlew --version
+
+
+      # ==================================================
+      # 19. Clean Android project
+      # ==================================================
+
+      - name: Clean Android Project
         run: |
 
           cd android
@@ -292,15 +387,32 @@ jobs:
 
           ./gradlew clean
 
+
+      # ==================================================
+      # 20. Build DEBUG APK
+      #
+      # This APK can be installed directly on Android
+      # for testing.
+      # ==================================================
+
+      - name: Build Installable Debug APK
+        run: |
+
+          cd android
+
+          chmod +x ./gradlew
+
           ./gradlew assembleDebug --stacktrace
 
 
-      # --------------------------------------------------
-      # 17. Find APK
-      # --------------------------------------------------
+      # ==================================================
+      # 21. Find APK
+      # ==================================================
 
       - name: Prepare APK
         run: |
+
+          echo "Searching for APK..."
 
           APK=$(find \
             android/app/build/outputs/apk/debug \
@@ -308,19 +420,22 @@ jobs:
             -name "*.apk" \
             | head -n 1)
 
-
           if [ -z "$APK" ]; then
 
-            echo "ERROR: APK was not created."
+            echo "================================"
+            echo "ERROR: APK WAS NOT CREATED"
+            echo "================================"
 
             exit 1
 
           fi
 
+          echo "APK found:"
+          echo "$APK"
 
           cp "$APK" fira-pro.apk
 
-
+          echo ""
           echo "================================"
           echo "FIRA PRO APK CREATED"
           echo "================================"
@@ -328,9 +443,9 @@ jobs:
           ls -lh fira-pro.apk
 
 
-      # --------------------------------------------------
-      # 18. Upload APK
-      # --------------------------------------------------
+      # ==================================================
+      # 22. Upload APK to GitHub Actions
+      # ==================================================
 
       - name: Upload Installable APK
         uses: actions/upload-artifact@v4
