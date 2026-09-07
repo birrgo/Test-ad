@@ -27,7 +27,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Top Header */
+        /* Top Header - Centered without back button */
         .details-header {
             position: sticky;
             top: 0;
@@ -51,7 +51,7 @@
         /* Main Content */
         .article-main-container {
             background-color: var(--content-bg);
-            padding: 20px 16px 80px 16px; /* Adjusted padding to safely scroll above the bottom banner */
+            padding: 24px 18px 100px 18px; /* Padding for bottom scroll clearance */
             max-width: 720px;
             margin: 0 auto;
             box-sizing: border-box;
@@ -72,11 +72,12 @@
         }
 
         .article-title-heading {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 800;
             line-height: 1.35;
             color: var(--text-primary);
             margin: 0 0 16px 0;
+            letter-spacing: -0.3px;
         }
 
         .article-image-box {
@@ -190,12 +191,12 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Floating Bottom Banner docked exactly to the bottom */
+        /* Bottom Fixed Ad - Fully Responsive Width */
         .ad-container-wrapper {
             position: fixed;
             bottom: 0px;
             left: 0;
-            width: 100%;
+            width: 100vw;
             display: flex;
             justify-content: center;
             pointer-events: none; 
@@ -203,12 +204,13 @@
             background: #ffffff;
             border-top: 1px solid #e5e7eb;
             padding-bottom: env(safe-area-inset-bottom, 0px);
+            overflow: hidden;
         }
 
         .admob-banner-container {
             width: 100%;
-            max-width: 320px;
-            height: 50px;
+            max-width: 100vw;
+            min-height: 50px;
             background: #ffffff;
             color: #202124;
             display: flex;
@@ -263,8 +265,9 @@
         </div>
     </div>
 
+    <!-- Centered Header with Back Button Removed -->
     <header class="details-header">
-        <span class="header-status-label">Article View</span>
+        <span class="header-status-label">Article Details</span>
     </header>
 
     <main class="article-main-container" id="articleMainContainer">
@@ -274,7 +277,7 @@
         </div>
     </main>
 
-    <!-- Ad Wrapper configured to sit strictly at the bottom -->
+    <!-- Ad Wrapper configured to sit strictly at the bottom with 100% width fit -->
     <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;">
         <div class="admob-banner-container">
             <div style="display:flex; align-items:center; gap:8px;">
@@ -287,6 +290,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@capacitor/core@5.0.0/dist/capacitor.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@capacitor-community/admob@5.0.0/dist/plugin.min.js"></script>
+    <!-- App plugin required for catching the hardware back button -->
+    <script src="https://cdn.jsdelivr.net/npm/@capacitor/app@5.0.0/dist/plugin.min.js"></script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -315,6 +320,33 @@
             nativeId: "",
             bannerId: ""
         };
+
+        // 🚨 CLEANUP FUNCTION: Destroys banner ad securely before leaving the page via phone back button
+        window.navigateBackAndCleanup = async function(triggerHistory = true) {
+            const adWrapper = document.getElementById('adContainerWrapper');
+            if (adWrapper) adWrapper.style.display = 'none';
+
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                const { AdMob } = Capacitor.Plugins;
+                try {
+                    await AdMob.hideBanner().catch(() => {});
+                    await AdMob.removeBanner().catch(() => {});
+                } catch (e) {
+                    console.warn("Banner cleanup warning:", e);
+                }
+            }
+            if (triggerHistory) window.history.back();
+        };
+
+        // Hook Android physical hardware back button & swipe gestures to ensure cleanup fires
+        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+            const { App } = Capacitor.Plugins;
+            if (App) {
+                App.addListener('backButton', async () => {
+                    await window.navigateBackAndCleanup(true);
+                });
+            }
+        }
 
         function getYouTubeEmbedUrl(url) {
             if (!url) return null;
@@ -515,12 +547,13 @@
 
         async function mountBottomBanner(bannerId) {
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                const { AdMob } = Capacitor.Plugins;
+                const { AdMob, BannerAdSize, BannerAdPosition } = Capacitor.Plugins;
                 try {
+                    // ADAPTIVE_BANNER forces the banner to scale correctly and fit the screen width
                     await AdMob.showBanner({
                         adId: bannerId,
-                        adSize: 'BANNER',
-                        position: 'BOTTOM_CENTER',
+                        adSize: BannerAdSize.ADAPTIVE_BANNER || 'ADAPTIVE_BANNER',
+                        position: BannerAdPosition.BOTTOM_CENTER || 'BOTTOM_CENTER',
                         margin: 0 // Docked exactly to the bottom
                     });
                 } catch (e) {

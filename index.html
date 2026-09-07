@@ -49,28 +49,29 @@
         :root {
             --bottom-nav-height: 65px;
         }
+        
+        /* Fully Responsive Full-Width Banner CSS */
         .ad-container-wrapper {
             position: fixed;
-            bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 6px);
+            bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
             left: 0;
-            width: 100%;
+            width: 100vw;
             display: flex;
             justify-content: center;
             pointer-events: none; 
             z-index: 990;
         }
         .admob-banner-container {
-            width: 320px;
-            height: 50px;
+            width: 100%;
+            max-width: 100vw;
+            min-height: 50px;
             background: #ffffff;
             color: #202124;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 4px 12px;
-            border: 1px solid #dadce0;
-            border-radius: 6px;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+            border-top: 1px solid #dadce0;
             pointer-events: auto;
         }
         .ad-badge {
@@ -321,6 +322,15 @@
             initApp();
         }
 
+        // Restores the ad correctly if user presses "Back" to return to this page
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted && window.globalAdConfig.status) {
+                setTimeout(() => {
+                    triggerBannerAd();
+                }, 300);
+            }
+        });
+
         // Automatic Infinite Scroll using Intersection Observer
         function setupIntersectionObserver() {
             const loaderBox = document.getElementById('feedLoaderBox');
@@ -454,10 +464,10 @@
                     if (isBannerInitialized) {
                         await AdMob.resumeBanner().catch(() => {});
                     } else {
-                        // Using Safe String Enums to prevent adaptive banner crashes
+                        // Using ADAPTIVE_BANNER forces full width coverage
                         await AdMob.showBanner({
                             adId: window.globalAdConfig.bannerId,
-                            adSize: 'BANNER',
+                            adSize: 'ADAPTIVE_BANNER',
                             position: 'BOTTOM_CENTER',
                             margin: navHeight
                         });
@@ -484,8 +494,10 @@
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                 const { AdMob } = Capacitor.Plugins;
                 try {
+                    // Destroy Banner fully to avoid ghost rendering when navigating back
                     await AdMob.hideBanner().catch(() => {});
                     await AdMob.removeBanner().catch(() => {});
+                    isBannerInitialized = false; 
                 } catch (e) {
                     console.warn("Banner cleanup warning:", e);
                 }
