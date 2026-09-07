@@ -318,7 +318,8 @@
         window.globalAdConfig = {
             status: false,
             nativeId: "",
-            bannerId: ""
+            bannerId: "",
+            placements: {}
         };
 
         // 🚨 CLEANUP FUNCTION: Destroys banner ad securely before leaving the page via phone back button
@@ -416,7 +417,8 @@
                 window.globalAdConfig = {
                     status: isStatusOn,
                     nativeId: nativeId,
-                    bannerId: bannerId
+                    bannerId: bannerId,
+                    placements: adData.placements || {}
                 };
 
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
@@ -429,10 +431,7 @@
                     }).catch(e => console.warn("Init warning:", e));
                 }
 
-                if (isStatusOn && adData.placements?.bannerAdPostDetails !== false && bannerId) {
-                    mountBottomBanner(bannerId);
-                }
-
+                // Wait to load bottom banner UNTIL interstitial finishes so they don't block each other
                 if (isStatusOn && adData.placements?.interstitialAdPostDetails !== false && interstitialId) {
                     showGatedInterstitial(interstitialId);
                 } else {
@@ -543,21 +542,39 @@
                 ${wideRectangleAdHTML}
                 ${redirectBtnHTML}
             `;
+
+            // 🚨 BUG FIX: Show the bottom banner AFTER the article finishes rendering so it doesn't get blocked by the interstitial
+            if (window.globalAdConfig.status && window.globalAdConfig.placements?.bannerAdPostDetails !== false && window.globalAdConfig.bannerId) {
+                setTimeout(() => {
+                    mountBottomBanner(window.globalAdConfig.bannerId);
+                }, 500); // 500ms delay gives WebView enough time to calculate layout
+            }
         }
 
         async function mountBottomBanner(bannerId) {
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                const { AdMob, BannerAdSize, BannerAdPosition } = Capacitor.Plugins;
+                const { AdMob } = Capacitor.Plugins;
                 try {
                     // ADAPTIVE_BANNER forces the banner to scale correctly and fit the screen width
                     await AdMob.showBanner({
                         adId: bannerId,
-                        adSize: BannerAdSize.ADAPTIVE_BANNER || 'ADAPTIVE_BANNER',
-                        position: BannerAdPosition.BOTTOM_CENTER || 'BOTTOM_CENTER',
+                        adSize: 'ADAPTIVE_BANNER',
+                        position: 'BOTTOM_CENTER',
                         margin: 0 // Docked exactly to the bottom
                     });
                 } catch (e) {
-                    console.warn("Banner error:", e);
+                    console.warn("Adaptive Banner failed, falling back to standard:", e);
+                    // Safe fallback if the device refuses adaptive width
+                    try {
+                        await AdMob.showBanner({
+                            adId: bannerId,
+                            adSize: 'BANNER',
+                            position: 'BOTTOM_CENTER',
+                            margin: 0
+                        });
+                    } catch (e2) {
+                        console.error("Banner fallback error:", e2);
+                    }
                 }
             } else {
                 const wrapper = document.getElementById('adContainerWrapper');
