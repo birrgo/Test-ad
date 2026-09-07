@@ -50,27 +50,28 @@
             --bottom-nav-height: 65px;
         }
 
-        /* Enforce Z-Index hierarchy so search overlay sits UNDER bottom nav & ads */
         .bottom-nav {
             z-index: 99998 !important; 
         }
         .search-modal-overlay {
             z-index: 9990 !important;
-            padding-bottom: 140px !important; /* Extra padding so results scroll above nav */
+            padding-bottom: 140px !important;
         }
 
+        /* UPDATED AD CONTAINER CSS */
         .ad-container-wrapper {
             position: fixed;
-            bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 6px);
+            /* Removed the extra gap so it sits flush on the bottom nav */
+            bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
             left: 0;
             width: 100%;
             display: flex;
             justify-content: center;
             pointer-events: none; 
-            z-index: 99999 !important; /* Ensure ad sits above EVERYTHING */
+            z-index: 99999 !important;
         }
         .admob-banner-container {
-            width: 100%; /* Forces the ad to fit the full width of the screen */
+            width: 100%; /* Forces ad to fit full width */
             height: auto;
             min-height: 50px;
             background: #ffffff;
@@ -78,11 +79,13 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 6px 16px;
-            border-top: 1px solid #dadce0; /* Replaces the full border for a seamless fit */
-            box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.1); /* Casts a shadow upward */
+            padding: 4px 12px;
+            border-top: 1px solid #dadce0; /* Top border only for seamless look */
+            box-shadow: 0px -4px 12px rgba(0, 0, 0, 0.1); /* Upward shadow */
             pointer-events: auto;
         }
+        /* END UPDATED AD CONTAINER CSS */
+
         .ad-badge {
             background: #fbbc04;
             color: #202124;
@@ -105,7 +108,6 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
         
-        /* Automatic Loader UI */
         .feed-loader-box {
             text-align: center;
             padding: 20px;
@@ -128,7 +130,6 @@
             margin-right: 8px;
         }
 
-        /* Initial Fullscreen Loader */
         .initial-fullscreen-loader {
             display: flex;
             flex-direction: column;
@@ -167,7 +168,6 @@
             <iframe class="menu-iframe-drawer" id="menuIframe" src="about:blank"></iframe>
         </div>
 
-        <!-- SEARCH OVERLAY -->
         <div class="search-modal-overlay" id="searchModalOverlay">
             <div class="search-box-header">
                 <div class="search-input-wrapper">
@@ -183,7 +183,8 @@
             </div>
         </div>
 
-        <header class="nav-header" style="display: flex; align-items: center; justify-content: space-between; padding-right: 16px; padding-left: 16px; gap: 14px;">
+        <!-- UPDATED HEADER WITH "WHAT'S NEW" -->
+        <header class="nav-header" style="display: flex; align-items: center; justify-content: space-between; padding-left: 16px; padding-right: 16px; gap: 14px;">
             <div class="header-left-group" style="display: flex; align-items: center; gap: 12px;">
                 <button type="button" class="menu-action-btn" id="openMenuIframeBtn" aria-label="Open Menu" style="background: none; border: none; cursor: pointer; color: #ffffff; padding: 0; display: flex; align-items: center; justify-content: center;">
                     <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -192,10 +193,9 @@
                         <line x1="3" y1="18" x2="21" y2="18"></line>
                     </svg>
                 </button>
-                <span style="color: #ffffff; font-size: 18px; font-weight: 700; white-space: nowrap;">What's New</span>
+                <span style="color: #ffffff; font-size: 17px; font-weight: 700; white-space: nowrap;">What's new?</span>
             </div>
 
-            <!-- Sleek Top Search Bar Replacing Time & What's New -->
             <div class="header-center-group" style="flex: 1;" onclick="document.getElementById('openSearchBtn').click()">
                 <div style="background: rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 10px 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ffffff" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -203,7 +203,6 @@
                 </div>
             </div>
 
-            <!-- Hidden functional trigger -->
             <button class="search-action-btn" id="openSearchBtn" style="display: none;"></button>
         </header>
 
@@ -214,7 +213,6 @@
             </div>
 
             <div class="broadcasts-container" id="broadcastsContainer">
-                <!-- Prominent Initial Loading State -->
                 <div class="initial-fullscreen-loader">
                     <div class="initial-loader-spinner"></div>
                     <h2 style="color: #ffffff; font-size: 16px; font-weight: 700; margin: 0;">Loading latest updates...</h2>
@@ -222,7 +220,6 @@
                 </div>
             </div>
 
-            <!-- Auto-Loader Target Box (For Pagination) -->
             <div class="feed-loader-box" id="feedLoaderBox">
                 <span class="loader-spinner" id="loaderSpinner" style="display:none;"></span>
                 <span id="loaderText">Loading...</span>
@@ -233,7 +230,6 @@
             </footer>
         </main>
 
-        <!-- Bottom Banner Placement -->
         <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;">
             <div class="admob-banner-container" id="admobBannerNode">
                 <div style="display:flex; align-items:center; gap:8px;">
@@ -244,7 +240,6 @@
             </div>
         </div>
 
-        <!-- Bottom Navigation Menu -->
         <nav class="bottom-nav" id="mainBottomNav">
             <a id="nav-home" href="index.html" class="nav-item active">
                 <div class="icon-bg">
@@ -302,7 +297,6 @@
         let currentActiveCategoryFilter = "Shikela Update";
         let isBannerInitialized = false;
 
-        // Lazy Loading & Pagination State
         let currentVisibleFeedCount = 0;
         let isFetchingMore = false;
         const FEED_BATCH_SIZE = 3;
@@ -331,7 +325,6 @@
             initApp();
         }
 
-        // Restores the ad correctly if user presses "Back" to return to this page
         window.addEventListener('pageshow', (event) => {
             if (event.persisted && window.globalAdConfig.status) {
                 setTimeout(() => {
@@ -340,14 +333,13 @@
             }
         });
 
-        // Automatic Infinite Scroll using Intersection Observer
         function setupIntersectionObserver() {
             const loaderBox = document.getElementById('feedLoaderBox');
             if (!loaderBox) return;
 
             const options = {
                 root: null,
-                rootMargin: '400px', // Triggers loading 400px before the user actually reaches the bottom
+                rootMargin: '400px',
                 threshold: 0
             };
 
@@ -377,9 +369,9 @@
             if (loaderText) loaderText.innerText = 'Loading...';
 
             setTimeout(() => {
-                renderFilteredBroadcasts(false); // Append next 3 automatically
+                renderFilteredBroadcasts(false); 
                 isFetchingMore = false;
-            }, 300); // Small visual delay to show it's working
+            }, 300); 
         }
 
         function updateLoaderUI() {
@@ -394,7 +386,6 @@
             loaderBox.style.display = 'block';
 
             if (currentVisibleFeedCount >= filtered.length) {
-                // Database fully loaded
                 if (filtered.length > 0) {
                     if (loaderSpinner) loaderSpinner.style.display = 'none';
                     if (loaderText) loaderText.innerText = 'All updates loaded ✅';
@@ -402,7 +393,6 @@
                     loaderBox.style.display = 'none';
                 }
             } else {
-                // More items exist, reset to generic loading state
                 if (loaderSpinner) loaderSpinner.style.display = 'none';
                 if (loaderText) loaderText.innerText = 'Loading...';
             }
@@ -442,7 +432,6 @@
                         requestTrackingAuthorization: true,
                         initializeForTesting: window.globalAdConfig.isTesting
                     }).then(() => {
-                        // Delay execution slightly to ensure WebView constraints are settled
                         setTimeout(triggerBannerAd, 500);
                     }).catch(e => console.warn("AdMob Init:", e));
                 } else {
@@ -473,7 +462,6 @@
                     if (isBannerInitialized) {
                         await AdMob.resumeBanner().catch(() => {});
                     } else {
-                        // Using ADAPTIVE_BANNER forces full width coverage
                         await AdMob.showBanner({
                             adId: window.globalAdConfig.bannerId,
                             adSize: 'BANNER',
@@ -503,7 +491,6 @@
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                 const { AdMob } = Capacitor.Plugins;
                 try {
-                    // Destroy Banner fully to avoid ghost rendering when navigating back
                     await AdMob.hideBanner().catch(() => {});
                     await AdMob.removeBanner().catch(() => {});
                     isBannerInitialized = false; 
@@ -700,7 +687,6 @@
 
             resultsArea.innerHTML = '';
             
-            // Note: Native ads are removed completely from search results 
             matchedNews.forEach((item) => {
                 const card = document.createElement('article');
                 card.className = "featured-broadcast-card";
