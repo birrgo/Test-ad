@@ -27,7 +27,6 @@ jobs:
         run: |
           mkdir -p www
           rsync -av --exclude='.git' --exclude='.github' --exclude='www' --exclude='android' --exclude='node_modules' --exclude='package*.json' ./ www/
-          # Ensure index.html exists
           if [ ! -f www/index.html ]; then
             first_html=$(find www/ -maxdepth 1 -name "*.html" | head -n 1)
             if [ -n "$first_html" ]; then
@@ -59,6 +58,18 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      - name: Inject Kotlin Plugin for AdMob Plus
+        run: |
+          # Add Kotlin classpath to root build.gradle
+          sed -i '/dependencies {/a \        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.20"' android/build.gradle
+
+      - name: Target Stable API Level 34 & Fix SDK Variables
+        run: |
+          if [ -f android/variables.gradle ]; then
+            sed -i 's/targetSdkVersion = .*/targetSdkVersion = 34/' android/variables.gradle
+            sed -i 's/compileSdkVersion = .*/compileSdkVersion = 34/' android/variables.gradle
+          fi
+
       - name: Configure AdMob App ID & Advertising Permissions in AndroidManifest
         run: |
           ADMOB_APP_ID="ca-app-pub-3940256099942544~3347511713"
@@ -72,14 +83,12 @@ jobs:
           root = tree.getroot()
           ns_android = 'http://schemas.android.com/apk/res/android'
 
-          # 1. Add AD_ID permission if not present
           has_ad_id = any(p.attrib.get(f'{{{ns_android}}}name') == 'com.google.android.gms.permission.AD_ID' for p in root.findall('uses-permission'))
           if not has_ad_id:
               new_perm = ET.Element('uses-permission')
               new_perm.set(f'{{{ns_android}}}name', 'com.google.android.gms.permission.AD_ID')
               root.insert(0, new_perm)
 
-          # 2. Add or update AdMob APPLICATION_ID metadata
           app_elem = root.find('application')
           if app_elem is not None:
               meta_elem = None
@@ -95,13 +104,6 @@ jobs:
           tree.write(manifest_path, encoding='utf-8', xml_declaration=True)
           EOF
 
-      - name: Target Stable API Level 34
-        run: |
-          if [ -f android/variables.gradle ]; then
-            sed -i 's/targetSdkVersion = .*/targetSdkVersion = 34/' android/variables.gradle
-            sed -i 's/compileSdkVersion = .*/compileSdkVersion = 34/' android/variables.gradle
-          fi
-
       - name: Set Version Code & Name
         run: |
           sed -i 's/versionCode .*/versionCode 3/' android/app/build.gradle
@@ -115,14 +117,12 @@ jobs:
           if [ -f s.png ]; then
             convert s.png -strip s_valid.png
             
-            # Setup Launcher Icons
             rm -rf android/app/src/main/res/mipmap-anydpi-v26
             for dir in android/app/src/main/res/mipmap-*/; do
               cp -f s_valid.png "${dir}ic_launcher.png" 2>/dev/null || true
               cp -f s_valid.png "${dir}ic_launcher_round.png" 2>/dev/null || true
             done
             
-            # Setup Splash Screen Drawable
             cp -f s_valid.png android/app/src/main/res/drawable/splash.png
           fi
 
