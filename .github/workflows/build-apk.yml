@@ -171,8 +171,12 @@ jobs:
       # ==================================================
       # 10. Verify required images
       #
-      # s.png  = application icon
-      # s1.png = welcome/startup image
+      # s.png  = application icon (required by Android OS
+      #          for the launcher / app drawer — this
+      #          cannot be removed, it is a system
+      #          requirement, not a Capacitor setting)
+      #
+      # s1.png = welcome/splash image shown on app open
       # ==================================================
 
       - name: Verify App Images
@@ -292,7 +296,64 @@ jobs:
 
 
       # ==================================================
+      # 14b. Suppress Android 12+ system icon splash
+      #
+      # On Android 12+, the OS shows its OWN splash first
+      # (your launcher icon on a plain background) BEFORE
+      # Capacitor's SplashScreen plugin can show s1.png.
+      # This is a system-level behavior, not something
+      # controlled from HTML/JS.
+      #
+      # Fix: override the v31 theme so the system splash
+      # uses a transparent icon + a background color that
+      # matches s1.png. This makes the forced system splash
+      # invisible/seamless, so the app appears to jump
+      # straight to s1.png.
+      #
+      # Change SPLASH_BG_COLOR below if s1.png's dominant
+      # background color is not #001a66.
+      # ==================================================
+
+      - name: Suppress Android 12+ Icon Splash
+        run: |
+
+          SPLASH_BG_COLOR="#001a66"
+
+          mkdir -p android/app/src/main/res/drawable
+          mkdir -p android/app/src/main/res/values-v31
+
+          # 1x1 fully transparent drawable used as the
+          # "animated icon" so nothing visibly renders
+          cat > android/app/src/main/res/drawable/splash_transparent.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <shape xmlns:android="http://schemas.android.com/apk/res/android">
+              <solid android:color="@android:color/transparent" />
+          </shape>
+          EOF
+
+          # Override the Android 12+ splash theme attributes
+          cat > android/app/src/main/res/values-v31/styles.xml <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+                  <item name="windowSplashScreenBackground">${SPLASH_BG_COLOR}</item>
+                  <item name="windowSplashScreenAnimatedIcon">@drawable/splash_transparent</item>
+                  <item name="windowSplashScreenIconBackgroundColor">${SPLASH_BG_COLOR}</item>
+                  <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+              </style>
+          </resources>
+          EOF
+
+          echo "Android 12+ system splash icon suppressed."
+          echo "Background color used: ${SPLASH_BG_COLOR}"
+
+
+      # ==================================================
       # 15. Configure Capacitor
+      #
+      # launchAutoHide + launchShowDuration control how
+      # long Capacitor's OWN splash (s1.png, full screen)
+      # stays visible after the OS hands off control to it.
       # ==================================================
 
       - name: Write Capacitor Configuration
@@ -309,7 +370,10 @@ jobs:
                 "launchShowDuration": 1500,
                 "launchAutoHide": true,
                 "backgroundColor": "#001a66",
-                "showSpinner": false
+                "androidScaleType": "CENTER_CROP",
+                "showSpinner": false,
+                "splashFullScreen": true,
+                "splashImmersive": true
               }
             }
           }
@@ -323,7 +387,9 @@ jobs:
       # 16. Sync Capacitor
       #
       # This installs Capacitor plugins and runs the
-      # AdMob NextGen setup scripts defined in package.json.
+      # AdMob NextGen setup scripts defined in package.json
+      # (capacitor:sync:after hook — already correctly
+      # wired in package.json, no change needed there).
       # ==================================================
 
       - name: Sync Capacitor
@@ -392,7 +458,10 @@ jobs:
       # 20. Build DEBUG APK
       #
       # This APK can be installed directly on Android
-      # for testing.
+      # for testing. Uses TEST AdMob IDs (globalAdConfig
+      # in the HTML + androidAppId in package.json) —
+      # these are Google's official public test IDs and
+      # are already correctly configured.
       # ==================================================
 
       - name: Build Installable Debug APK
