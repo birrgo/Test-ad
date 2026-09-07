@@ -150,6 +150,7 @@
             margin-bottom: 8px;
             text-align: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            min-height: 140px;
         }
 
         /* Full Screen Blurred Loading Overlay */
@@ -308,8 +309,17 @@
         </div>
     </div>
 
+    <!--
+        NOTE: We intentionally do NOT load a separate @capacitor-community/admob
+        (or any other) plugin JS bundle here. On a native build, the AdMob
+        plugin (capacitor-admob-nextgen, matching index.html) registers itself
+        on window.Capacitor.Plugins.AdMob automatically via the native bridge.
+        Loading a second, different AdMob web shim on top of that can register
+        a conflicting/incompatible "AdMob" object and silently break banner,
+        interstitial, and native ad calls. Only @capacitor/core (for the
+        bridge) and @capacitor/app (for the hardware back button) are needed.
+    -->
     <script src="https://cdn.jsdelivr.net/npm/@capacitor/core@5.0.0/dist/capacitor.global.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@capacitor-community/admob@5.0.0/dist/plugin.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@capacitor/app@5.0.0/dist/plugin.min.js"></script>
 
     <script type="module">
@@ -331,14 +341,31 @@
         const db = getDatabase(app);
         const APP_NODE_NAME = "app1";
 
+        // Official Google test ad unit IDs (Android) — used whenever
+        // no real ID is configured, or when isTesting is detected.
+        // Kept identical to index.html so both pages behave the same way.
+        const TEST_IDS = {
+            banner: "ca-app-pub-3940256099942544/6300978111",
+            interstitial: "ca-app-pub-3940256099942544/1033173712",
+            native: "ca-app-pub-3940256099942544/2247696110"
+        };
+
         let pendingArticleData = null;
         let isAdComplete = false;
+
+        // Guards mirroring index.html: prevents double-initializing the
+        // native AdMob SDK and lets us distinguish "show" vs "resume" for
+        // the banner if the page is restored from the bfcache.
+        let isAdMobSdkInitialized = false;
+        let isBannerInitialized = false;
 
         window.globalAdConfig = {
             status: false,
             bannerId: "",
+            interstitialId: "",
             nativeId: "",
-            placements: {}
+            placements: {},
+            isTesting: true
         };
 
         // Cleanup before back navigation
@@ -347,12 +374,15 @@
             if (adWrapper) adWrapper.style.display = 'none';
 
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                const { AdMob } = Capacitor.Plugins;
-                try {
-                    await AdMob.hideBanner().catch(() => {});
-                    await AdMob.removeBanner().catch(() => {});
-                } catch (e) {
-                    console.warn("Banner cleanup warning:", e);
+                const AdMob = window.Capacitor.Plugins.AdMob;
+                if (AdMob) {
+                    try {
+                        await AdMob.hideBanner().catch(() => {});
+                        await AdMob.removeBanner().catch(() => {});
+                        isBannerInitialized = false;
+                    } catch (e) {
+                        console.warn("[AdMob] Banner cleanup warning:", e);
+                    }
                 }
             }
             if (triggerHistory) window.history.back();
@@ -366,6 +396,14 @@
                 });
             }
         }
+
+        // Resume the banner if this page is restored from the bfcache
+        // instead of being reloaded fresh (mirrors index.html).
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted && window.globalAdConfig.status && isBannerInitialized) {
+                setTimeout(() => { mountBottomBanner(window.globalAdConfig.bannerId); }, 300);
+            }
+        });
 
         function getYouTubeEmbedUrl(url) {
             if (!url) return null;
@@ -416,57 +454,102 @@
             }
         }
 
+        // ==========================================================
+        // ADMOB CONFIG + GATE (brought to parity with index.html)
+        //
+        // 1. Falls back to Google's official test ad unit IDs for
+        //    banner/interstitial/native whenever nothing real is
+        //    configured in Firebase, so ads always have 100% fill
+        //    out of the box instead of silently doing nothing.
+        // 2. isTesting is detected from ANY of the three ad unit IDs
+        //    (not just the banner), or when nothing is configured.
+        // 3. AdMob.initialize() is only ever called once per page via
+        //    initAdMobSdkOnce(), matching index.html's guard.
+        // 4. Added console logging so `adb logcat` (filter: chromium /
+        //    Capacitor/Console) shows config load + init + gate result.
+        // ==========================================================
         async function fetchAdAndTriggerGate() {
             try {
                 const adSnap = await get(ref(db, `${APP_NODE_NAME}/adManager`));
-                if (!adSnap.exists()) {
+                const adData = adSnap.exists() ? adSnap.val() : {};
+
+                const isStatusOn = (adData.adStatus === "ON" || adData.adStatus === true || adData.adStatus === "true" || adData.adStatus === 1);
+                const configuredBannerId = (adData.adMobBannerUnitId || "").trim();
+                const configuredInterstitialId = (adData.adMobInterstitialUnitId || "").trim();
+                const configuredNativeId = (adData.adMobNativeUnitId || "").trim();
+
+                const looksLikeTestId = configuredBannerId.includes("3940256099942544") ||
+                                         configuredInterstitialId.includes("3940256099942544") ||
+                                         configuredNativeId.includes("3940256099942544");
+                const nothingConfigured = !configuredBannerId && !configuredInterstitialId && !configuredNativeId;
+
+                window.globalAdConfig = {
+                    status: isStatusOn,
+                    bannerId: configuredBannerId || TEST_IDS.banner,
+                    interstitialId: configuredInterstitialId || TEST_IDS.interstitial,
+                    nativeId: configuredNativeId || TEST_IDS.native,
+                    placements: adData.placements || {},
+                    isTesting: looksLikeTestId || nothingConfigured
+                };
+
+                console.log("[AdMob] Config loaded:", window.globalAdConfig);
+
+                if (!isStatusOn) {
                     window.finishInterstitialAd();
                     return;
                 }
 
-                const adData = adSnap.val();
-                const isStatusOn = (adData.adStatus === "ON" || adData.adStatus === true || adData.adStatus === "true" || adData.adStatus === 1);
-                
-                const interstitialId = (adData.adMobInterstitialUnitId || "").trim();
-                const bannerId = (adData.adMobBannerUnitId || "").trim();
-                const nativeId = (adData.adMobNativeUnitId || "").trim();
-
-                window.globalAdConfig = {
-                    status: isStatusOn,
-                    bannerId: bannerId,
-                    nativeId: nativeId,
-                    placements: adData.placements || {}
-                };
-
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                    const { AdMob } = Capacitor.Plugins;
-                    const isTestId = bannerId.includes("3940256099942544") || interstitialId.includes("3940256099942544");
-                    
-                    await AdMob.initialize({
-                        requestTrackingAuthorization: true,
-                        initializeForTesting: isTestId
-                    }).catch(e => console.warn("Init warning:", e));
+                    await initAdMobSdkOnce();
                 }
 
-                if (isStatusOn && adData.placements?.interstitialAdPostDetails !== false && interstitialId) {
-                    showGatedInterstitial(interstitialId);
+                if (window.globalAdConfig.placements?.interstitialAdPostDetails !== false && window.globalAdConfig.interstitialId) {
+                    showGatedInterstitial(window.globalAdConfig.interstitialId);
                 } else {
                     window.finishInterstitialAd();
                 }
             } catch (e) {
-                console.warn("Ad Gate Bypassed:", e);
+                console.warn("[AdMob] Ad gate bypassed due to error:", e);
                 window.finishInterstitialAd();
+            }
+        }
+
+        async function initAdMobSdkOnce() {
+            const AdMob = window.Capacitor.Plugins.AdMob;
+            if (!AdMob) {
+                console.error("[AdMob] Plugin not found on window.Capacitor.Plugins.AdMob — is capacitor-admob-nextgen installed and synced (npx cap sync android)?");
+                return;
+            }
+            if (isAdMobSdkInitialized) return;
+
+            try {
+                await AdMob.initialize({
+                    requestTrackingAuthorization: true,
+                    initializeForTesting: window.globalAdConfig.isTesting,
+                    testingDevices: []
+                });
+                isAdMobSdkInitialized = true;
+                console.log("[AdMob] SDK initialized successfully. Testing mode:", window.globalAdConfig.isTesting);
+            } catch (e) {
+                console.error("[AdMob] initialize() failed:", e);
             }
         }
 
         function showGatedInterstitial(interstitialId) {
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                const { AdMob } = Capacitor.Plugins;
+                const AdMob = window.Capacitor.Plugins.AdMob;
+                if (!AdMob) {
+                    window.finishInterstitialAd();
+                    return;
+                }
                 AdMob.prepareInterstitial({ adId: interstitialId })
                     .then(() => AdMob.showInterstitial())
-                    .then(() => window.finishInterstitialAd())
+                    .then(() => {
+                        console.log("[AdMob] Interstitial shown.");
+                        window.finishInterstitialAd();
+                    })
                     .catch((err) => {
-                        console.warn("Native Interstitial skipped:", err);
+                        console.warn("[AdMob] Native interstitial skipped:", err);
                         window.finishInterstitialAd();
                     });
             } else {
@@ -490,25 +573,61 @@
                 finalizeArticleRender();
             }
         };
-        
-        // Native Ad Mockup Generator
-        function getInlineNativeAdHTML() {
+
+        // In-feed native ad slot. Mirrors index.html: on native platforms
+        // this tries the real AdMob native ad API and hides the slot if
+        // the installed plugin build doesn't support it; on web preview
+        // it shows a clearly-labeled placeholder so layout stays correct.
+        function getInlineNativeAdHTML(adContainerId) {
             if (!window.globalAdConfig.status) return "";
-            
-            const nativeId = window.globalAdConfig.nativeId || "ca-app-pub-3940256099942544/2247696110";
-            
-            return `
-                <div class="inline-feed-ad">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
-                        <span class="ad-badge">AdMob Native</span>
-                        <span style="font-size:11px; color:#64748b; font-weight:600;">Sponsored Content</span>
-                    </div>
-                    <div style="font-size:32px; margin-bottom:8px;">💡</div>
-                    <strong style="font-size:15px; color:#1e293b; display:block;">Promoted Opportunities</strong>
-                    <span style="font-size:13px; color:#64748b; display:block; margin: 4px 0 2px 0;">AdMob Native Placement Preview.</span>
-                    <span style="font-size:10px; color:#9ca3af; display:block; margin-bottom: 12px; word-break: break-all;">ID: ${nativeId}</span>
-                    <button style="background:#2563eb; color:#fff; border:none; padding:12px 18px; border-radius:8px; font-size:13px; font-weight:700; width:100%; cursor:pointer;">LEARN MORE</button>
+            return `<div class="inline-feed-ad" id="${adContainerId}" data-native-ad-id="${window.globalAdConfig.nativeId}"></div>`;
+        }
+
+        function loadNativeAdForElement(elementId, nativeId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                const AdMob = window.Capacitor.Plugins.AdMob;
+                if (!AdMob) {
+                    el.style.display = 'none';
+                    return;
+                }
+
+                // capacitor-admob-nextgen native ad rendering. If your
+                // installed version exposes a different method name for
+                // native ads, swap it in here — check
+                // node_modules/capacitor-admob-nextgen/dist/esm/definitions.js
+                // for the exact exported method (e.g. showNativeAd /
+                // loadNativeAd / renderNativeAd).
+                if (typeof AdMob.showNativeAd === 'function') {
+                    AdMob.showNativeAd({
+                        adId: nativeId,
+                        elementId: elementId
+                    }).then(() => {
+                        console.log("[AdMob] Native ad rendered for", elementId);
+                    }).catch(e => {
+                        console.warn("[AdMob] Native ad failed, hiding slot:", e);
+                        el.style.display = 'none';
+                    });
+                } else {
+                    el.style.display = 'none';
+                }
+                return;
+            }
+
+            // Web preview only — real AdMob native ads never render
+            // inside a desktop browser tab, so show a labeled mockup.
+            el.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                    <span class="ad-badge">AdMob Native</span>
+                    <span style="font-size:11px; color:#64748b; font-weight:600;">Sponsored Content</span>
                 </div>
+                <div style="font-size:32px; margin-bottom:8px;">💡</div>
+                <strong style="font-size:15px; color:#1e293b; display:block;">Promoted Opportunities</strong>
+                <span style="font-size:13px; color:#64748b; display:block; margin: 4px 0 2px 0;">AdMob Native Placement Preview.</span>
+                <span style="font-size:10px; color:#9ca3af; display:block; margin-bottom: 12px; word-break: break-all;">ID: ${nativeId}</span>
+                <button style="background:#2563eb; color:#fff; border:none; padding:12px 18px; border-radius:8px; font-size:13px; font-weight:700; width:100%; cursor:pointer;">LEARN MORE</button>
             `;
         }
 
@@ -549,10 +668,12 @@
             let redirectBtnHTML = targetRedirectUrl
                 ? `<a href="${targetRedirectUrl}" target="_blank" class="action-link-btn">${actionLabel}</a>` : "";
 
-            // INJECT NATIVE AD MOCKUP AT END OF ARTICLE
+            // INJECT NATIVE AD SLOT AT END OF ARTICLE, then load it
             let nativeAdHTML = "";
+            let nativeAdContainerId = "";
             if (window.globalAdConfig.status && window.globalAdConfig.placements?.nativeAdPostDetails !== false) {
-                nativeAdHTML = getInlineNativeAdHTML();
+                nativeAdContainerId = `native-ad-${Date.now()}`;
+                nativeAdHTML = getInlineNativeAdHTML(nativeAdContainerId);
             }
 
             container.innerHTML = `
@@ -565,6 +686,12 @@
                 ${redirectBtnHTML}
             `;
 
+            if (nativeAdContainerId) {
+                setTimeout(() => {
+                    loadNativeAdForElement(nativeAdContainerId, window.globalAdConfig.nativeId);
+                }, 100);
+            }
+
             if (window.globalAdConfig.status && window.globalAdConfig.placements?.bannerAdPostDetails !== false && window.globalAdConfig.bannerId) {
                 setTimeout(() => {
                     mountBottomBanner(window.globalAdConfig.bannerId);
@@ -574,17 +701,24 @@
 
         async function mountBottomBanner(bannerId) {
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                const { AdMob } = Capacitor.Plugins;
+                const AdMob = window.Capacitor.Plugins.AdMob;
+                if (!AdMob) return;
                 try {
-                    // Changed to 'BANNER' to match the 350x50 fixed container perfectly
-                    await AdMob.showBanner({
-                        adId: bannerId,
-                        adSize: 'BANNER', 
-                        position: 'BOTTOM_CENTER',
-                        margin: 0
-                    });
+                    if (isBannerInitialized) {
+                        await AdMob.resumeBanner();
+                        console.log("[AdMob] Banner resumed.");
+                    } else {
+                        await AdMob.showBanner({
+                            adId: bannerId,
+                            adSize: 'BANNER',
+                            position: 'BOTTOM_CENTER',
+                            margin: 0
+                        });
+                        isBannerInitialized = true;
+                        console.log("[AdMob] Banner shown:", bannerId);
+                    }
                 } catch (e) {
-                    console.error("Banner Ad Error:", e);
+                    console.error("[AdMob] Banner Show Error:", e);
                 }
             } else {
                 const wrapper = document.getElementById('adContainerWrapper');
