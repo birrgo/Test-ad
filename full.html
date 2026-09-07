@@ -51,7 +51,7 @@
         /* Main Content */
         .article-main-container {
             background-color: var(--content-bg);
-            padding: 20px 16px 110px 16px;
+            padding: 20px 16px 80px 16px; /* Adjusted padding to safely scroll above the bottom banner */
             max-width: 720px;
             margin: 0 auto;
             box-sizing: border-box;
@@ -190,19 +190,19 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Bottom Fixed Ad */
+        /* Floating Bottom Banner docked exactly to the bottom */
         .ad-container-wrapper {
             position: fixed;
-            bottom: 0px !important;
+            bottom: 0px;
             left: 0;
             width: 100%;
             display: flex;
             justify-content: center;
+            pointer-events: none; 
             z-index: 990;
             background: #ffffff;
             border-top: 1px solid #e5e7eb;
-            padding: 0;
-            margin: 0;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         .admob-banner-container {
@@ -216,6 +216,7 @@
             justify-content: space-between;
             padding: 0 12px;
             box-sizing: border-box;
+            pointer-events: auto;
         }
 
         /* Interstitial Simulator Modal */
@@ -273,6 +274,7 @@
         </div>
     </main>
 
+    <!-- Ad Wrapper configured to sit strictly at the bottom -->
     <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;">
         <div class="admob-banner-container">
             <div style="display:flex; align-items:center; gap:8px;">
@@ -307,6 +309,12 @@
 
         let pendingArticleData = null;
         let isAdComplete = false;
+
+        window.globalAdConfig = {
+            status: false,
+            nativeId: "",
+            bannerId: ""
+        };
 
         function getYouTubeEmbedUrl(url) {
             if (!url) return null;
@@ -371,6 +379,13 @@
                 
                 const interstitialId = (adData.adMobInterstitialUnitId || "").trim();
                 const bannerId = (adData.adMobBannerUnitId || "").trim();
+                const nativeId = (adData.adMobNativeUnitId || "").trim();
+
+                window.globalAdConfig = {
+                    status: isStatusOn,
+                    nativeId: nativeId,
+                    bannerId: bannerId
+                };
 
                 if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                     const { AdMob } = Capacitor.Plugins;
@@ -460,23 +475,27 @@
                 videoHTML = `<div class="article-video-wrapper"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
             }
 
-            // Wider In-Article Ad Slot
-            const wideRectangleAdHTML = `
-                <div class="mrec-ad-wrapper">
-                    <div class="mrec-ad-box">
-                        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                            <span class="ad-badge">Ad</span>
-                            <span style="font-size:11px; color:#64748b; font-weight:600;">Sponsored Recommendation</span>
+            // Wider In-Article Ad Slot using Database Unit ID
+            let wideRectangleAdHTML = "";
+            if (window.globalAdConfig.status && window.globalAdConfig.nativeId) {
+                wideRectangleAdHTML = `
+                    <div class="mrec-ad-wrapper">
+                        <div class="mrec-ad-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                                <span class="ad-badge">Ad</span>
+                                <span style="font-size:11px; color:#64748b; font-weight:600;">Sponsored Recommendation</span>
+                            </div>
+                            <div style="margin: 14px 0;">
+                                <div style="font-size:32px; margin-bottom:6px;">📊</div>
+                                <strong style="font-size:14px; color:#1e293b;">Google AdMob In-Feed Unit</strong>
+                                <div style="font-size:12px; color:#64748b; margin-top:4px;">In-Article Responsive Placement</div>
+                                <span style="font-size:10px; color:#9ca3af; display:block; margin-top: 8px; word-break: break-all;">ID: ${window.globalAdConfig.nativeId}</span>
+                            </div>
+                            <button style="background:#2563eb; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-size:12px; font-weight:700; width:100%; max-width:280px; cursor:pointer;">LEARN MORE</button>
                         </div>
-                        <div style="margin: 14px 0;">
-                            <div style="font-size:32px; margin-bottom:6px;">📊</div>
-                            <strong style="font-size:14px; color:#1e293b;">Google AdMob In-Feed Unit</strong>
-                            <div style="font-size:12px; color:#64748b; margin-top:4px;">In-Article Responsive Placement</div>
-                        </div>
-                        <button style="background:#2563eb; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-size:12px; font-weight:700; width:100%; max-width:280px; cursor:pointer;">LEARN MORE</button>
                     </div>
-                </div>
-            `;
+                `;
+            }
 
             let redirectBtnHTML = targetRedirectUrl
                 ? `<a href="${targetRedirectUrl}" target="_blank" class="action-link-btn">${actionLabel}</a>` : "";
@@ -496,14 +515,13 @@
 
         async function mountBottomBanner(bannerId) {
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                const { AdMob, BannerAdSize, BannerAdPosition } = Capacitor.Plugins;
+                const { AdMob } = Capacitor.Plugins;
                 try {
                     await AdMob.showBanner({
                         adId: bannerId,
-                        adSize: BannerAdSize.ADAPTIVE_BANNER || BannerAdSize.BANNER,
-                        position: BannerAdPosition.BOTTOM_CENTER || 'BOTTOM_CENTER',
-                        margin: 0,
-                        isTesting: bannerId.includes("3940256099942544")
+                        adSize: 'BANNER',
+                        position: 'BOTTOM_CENTER',
+                        margin: 0 // Docked exactly to the bottom
                     });
                 } catch (e) {
                     console.warn("Banner error:", e);
