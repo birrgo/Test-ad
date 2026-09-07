@@ -1,44 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width,
-                   initial-scale=1.0,
-                   maximum-scale=1.0,
-                   user-scalable=no,
-                   viewport-fit=cover">
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1.0,
+               maximum-scale=1.0,
+               user-scalable=no,
+               viewport-fit=cover">
 
-    <title>
-        Yala Tech | Online Work in Ethiopia, Tech Tips & Vacancies
-    </title>
+<title>
+Yala Tech | Online Work in Ethiopia, Tech Tips & Vacancies
+</title>
 
-    <meta name="title"
-          content="Yala Tech | Online Work in Ethiopia, Tech Tips & Vacancies">
+<meta name="title"
+      content="Yala Tech | Online Work in Ethiopia, Tech Tips & Vacancies">
 
-    <meta name="description"
-          content="Yala Tech - Online work in Ethiopia, technology tips, vacancies and useful updates.">
+<meta name="description"
+      content="Yala Tech - Online work in Ethiopia, technology tips, vacancies and useful updates.">
 
-    <link rel="canonical"
-          href="https://shiqela.online/">
+<link rel="canonical"
+      href="https://shiqela.online/">
 
-    <link rel="preconnect"
-          href="https://fonts.googleapis.com">
+<link rel="preconnect"
+      href="https://fonts.googleapis.com">
 
-    <link rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossorigin>
+<link rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin>
 
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet">
 
-    <link rel="stylesheet"
-          href="news.css">
+<link rel="stylesheet"
+      href="news.css">
 
 
 <style>
+
+/* =========================================================
+   STARTUP / WELCOME SCREEN
+========================================================= */
+
+#firaStartup {
+
+    position: fixed;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background: #001a66;
+
+    z-index: 999999999;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    opacity: 1;
+
+    visibility: visible;
+
+    transition:
+        opacity .45s ease,
+        visibility .45s ease;
+
+}
+
+#firaStartup.hidden {
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+}
+
+.firaStartupImage {
+
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+
+}
+
+.firaStartupLoading {
+
+    position: absolute;
+
+    left: 50%;
+
+    bottom: 42px;
+
+    transform: translateX(-50%);
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 10px;
+
+    color: #ffffff;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    text-shadow:
+        0 2px 6px
+        rgba(0,0,0,.6);
+
+}
+
+.firaLoadingSpinner {
+
+    width: 30px;
+    height: 30px;
+
+    border-radius: 50%;
+
+    border:
+        3px solid
+        rgba(255,255,255,.3);
+
+    border-top-color:
+        #ffffff;
+
+    animation:
+        firaSpin .75s linear infinite;
+
+}
+
+@keyframes firaSpin {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
 
 /* =========================================================
    MENU DRAWER
@@ -53,7 +180,8 @@
     width: 100%;
     height: 100%;
 
-    background: rgba(0,0,0,0.5);
+    background:
+        rgba(0,0,0,.5);
 
     z-index: 9999;
 
@@ -62,18 +190,18 @@
     visibility: hidden;
 
     transition:
-        opacity 0.3s ease,
-        visibility 0.3s ease;
-}
+        opacity .3s ease,
+        visibility .3s ease;
 
+}
 
 .menu-iframe-overlay.active {
 
     opacity: 1;
 
     visibility: visible;
-}
 
+}
 
 .menu-iframe-drawer {
 
@@ -93,18 +221,20 @@
         translateX(-100%);
 
     transition:
-        transform 0.3s ease-in-out;
+        transform .3s ease-in-out;
 
     box-shadow:
-        4px 0 12px rgba(0,0,0,0.3);
-}
+        4px 0 12px
+        rgba(0,0,0,.3);
 
+}
 
 .menu-iframe-overlay.active
 .menu-iframe-drawer {
 
     transform:
         translateX(0);
+
 }
 
 
@@ -116,12 +246,9 @@
 
     --bottom-nav-height: 65px;
 
-    --native-ad-height: 0px;
-
     --ad-gap: 6px;
 
 }
-
 
 body {
 
@@ -168,7 +295,7 @@ body {
 
 
 /* =========================================================
-   WEB AD FALLBACK
+   WEBSITE FALLBACK AD
 ========================================================= */
 
 .ad-container-wrapper {
@@ -201,10 +328,7 @@ body {
 
     z-index: 99999 !important;
 
-    box-sizing: border-box;
-
 }
-
 
 .web-ad-fallback {
 
@@ -225,7 +349,7 @@ body {
 
     box-shadow:
         0 4px 12px
-        rgba(0,0,0,0.15);
+        rgba(0,0,0,.15);
 
     display: flex;
 
@@ -238,10 +362,7 @@ body {
 
     box-sizing: border-box;
 
-    pointer-events: auto;
-
 }
-
 
 .web-ad-fallback-inner {
 
@@ -256,7 +377,6 @@ body {
     width: 100%;
 
 }
-
 
 .ad-badge {
 
@@ -276,7 +396,6 @@ body {
 
 }
 
-
 .web-ad-text {
 
     font-size: 12px;
@@ -289,17 +408,8 @@ body {
 
 
 /* =========================================================
-   REAL NATIVE ADMOB IN-FEED AD
+   REAL NATIVE ADMOB TARGET
 ========================================================= */
-
-/*
-   IMPORTANT:
-
-   This element is NOT the advertisement itself.
-
-   Android NativeAdMobPlugin.java creates the real
-   Google Mobile Ads NativeAdView above this location.
-*/
 
 .inline-feed-ad-slot {
 
@@ -307,12 +417,12 @@ body {
 
     width: 100%;
 
-    height: 250px;
+    height: 350px;
 
-    min-height: 250px;
+    min-height: 350px;
 
     margin:
-        12px 0;
+        14px 0;
 
     background:
         transparent;
@@ -325,27 +435,16 @@ body {
 
 }
 
-
-/*
-   Invisible positioning target.
-
-   Android native ad is displayed over this location.
-*/
-
 .native-ad-placeholder {
 
     width: 100%;
 
-    height: 250px;
+    height: 350px;
 
-    visibility: hidden;
+    background:
+        transparent;
 
 }
-
-
-/*
-   Do not show native slot on normal website.
-*/
 
 body.web-version
 .inline-feed-ad-slot {
@@ -356,7 +455,7 @@ body.web-version
 
 
 /* =========================================================
-   FEED LOADER
+   LOADER
 ========================================================= */
 
 .feed-loader-box {
@@ -376,11 +475,7 @@ body.web-version
 
     display: none;
 
-    transition:
-        all 0.2s ease;
-
 }
-
 
 .loader-spinner {
 
@@ -396,7 +491,7 @@ body.web-version
             156,
             163,
             175,
-            0.3
+            .3
         );
 
     border-top-color:
@@ -405,7 +500,7 @@ body.web-version
     border-radius: 50%;
 
     animation:
-        spin 0.8s linear infinite;
+        spin .8s linear infinite;
 
     vertical-align: middle;
 
@@ -435,7 +530,6 @@ body.web-version
 
 }
 
-
 .initial-loader-spinner {
 
     width: 40px;
@@ -448,7 +542,7 @@ body.web-version
             255,
             255,
             255,
-            0.1
+            .1
         );
 
     border-top-color:
@@ -457,9 +551,26 @@ body.web-version
     border-radius: 50%;
 
     animation:
-        spin 0.8s linear infinite;
+        spin .8s linear infinite;
 
     margin-bottom: 20px;
+
+}
+
+
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+@keyframes spin {
+
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 
 }
 
@@ -481,35 +592,39 @@ body.web-version
 
 }
 
-
-/* =========================================================
-   ANIMATION
-========================================================= */
-
-@keyframes spin {
-
-    0% {
-
-        transform:
-            rotate(0deg);
-
-    }
-
-    100% {
-
-        transform:
-            rotate(360deg);
-
-    }
-
-}
-
 </style>
 
 </head>
 
 
 <body>
+
+
+<!-- =========================================================
+     WELCOME SCREEN
+========================================================= -->
+
+<div id="firaStartup">
+
+    <img
+        src="s1.png"
+        class="firaStartupImage"
+        alt="Yala Tech">
+
+    <div class="firaStartupLoading">
+
+        <div
+            class="firaLoadingSpinner">
+        </div>
+
+        <div>
+            Loading...
+        </div>
+
+    </div>
+
+</div>
+
 
 <div class="app-view">
 
@@ -527,8 +642,8 @@ body.web-version
 
     <path
         d="M0 0H375V75C375 75 280 155 0 95V0Z"
-        fill="url(#paint0_linear)"
-    />
+        fill="url(#paint0_linear)">
+    </path>
 
     <defs>
 
@@ -541,11 +656,13 @@ body.web-version
             gradientUnits="userSpaceOnUse">
 
             <stop
-                stop-color="#081B38"/>
+                stop-color="#081B38">
+            </stop>
 
             <stop
                 offset="1"
-                stop-color="#0F2C59"/>
+                stop-color="#0F2C59">
+            </stop>
 
         </linearGradient>
 
@@ -572,7 +689,7 @@ body.web-version
 
 
 <!-- =========================================================
-     SEARCH MODAL
+     SEARCH
 ========================================================= -->
 
 <div
@@ -661,7 +778,6 @@ body.web-version
         gap:14px;
     ">
 
-
     <div
         class="header-left-group"
         style="
@@ -669,7 +785,6 @@ body.web-version
             align-items:center;
             gap:12px;
         ">
-
 
         <button
             type="button"
@@ -740,7 +855,9 @@ body.web-version
 
     <div
         class="header-center-group"
-        style="flex:1;"
+        style="
+            flex:1;
+        "
         onclick="
             document
                 .getElementById('openSearchBtn')
@@ -749,14 +866,14 @@ body.web-version
 
         <div
             style="
-                background:rgba(255,255,255,0.15);
+                background:rgba(255,255,255,.15);
                 border-radius:20px;
                 padding:10px 16px;
                 display:flex;
                 align-items:center;
                 gap:10px;
                 cursor:pointer;
-                border:1px solid rgba(255,255,255,0.1);
+                border:1px solid rgba(255,255,255,.1);
             ">
 
             <svg
@@ -781,7 +898,6 @@ body.web-version
                 </line>
 
             </svg>
-
 
             <span
                 style="
@@ -852,7 +968,8 @@ body.web-version
         class="broadcasts-container"
         id="broadcastsContainer">
 
-        <div class="initial-fullscreen-loader">
+        <div
+            class="initial-fullscreen-loader">
 
             <div
                 class="initial-loader-spinner">
@@ -886,7 +1003,7 @@ body.web-version
     </div>
 
 
-    <!-- LOADER -->
+    <!-- FEED LOADER -->
 
     <div
         class="feed-loader-box"
@@ -1111,29 +1228,18 @@ body.web-version
 
 
 <!-- =========================================================
-     CAPACITOR
-========================================================= -->
-
-<script
-    src="https://cdn.jsdelivr.net/npm/@capacitor/core@5.0.0/dist/capacitor.global.min.js">
-</script>
-
-
-<!-- =========================================================
      FIREBASE + APP
 ========================================================= -->
 
 <script type="module">
 
-
 /* =========================================================
-   FIREBASE IMPORT
+   FIREBASE
 ========================================================= */
 
 import {
     initializeApp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-
 
 import {
     getDatabase,
@@ -1141,10 +1247,6 @@ import {
     onValue
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-
-/* =========================================================
-   FIREBASE CONFIG
-========================================================= */
 
 const firebaseConfig = {
 
@@ -1180,12 +1282,8 @@ const app =
         firebaseConfig
     );
 
-
 const db =
-    getDatabase(
-        app
-    );
-
+    getDatabase(app);
 
 const APP_NODE_NAME =
     "app1";
@@ -1209,49 +1307,78 @@ let currentActiveCategoryFilter =
    ADS
 ========================================================= */
 
-let isBannerInitialized =
-    false;
+const TEST_AD_IDS = {
 
-let articleClickCount =
-    0;
+    banner:
+        "ca-app-pub-3940256099942544/6300978111",
 
+    interstitial:
+        "ca-app-pub-3940256099942544/1033173712",
 
-/*
- * Google official test IDs
- */
+    rewarded:
+        "ca-app-pub-3940256099942544/5224354917",
 
-const TEST_BANNER_ID =
-    "ca-app-pub-3940256099942544/6300978111";
+    rewardedInterstitial:
+        "ca-app-pub-3940256099942544/5354046379",
 
-const TEST_INTERSTITIAL_ID =
-    "ca-app-pub-3940256099942544/1033173712";
+    native:
+        "ca-app-pub-3940256099942544/2247696110",
 
-const TEST_NATIVE_ID =
-    "ca-app-pub-3940256099942544/2247696110";
+    appOpen:
+        "ca-app-pub-3940256099942544/9257395921"
+
+};
 
 
 window.globalAdConfig = {
 
-    status: false,
+    status: true,
 
     bannerId:
-        TEST_BANNER_ID,
+        TEST_AD_IDS.banner,
 
     interstitialId:
-        TEST_INTERSTITIAL_ID,
+        TEST_AD_IDS.interstitial,
+
+    rewardedId:
+        TEST_AD_IDS.rewarded,
+
+    rewardedInterstitialId:
+        TEST_AD_IDS.rewardedInterstitial,
 
     nativeId:
-        TEST_NATIVE_ID,
+        TEST_AD_IDS.native,
+
+    appOpenId:
+        TEST_AD_IDS.appOpen,
 
     interstitialInterval:
         3,
 
     placements: {},
 
-    isTesting:
-        true
+    isTesting: true
 
 };
+
+
+let adMobInitialized =
+    false;
+
+let bannerCreated =
+    false;
+
+let articleClickCount =
+    0;
+
+let firstAppOpenShown =
+    false;
+
+let currentNativeAdElementId =
+    null;
+
+let nativeAdPositionFrame =
+    null;
 
 
 /* =========================================================
@@ -1268,19 +1395,91 @@ const FEED_BATCH_SIZE =
     3;
 
 
-/*
- * Only ONE native ad view is used by
- * NativeAdMobPlugin.java.
- *
- * This ID tracks the current target.
- */
+/* =========================================================
+   STARTUP SCREEN
+========================================================= */
 
-let currentNativeAdElementId =
-    null;
+(function setupStartupScreen() {
+
+    const startup =
+        document.getElementById(
+            "firaStartup"
+        );
+
+    if (!startup) {
+        return;
+    }
+
+    let closed =
+        false;
+
+    function closeStartup() {
+
+        if (closed) {
+            return;
+        }
+
+        closed = true;
+
+        startup.classList.add(
+            "hidden"
+        );
+
+        setTimeout(
+            () => {
+
+                if (
+                    startup &&
+                    startup.parentNode
+                ) {
+
+                    startup.parentNode
+                        .removeChild(
+                            startup
+                        );
+
+                }
+
+            },
+            500
+        );
+
+    }
+
+    if (
+        document.readyState ===
+        "complete"
+    ) {
+
+        setTimeout(
+            closeStartup,
+            250
+        );
+
+    } else {
+
+        window.addEventListener(
+            "load",
+            () => {
+
+                setTimeout(
+                    closeStartup,
+                    250
+                );
+
+            },
+            {
+                once: true
+            }
+        );
+
+    }
+
+})();
 
 
 /* =========================================================
-   INITIALIZE
+   INIT
 ========================================================= */
 
 function initApp() {
@@ -1317,34 +1516,6 @@ if (
     initApp();
 
 }
-
-
-/* =========================================================
-   PAGE SHOW
-========================================================= */
-
-window.addEventListener(
-    "pageshow",
-    (event) => {
-
-        if (
-            event.persisted &&
-            window.globalAdConfig.status
-        ) {
-
-            setTimeout(
-                () => {
-
-                    triggerBannerAd();
-
-                },
-                300
-            );
-
-        }
-
-    }
-);
 
 
 /* =========================================================
@@ -1396,7 +1567,7 @@ function detectPlatform() {
 
 
 /* =========================================================
-   GET ADMOB
+   GET NEXTGEN ADMOB
 ========================================================= */
 
 function getAdMobPlugin() {
@@ -1409,383 +1580,62 @@ function getAdMobPlugin() {
 
     }
 
-
-    return (
-
-        window.Capacitor &&
-        window.Capacitor.Plugins &&
-        window.Capacitor.Plugins.AdMob
-
-    )
-        ? window.Capacitor
-            .Plugins
-            .AdMob
-        : null;
-
-}
-
-
-/* =========================================================
-   GET NATIVE ADMOB PLUGIN
-========================================================= */
-
-function getNativeAdMobPlugin() {
-
     if (
-        !isNativeApp()
+        !window.Capacitor ||
+        !window.Capacitor.Plugins
     ) {
 
         return null;
 
     }
 
+    return (
+        window.Capacitor
+            .Plugins
+            .AdMob
+    ) || null;
+
+}
+
+
+/* =========================================================
+   ADMOB CONFIG HELPERS
+========================================================= */
+
+function firebaseBoolean(value) {
 
     return (
 
-        window.Capacitor &&
-        window.Capacitor.Plugins &&
-        window.Capacitor.Plugins.NativeAdMob
+        value === true ||
 
-    )
-        ? window.Capacitor
-            .Plugins
-            .NativeAdMob
-        : null;
+        value === "true" ||
 
-}
+        value === "TRUE" ||
 
+        value === "ON" ||
 
-/* =========================================================
-   INTERSECTION OBSERVER
-========================================================= */
+        value === "on" ||
 
-function setupIntersectionObserver() {
+        value === 1
 
-    const loaderBox =
-        document.getElementById(
-            "feedLoaderBox"
-        );
-
-
-    if (!loaderBox) {
-        return;
-    }
-
-
-    const options = {
-
-        root: null,
-
-        rootMargin: "400px",
-
-        threshold: 0
-
-    };
-
-
-    const observer =
-        new IntersectionObserver(
-
-            (entries) => {
-
-                entries.forEach(
-                    (entry) => {
-
-                        if (
-
-                            entry.isIntersecting &&
-
-                            !document
-                                .getElementById(
-                                    "searchModalOverlay"
-                                )
-                                .classList
-                                .contains(
-                                    "active-search"
-                                )
-
-                        ) {
-
-                            executeLoadMoreBatch();
-
-                        }
-
-                    }
-                );
-
-            },
-
-            options
-
-        );
-
-
-    observer.observe(
-        loaderBox
     );
 
 }
 
 
-/* =========================================================
-   LOAD MORE
-========================================================= */
+function cleanAdId(
+    value,
+    fallback
+) {
 
-function executeLoadMoreBatch() {
+    const id =
+        String(
+            value || ""
+        ).trim();
 
-    if (
-        isFetchingMore
-    ) {
-
-        return;
-
-    }
-
-
-    const filtered =
-        localCachedBroadcasts.filter(
-
-            item =>
-
-                (
-                    item.category ||
-                    ""
-                )
-                .trim()
-                .toLowerCase()
-                ===
-                currentActiveCategoryFilter
-                    .trim()
-                    .toLowerCase()
-
-        );
-
-
-    if (
-
-        currentVisibleFeedCount
-        >=
-        filtered.length
-
-    ) {
-
-        return;
-
-    }
-
-
-    isFetchingMore =
-        true;
-
-
-    const loaderSpinner =
-        document.getElementById(
-            "loaderSpinner"
-        );
-
-
-    const loaderText =
-        document.getElementById(
-            "loaderText"
-        );
-
-
-    if (loaderSpinner) {
-
-        loaderSpinner.style.display =
-            "inline-block";
-
-    }
-
-
-    if (loaderText) {
-
-        loaderText.innerText =
-            "Loading...";
-
-    }
-
-
-    setTimeout(
-        () => {
-
-            renderFilteredBroadcasts(
-                false
-            );
-
-            isFetchingMore =
-                false;
-
-        },
-        300
-    );
+    return id || fallback;
 
 }
-
-
-/* =========================================================
-   LOADER
-========================================================= */
-
-function updateLoaderUI() {
-
-    const loaderBox =
-        document.getElementById(
-            "feedLoaderBox"
-        );
-
-
-    const loaderSpinner =
-        document.getElementById(
-            "loaderSpinner"
-        );
-
-
-    const loaderText =
-        document.getElementById(
-            "loaderText"
-        );
-
-
-    if (!loaderBox) {
-        return;
-    }
-
-
-    const filtered =
-        localCachedBroadcasts.filter(
-
-            item =>
-
-                (
-                    item.category ||
-                    ""
-                )
-                .trim()
-                .toLowerCase()
-                ===
-                currentActiveCategoryFilter
-                    .trim()
-                    .toLowerCase()
-
-        );
-
-
-    loaderBox.style.display =
-        "block";
-
-
-    if (
-
-        currentVisibleFeedCount
-        >=
-        filtered.length
-
-    ) {
-
-        if (
-            filtered.length > 0
-        ) {
-
-            if (loaderSpinner) {
-
-                loaderSpinner.style.display =
-                    "none";
-
-            }
-
-
-            if (loaderText) {
-
-                loaderText.innerText =
-                    "All updates loaded ✅";
-
-            }
-
-        } else {
-
-            loaderBox.style.display =
-                "none";
-
-        }
-
-    } else {
-
-        if (loaderSpinner) {
-
-            loaderSpinner.style.display =
-                "none";
-
-        }
-
-
-        if (loaderText) {
-
-            loaderText.innerText =
-                "Loading...";
-
-        }
-
-    }
-
-}
-
-
-/* =========================================================
-   BOTTOM NAV SIZE
-========================================================= */
-
-function adjustBottomNavigationOffsets() {
-
-    const nav =
-        document.getElementById(
-            "mainBottomNav"
-        );
-
-
-    if (!nav) {
-        return;
-    }
-
-
-    const navHeight =
-        nav.offsetHeight || 65;
-
-
-    document.documentElement
-        .style
-        .setProperty(
-            "--bottom-nav-height",
-            `${navHeight}px`
-        );
-
-
-    const mainArea =
-        document.getElementById(
-            "mainContentArea"
-        );
-
-
-    if (mainArea) {
-
-        mainArea.style.paddingBottom =
-            `${navHeight + 90}px`;
-
-    }
-
-}
-
-
-window.addEventListener(
-    "resize",
-    () => {
-
-        adjustBottomNavigationOffsets();
-
-        updateNativeAdPosition();
-
-    }
-);
 
 
 /* =========================================================
@@ -1803,12 +1653,7 @@ function fetchDatabaseAdConfig() {
 
     onValue(
         adManagerRef,
-        (snapshot) => {
-
-
-            /*
-             * No Firebase config
-             */
+        async snapshot => {
 
             if (
                 !snapshot.exists()
@@ -1816,127 +1661,151 @@ function fetchDatabaseAdConfig() {
 
                 window.globalAdConfig = {
 
-                    status: false,
+                    status: true,
 
                     bannerId:
-                        TEST_BANNER_ID,
+                        TEST_AD_IDS.banner,
 
                     interstitialId:
-                        TEST_INTERSTITIAL_ID,
+                        TEST_AD_IDS.interstitial,
+
+                    rewardedId:
+                        TEST_AD_IDS.rewarded,
+
+                    rewardedInterstitialId:
+                        TEST_AD_IDS
+                            .rewardedInterstitial,
 
                     nativeId:
-                        TEST_NATIVE_ID,
+                        TEST_AD_IDS.native,
+
+                    appOpenId:
+                        TEST_AD_IDS.appOpen,
 
                     interstitialInterval:
                         3,
 
                     placements: {},
 
-                    isTesting:
-                        true
+                    isTesting: true
 
                 };
 
+            } else {
 
-                triggerBannerAd();
+                const adData =
+                    snapshot.val() || {};
 
-                return;
+                const bannerId =
+                    cleanAdId(
+                        adData.adMobBannerUnitId,
+                        TEST_AD_IDS.banner
+                    );
+
+                const interstitialId =
+                    cleanAdId(
+                        adData.adMobInterstitialUnitId,
+                        TEST_AD_IDS.interstitial
+                    );
+
+                const rewardedId =
+                    cleanAdId(
+                        adData.adMobRewardedUnitId,
+                        TEST_AD_IDS.rewarded
+                    );
+
+                const rewardedInterstitialId =
+                    cleanAdId(
+                        adData.adMobRewardedInterstitialUnitId,
+                        TEST_AD_IDS
+                            .rewardedInterstitial
+                    );
+
+                const nativeId =
+                    cleanAdId(
+                        adData.adMobNativeUnitId,
+                        TEST_AD_IDS.native
+                    );
+
+                const appOpenId =
+                    cleanAdId(
+                        adData.adMobAppOpenUnitId,
+                        TEST_AD_IDS.appOpen
+                    );
+
+
+                window.globalAdConfig = {
+
+                    status:
+                        firebaseBoolean(
+                            adData.adStatus
+                        ),
+
+                    bannerId,
+
+                    interstitialId,
+
+                    rewardedId,
+
+                    rewardedInterstitialId,
+
+                    nativeId,
+
+                    appOpenId,
+
+                    interstitialInterval:
+                        Math.max(
+                            1,
+                            parseInt(
+                                adData
+                                    .interstitialAdInterval,
+                                10
+                            ) || 3
+                        ),
+
+                    placements:
+                        adData.placements || {},
+
+                    isTesting:
+
+                        bannerId.includes(
+                            "3940256099942544"
+                        ) ||
+
+                        interstitialId.includes(
+                            "3940256099942544"
+                        ) ||
+
+                        rewardedId.includes(
+                            "3940256099942544"
+                        ) ||
+
+                        rewardedInterstitialId.includes(
+                            "3940256099942544"
+                        ) ||
+
+                        nativeId.includes(
+                            "3940256099942544"
+                        ) ||
+
+                        appOpenId.includes(
+                            "3940256099942544"
+                        )
+
+                };
 
             }
 
-
-            const adData =
-                snapshot.val();
-
-
-            const isStatusOn =
-
-                adData.adStatus === "ON" ||
-
-                adData.adStatus === true ||
-
-                adData.adStatus === "true" ||
-
-                adData.adStatus === 1;
-
-
-            const bannerId =
-                (
-                    adData.adMobBannerUnitId ||
-                    TEST_BANNER_ID
-                ).trim();
-
-
-            const interstitialId =
-                (
-                    adData.adMobInterstitialUnitId ||
-                    TEST_INTERSTITIAL_ID
-                ).trim();
-
-
-            const nativeId =
-                (
-                    adData.adMobNativeUnitId ||
-                    TEST_NATIVE_ID
-                ).trim();
-
-
-            window.globalAdConfig = {
-
-                status:
-                    isStatusOn,
-
-                bannerId:
-                    bannerId,
-
-                interstitialId:
-                    interstitialId,
-
-                nativeId:
-                    nativeId,
-
-                interstitialInterval:
-
-                    parseInt(
-                        adData.interstitialAdInterval,
-                        10
-                    ) || 3,
-
-                placements:
-                    adData.placements || {},
-
-                isTesting:
-
-                    bannerId.includes(
-                        "3940256099942544"
-                    ) ||
-
-                    nativeId.includes(
-                        "3940256099942544"
-                    )
-
-            };
-
-
-            /*
-             * NATIVE APP
-             */
 
             if (
                 isNativeApp()
             ) {
 
-                initializeNativeAdMob();
+                await initializeNativeAdMob();
 
-            }
+            } else {
 
-            /*
-             * WEBSITE
-             */
-
-            else {
-
-                triggerBannerAd();
+                triggerWebsiteFallback();
 
             }
 
@@ -1958,7 +1827,7 @@ function fetchDatabaseAdConfig() {
 
 
 /* =========================================================
-   INITIALIZE ADMOB
+   INITIALIZE NEXTGEN ADMOB
 ========================================================= */
 
 async function initializeNativeAdMob() {
@@ -1966,11 +1835,10 @@ async function initializeNativeAdMob() {
     const AdMob =
         getAdMobPlugin();
 
-
     if (!AdMob) {
 
         console.warn(
-            "Capacitor AdMob plugin not found."
+            "AdMob NextGen plugin not available."
         );
 
         return;
@@ -1978,43 +1846,11 @@ async function initializeNativeAdMob() {
     }
 
 
-    /*
-     * ADS OFF
-     */
-
     if (
         !window.globalAdConfig.status
     ) {
 
-        try {
-
-            await AdMob.hideBanner()
-                .catch(
-                    () => {}
-                );
-
-
-            await AdMob.removeBanner()
-                .catch(
-                    () => {}
-                );
-
-        } catch (e) {}
-
-
-        const NativeAdMob =
-            getNativeAdMobPlugin();
-
-
-        if (NativeAdMob) {
-
-            await NativeAdMob.hide()
-                .catch(
-                    () => {}
-                );
-
-        }
-
+        await hideAllAds();
 
         return;
 
@@ -2023,49 +1859,24 @@ async function initializeNativeAdMob() {
 
     try {
 
-
         /*
-         * Initialize Google Mobile Ads
-         */
-
-        await AdMob.initialize({
-
-            requestTrackingAuthorization:
-                true,
-
-            initializeForTesting:
-                window.globalAdConfig
-                    .isTesting
-
-        });
-
-
-        /*
-         * Prepare interstitial
+         * STEP 1
+         * Consent must happen first.
          */
 
         if (
-            window.globalAdConfig
-                .interstitialId
+            typeof
+                AdMob.requestConsentInfo
+            === "function"
         ) {
 
             await AdMob
-                .prepareInterstitial({
-
-                    adId:
-                        window.globalAdConfig
-                            .interstitialId,
-
-                    isTesting:
-                        window.globalAdConfig
-                            .isTesting
-
-                })
+                .requestConsentInfo({})
                 .catch(
                     error => {
 
                         console.warn(
-                            "Interstitial prepare:",
+                            "Consent:",
                             error
                         );
 
@@ -2076,7 +1887,36 @@ async function initializeNativeAdMob() {
 
 
         /*
-         * Bottom banner
+         * STEP 2
+         * Initialize SDK.
+         */
+
+        await AdMob.initialize({
+
+            isTesting:
+                window.globalAdConfig
+                    .isTesting,
+
+            maxAdContentRating:
+                "G"
+
+        });
+
+
+        adMobInitialized =
+            true;
+
+
+        /*
+         * STEP 3
+         * Load ads.
+         */
+
+        await loadAllAds();
+
+
+        /*
+         * Banner
          */
 
         setTimeout(
@@ -2099,14 +1939,40 @@ async function initializeNativeAdMob() {
                 loadVisibleNativeAd();
 
             },
-            1000
+            1200
         );
+
+
+        /*
+         * App Open
+         *
+         * Shown once after initial app
+         * initialization.
+         */
+
+        if (
+            window.globalAdConfig
+                .placements
+                ?.appOpenOnLaunch
+                !== false
+        ) {
+
+            setTimeout(
+                () => {
+
+                    showAppOpenAd();
+
+                },
+                900
+            );
+
+        }
 
 
     } catch (error) {
 
         console.error(
-            "AdMob initialization error:",
+            "AdMob initialization:",
             error
         );
 
@@ -2116,182 +1982,152 @@ async function initializeNativeAdMob() {
 
 
 /* =========================================================
-   SHOW REAL ADMOB BANNER
+   LOAD ALL AD TYPES
 ========================================================= */
 
-async function triggerBannerAd() {
+async function loadAllAds() {
 
-    const adWrapper =
-        document.getElementById(
-            "adContainerWrapper"
-        );
-
-
-    const nav =
-        document.getElementById(
-            "mainBottomNav"
-        );
-
-
-    const navHeight =
-        nav
-            ? nav.offsetHeight
-            : 65;
-
-
-    const shouldShowBanner =
-
-        window.globalAdConfig.status &&
-
-        (
-            window.globalAdConfig
-                .placements
-                ?.bannerAdHomePage
-                !== false
-        ) &&
-
-        Boolean(
-            window.globalAdConfig
-                .bannerId
-        );
-
-
-    /*
-     * ADS OFF
-     */
+    const AdMob =
+        getAdMobPlugin();
 
     if (
-        !shouldShowBanner
+        !AdMob ||
+        !adMobInitialized
     ) {
-
-        if (adWrapper) {
-
-            adWrapper.style.display =
-                "none";
-
-        }
-
-
-        if (
-            isNativeApp()
-        ) {
-
-            const AdMob =
-                getAdMobPlugin();
-
-
-            if (AdMob) {
-
-                await AdMob.hideBanner()
-                    .catch(
-                        () => {}
-                    );
-
-            }
-
-        }
-
 
         return;
 
     }
 
 
+    const config =
+        window.globalAdConfig;
+
+
     /*
-     * =====================================================
-     * NATIVE ANDROID / IOS
-     * =====================================================
+     * INTERSTITIAL
      */
 
     if (
-        isNativeApp()
+        config.interstitialId &&
+        typeof
+            AdMob.loadInterstitial
+        === "function"
     ) {
 
-        const AdMob =
-            getAdMobPlugin();
+        await AdMob
+            .loadInterstitial({
 
+                adUnitId:
+                    config.interstitialId,
 
-        if (!AdMob) {
+                retryInterval:
+                    5000
 
-            console.warn(
-                "AdMob plugin unavailable."
+            })
+            .catch(
+                error =>
+                    console.warn(
+                        "Interstitial load:",
+                        error
+                    )
             );
-
-            return;
-
-        }
-
-
-        try {
-
-            await AdMob.showBanner({
-
-                adId:
-                    window.globalAdConfig
-                        .bannerId,
-
-                adSize:
-                    "ADAPTIVE_BANNER",
-
-                position:
-                    "BOTTOM_CENTER",
-
-                margin:
-                    navHeight + 6,
-
-                isTesting:
-                    window.globalAdConfig
-                        .isTesting
-
-            });
-
-
-            isBannerInitialized =
-                true;
-
-
-            console.log(
-                "AdMob adaptive banner shown."
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "AdMob banner error:",
-                error
-            );
-
-        }
-
-
-        /*
-         * Hide HTML fallback
-         */
-
-        if (adWrapper) {
-
-            adWrapper.style.display =
-                "none";
-
-        }
-
-
-        return;
 
     }
 
 
     /*
-     * =====================================================
-     * WEBSITE
-     * =====================================================
+     * REWARDED
      */
 
-    if (adWrapper) {
+    if (
+        config.rewardedId &&
+        typeof
+            AdMob.loadRewarded
+        === "function"
+    ) {
 
-        adWrapper.style.display =
-            "flex";
+        await AdMob
+            .loadRewarded({
+
+                adUnitId:
+                    config.rewardedId,
+
+                retryInterval:
+                    5000
+
+            })
+            .catch(
+                error =>
+                    console.warn(
+                        "Rewarded load:",
+                        error
+                    )
+            );
+
+    }
+
+
+    /*
+     * REWARDED INTERSTITIAL
+     */
+
+    if (
+        config.rewardedInterstitialId &&
+        typeof
+            AdMob.loadRewardedInterstitial
+        === "function"
+    ) {
+
+        await AdMob
+            .loadRewardedInterstitial({
+
+                adUnitId:
+                    config.rewardedInterstitialId,
+
+                retryInterval:
+                    5000
+
+            })
+            .catch(
+                error =>
+                    console.warn(
+                        "Rewarded interstitial load:",
+                        error
+                    )
+            );
+
+    }
+
+
+    /*
+     * APP OPEN
+     */
+
+    if (
+        config.appOpenId &&
+        typeof
+            AdMob.loadAppOpen
+        === "function"
+    ) {
+
+        await AdMob
+            .loadAppOpen({
+
+                adUnitId:
+                    config.appOpenId,
+
+                retryInterval:
+                    5000
+
+            })
+            .catch(
+                error =>
+                    console.warn(
+                        "App Open load:",
+                        error
+                    )
+            );
 
     }
 
@@ -2299,23 +2135,515 @@ async function triggerBannerAd() {
 
 
 /* =========================================================
-   NATIVE AD HTML TARGET
+   BANNER
 ========================================================= */
 
-function getInlineNativeAdHTML(
-    adContainerId
-) {
+async function triggerBannerAd() {
+
+    const AdMob =
+        getAdMobPlugin();
 
     if (
-        !window.globalAdConfig.status
+        !isNativeApp() ||
+        !AdMob
     ) {
 
-        return "";
+        triggerWebsiteFallback();
+
+        return;
 
     }
 
 
     if (
+        !window.globalAdConfig.status
+    ) {
+
+        await hideBannerAd();
+
+        return;
+
+    }
+
+
+    const shouldShow =
+        window.globalAdConfig
+            .placements
+            ?.bannerAdHomePage
+            !== false;
+
+
+    if (!shouldShow) {
+
+        await hideBannerAd();
+
+        return;
+
+    }
+
+
+    if (
+        !window.globalAdConfig.bannerId
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        /*
+         * Create and automatically show
+         * adaptive banner.
+         */
+
+        if (
+            !bannerCreated
+        ) {
+
+            await AdMob.createBanner({
+
+                adUnitId:
+                    window.globalAdConfig
+                        .bannerId,
+
+                isAutoShow:
+                    true,
+
+                position:
+                    "BOTTOM",
+
+                adSize:
+                    "ADAPTIVE",
+
+                isOverlap:
+                    true,
+
+                isCollapsible:
+                    false,
+
+                retryInterval:
+                    5000
+
+            });
+
+            bannerCreated =
+                true;
+
+        } else {
+
+            await AdMob
+                .showBanner();
+
+        }
+
+
+        const fallback =
+            document.getElementById(
+                "adContainerWrapper"
+            );
+
+        if (fallback) {
+
+            fallback.style.display =
+                "none";
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Banner error:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   HIDE BANNER
+========================================================= */
+
+async function hideBannerAd() {
+
+    const AdMob =
+        getAdMobPlugin();
+
+    if (!AdMob) {
+        return;
+    }
+
+    try {
+
+        if (
+            typeof
+                AdMob.hideBanner
+            === "function"
+        ) {
+
+            await AdMob
+                .hideBanner()
+                .catch(
+                    () => {}
+                );
+
+        }
+
+    } catch (error) {}
+
+}
+
+
+/* =========================================================
+   WEBSITE FALLBACK
+========================================================= */
+
+function triggerWebsiteFallback() {
+
+    const wrapper =
+        document.getElementById(
+            "adContainerWrapper"
+        );
+
+    if (!wrapper) {
+        return;
+    }
+
+
+    if (
+        isNativeApp()
+    ) {
+
+        wrapper.style.display =
+            "none";
+
+        return;
+
+    }
+
+
+    if (
+        window.globalAdConfig.status &&
+        window.globalAdConfig
+            .placements
+            ?.bannerAdHomePage
+            !== false
+    ) {
+
+        wrapper.style.display =
+            "flex";
+
+    } else {
+
+        wrapper.style.display =
+            "none";
+
+    }
+
+}
+
+
+/* =========================================================
+   HIDE ALL ADS
+========================================================= */
+
+async function hideAllAds() {
+
+    const AdMob =
+        getAdMobPlugin();
+
+    if (!AdMob) {
+        return;
+    }
+
+
+    try {
+
+        if (
+            typeof
+                AdMob.hideBanner
+            === "function"
+        ) {
+
+            await AdMob
+                .hideBanner()
+                .catch(
+                    () => {}
+                );
+
+        }
+
+    } catch (error) {}
+
+
+    try {
+
+        if (
+            typeof
+                AdMob.hideNativeAd
+            === "function"
+        ) {
+
+            await AdMob
+                .hideNativeAd()
+                .catch(
+                    () => {}
+                );
+
+        }
+
+    } catch (error) {}
+
+}
+
+
+/* =========================================================
+   APP OPEN
+========================================================= */
+
+async function showAppOpenAd() {
+
+    if (
+        firstAppOpenShown
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        !isNativeApp() ||
+        !window.globalAdConfig.status
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        window.globalAdConfig
+            .placements
+            ?.appOpenOnLaunch
+            === false
+    ) {
+
+        return;
+
+    }
+
+
+    const AdMob =
+        getAdMobPlugin();
+
+    if (!AdMob) {
+        return;
+    }
+
+
+    if (
+        typeof
+            AdMob.showAppOpen
+        !== "function"
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        await AdMob
+            .showAppOpen();
+
+        firstAppOpenShown =
+            true;
+
+
+        /*
+         * Load next App Open ad.
+         */
+
+        if (
+            window.globalAdConfig
+                .appOpenId
+        ) {
+
+            await AdMob
+                .loadAppOpen({
+
+                    adUnitId:
+                        window.globalAdConfig
+                            .appOpenId,
+
+                    retryInterval:
+                        5000
+
+                })
+                .catch(
+                    () => {}
+                );
+
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "App Open skipped:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   REWARDED AD
+========================================================= */
+
+window.showRewardedAd =
+    async function () {
+
+        if (
+            !isNativeApp() ||
+            !window.globalAdConfig.status
+        ) {
+
+            return null;
+
+        }
+
+
+        const AdMob =
+            getAdMobPlugin();
+
+        if (!AdMob) {
+            return null;
+        }
+
+
+        try {
+
+            await AdMob
+                .showRewarded();
+
+
+            /*
+             * Load another rewarded ad.
+             */
+
+            await AdMob
+                .loadRewarded({
+
+                    adUnitId:
+                        window.globalAdConfig
+                            .rewardedId,
+
+                    retryInterval:
+                        5000
+
+                })
+                .catch(
+                    () => {}
+                );
+
+
+            return true;
+
+        } catch (error) {
+
+            console.warn(
+                "Rewarded ad:",
+                error
+            );
+
+            return false;
+
+        }
+
+    };
+
+
+/* =========================================================
+   REWARDED INTERSTITIAL
+========================================================= */
+
+window.showRewardedInterstitialAd =
+    async function () {
+
+        if (
+            !isNativeApp() ||
+            !window.globalAdConfig.status
+        ) {
+
+            return null;
+
+        }
+
+
+        const AdMob =
+            getAdMobPlugin();
+
+        if (!AdMob) {
+            return null;
+        }
+
+
+        try {
+
+            await AdMob
+                .showRewardedInterstitial();
+
+
+            await AdMob
+                .loadRewardedInterstitial({
+
+                    adUnitId:
+                        window.globalAdConfig
+                            .rewardedInterstitialId,
+
+                    retryInterval:
+                        5000
+
+                })
+                .catch(
+                    () => {}
+                );
+
+
+            return true;
+
+        } catch (error) {
+
+            console.warn(
+                "Rewarded interstitial:",
+                error
+            );
+
+            return false;
+
+        }
+
+    };
+
+
+/* =========================================================
+   NATIVE AD HTML TARGET
+========================================================= */
+
+function getInlineNativeAdHTML(
+    id
+) {
+
+    if (
+        !window.globalAdConfig.status ||
         !isNativeApp()
     ) {
 
@@ -2328,7 +2656,7 @@ function getInlineNativeAdHTML(
 
         <div
             class="inline-feed-ad-slot"
-            id="${escapeHTML(adContainerId)}">
+            id="${escapeHTML(id)}">
 
             <div
                 class="native-ad-placeholder">
@@ -2342,7 +2670,7 @@ function getInlineNativeAdHTML(
 
 
 /* =========================================================
-   LOAD REAL NATIVE ADMOB
+   LOAD REAL NEXTGEN NATIVE AD
 ========================================================= */
 
 async function loadNativeAdForElement(
@@ -2367,14 +2695,28 @@ async function loadNativeAdForElement(
     }
 
 
-    const NativeAdMob =
-        getNativeAdMobPlugin();
+    const AdMob =
+        getAdMobPlugin();
 
-
-    if (!NativeAdMob) {
+    if (!AdMob) {
 
         console.warn(
-            "NativeAdMob plugin not installed."
+            "AdMob plugin unavailable."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        typeof
+            AdMob.showNativeAd
+        !== "function"
+    ) {
+
+        console.warn(
+            "showNativeAd() is unavailable."
         );
 
         return;
@@ -2387,11 +2729,8 @@ async function loadNativeAdForElement(
             elementId
         );
 
-
     if (!element) {
-
         return;
-
     }
 
 
@@ -2403,16 +2742,12 @@ async function loadNativeAdForElement(
         element.getBoundingClientRect();
 
 
-    /*
-     * Convert browser coordinates to
-     * WebView coordinates.
-     */
-
     const visible =
 
         rect.bottom > 0 &&
 
-        rect.top < window.innerHeight;
+        rect.top <
+            window.innerHeight;
 
 
     if (!visible) {
@@ -2422,52 +2757,83 @@ async function loadNativeAdForElement(
     }
 
 
+    const width =
+        Math.max(
+            1,
+            Math.round(
+                rect.width
+            )
+        );
+
+
+    const height =
+        350;
+
+
     const adUnitId =
         (
             window.globalAdConfig
                 .nativeId ||
-            TEST_NATIVE_ID
+            TEST_AD_IDS.native
         ).trim();
 
 
     try {
 
-        await NativeAdMob.show({
+        /*
+         * IMPORTANT:
+         *
+         * This is the REAL Native AdMob
+         * NextGen API.
+         *
+         * It creates Google's native
+         * Android NativeAdView template.
+         */
 
-            adId:
+        const result =
+            await AdMob.showNativeAd({
+
                 adUnitId,
 
-            x:
-                Math.round(
-                    rect.left
-                ),
+                template:
+                    "medium",
 
-            y:
-                Math.round(
-                    rect.top
-                ),
+                x:
+                    Math.max(
+                        0,
+                        Math.round(
+                            rect.left
+                        )
+                    ),
 
-            width:
-                Math.round(
-                    rect.width
-                ),
+                y:
+                    Math.max(
+                        0,
+                        Math.round(
+                            rect.top
+                        )
+                    ),
 
-            height:
-                250
+                width,
 
-        });
+                height,
+
+                retryInterval:
+                    5000
+
+            });
 
 
         console.log(
-            "REAL Native AdMob loaded:",
-            adUnitId
+            "REAL Native Ad loaded:",
+            result
         );
 
 
     } catch (error) {
 
         console.error(
-            "Native AdMob error:",
+            "Native Ad error:",
             error
         );
 
@@ -2484,6 +2850,15 @@ function loadVisibleNativeAd() {
 
     if (
         !isNativeApp()
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        !window.globalAdConfig.status
     ) {
 
         return;
@@ -2509,11 +2884,6 @@ function loadVisibleNativeAd() {
     let selectedSlot =
         null;
 
-
-    /*
-     * Select the first visible
-     * native ad target.
-     */
 
     for (
         const slot of slots
@@ -2542,12 +2912,9 @@ function loadVisibleNativeAd() {
     }
 
 
-    /*
-     * If nothing visible,
-     * use first slot.
-     */
-
-    if (!selectedSlot) {
+    if (
+        !selectedSlot
+    ) {
 
         selectedSlot =
             slots[0];
@@ -2555,7 +2922,9 @@ function loadVisibleNativeAd() {
     }
 
 
-    if (!selectedSlot) {
+    if (
+        !selectedSlot
+    ) {
 
         return;
 
@@ -2563,11 +2932,8 @@ function loadVisibleNativeAd() {
 
 
     if (
-
-        currentNativeAdElementId
-        ===
+        currentNativeAdElementId ===
         selectedSlot.id
-
     ) {
 
         updateNativeAdPosition();
@@ -2585,12 +2951,8 @@ function loadVisibleNativeAd() {
 
 
 /* =========================================================
-   UPDATE NATIVE AD POSITION
+   UPDATE NATIVE AD
 ========================================================= */
-
-let nativeAdPositionFrame =
-    null;
-
 
 function updateNativeAdPosition() {
 
@@ -2603,11 +2965,11 @@ function updateNativeAdPosition() {
     }
 
 
-    const NativeAdMob =
-        getNativeAdMobPlugin();
+    if (
+        !currentNativeAdElementId
+    ) {
 
-
-    if (!NativeAdMob) {
+        loadVisibleNativeAd();
 
         return;
 
@@ -2625,26 +2987,10 @@ function updateNativeAdPosition() {
 
     nativeAdPositionFrame =
         requestAnimationFrame(
-            async () => {
+            () => {
 
                 nativeAdPositionFrame =
                     null;
-
-
-                /*
-                 * Find the currently active
-                 * native target.
-                 */
-
-                if (
-                    !currentNativeAdElementId
-                ) {
-
-                    loadVisibleNativeAd();
-
-                    return;
-
-                }
 
 
                 const element =
@@ -2677,52 +3023,31 @@ function updateNativeAdPosition() {
                         window.innerHeight;
 
 
-                try {
+                if (!visible) {
 
-                    if (!visible) {
+                    const AdMob =
+                        getAdMobPlugin();
 
-                        /*
-                         * Try another visible
-                         * native target.
-                         */
 
-                        loadVisibleNativeAd();
+                    if (
+                        AdMob &&
+                        typeof
+                            AdMob.hideNativeAd
+                        === "function"
+                    ) {
 
-                        return;
+                        AdMob
+                            .hideNativeAd()
+                            .catch(
+                                () => {}
+                            );
 
                     }
 
+                    currentNativeAdElementId =
+                        null;
 
-                    await NativeAdMob
-                        .setPosition({
-
-                            x:
-                                Math.round(
-                                    rect.left
-                                ),
-
-                            y:
-                                Math.round(
-                                    rect.top
-                                ),
-
-                            width:
-                                Math.round(
-                                    rect.width
-                                ),
-
-                            height:
-                                250
-
-                        });
-
-
-                } catch (error) {
-
-                    console.warn(
-                        "Native ad position:",
-                        error
-                    );
+                    loadVisibleNativeAd();
 
                 }
 
@@ -2733,7 +3058,7 @@ function updateNativeAdPosition() {
 
 
 /* =========================================================
-   SCROLL NATIVE AD
+   SCROLL
 ========================================================= */
 
 window.addEventListener(
@@ -2749,8 +3074,20 @@ window.addEventListener(
 );
 
 
+window.addEventListener(
+    "resize",
+    () => {
+
+        adjustBottomNavigationOffsets();
+
+        updateNativeAdPosition();
+
+    }
+);
+
+
 /* =========================================================
-   NAVIGATE TO ARTICLE
+   ARTICLE NAVIGATION
 ========================================================= */
 
 window.navigateToFull =
@@ -2775,10 +3112,6 @@ window.navigateToFull =
                 )
             }`;
 
-
-        /*
-         * Native AdMob
-         */
 
         if (
 
@@ -2808,7 +3141,7 @@ window.navigateToFull =
 
 
                 /*
-                 * Show interstitial every N clicks
+                 * Interstitial every N clicks.
                  */
 
                 if (
@@ -2830,17 +3163,19 @@ window.navigateToFull =
 
 
                         await AdMob
-                            .prepareInterstitial({
+                            .loadInterstitial({
 
-                                adId:
+                                adUnitId:
                                     window.globalAdConfig
                                         .interstitialId,
 
-                                isTesting:
-                                    window.globalAdConfig
-                                        .isTesting
+                                retryInterval:
+                                    5000
 
-                            });
+                            })
+                            .catch(
+                                () => {}
+                            );
 
 
                     } catch (error) {
@@ -2850,56 +3185,44 @@ window.navigateToFull =
                             error
                         );
 
+
+                        /*
+                         * Try loading another one
+                         * if current one wasn't ready.
+                         */
+
+                        await AdMob
+                            .loadInterstitial({
+
+                                adUnitId:
+                                    window.globalAdConfig
+                                        .interstitialId,
+
+                                retryInterval:
+                                    5000
+
+                            })
+                            .catch(
+                                () => {}
+                            );
+
                     }
 
                 }
 
 
                 /*
-                 * Remove bottom banner
+                 * Hide native ad before leaving.
                  */
 
-                try {
+                if (
+                    typeof
+                        AdMob.hideNativeAd
+                    === "function"
+                ) {
 
                     await AdMob
-                        .hideBanner()
-                        .catch(
-                            () => {}
-                        );
-
-
-                    await AdMob
-                        .removeBanner()
-                        .catch(
-                            () => {}
-                        );
-
-
-                    isBannerInitialized =
-                        false;
-
-                } catch (error) {
-
-                    console.warn(
-                        "Banner cleanup:",
-                        error
-                    );
-
-                }
-
-
-                /*
-                 * Remove native feed ad
-                 */
-
-                const NativeAdMob =
-                    getNativeAdMobPlugin();
-
-
-                if (NativeAdMob) {
-
-                    await NativeAdMob
-                        .destroy()
+                        .hideNativeAd()
                         .catch(
                             () => {}
                         );
@@ -3020,9 +3343,8 @@ function rebuildAndRenderBroadcastsCache() {
             nodeName
         ) => {
 
-
             Object.keys(
-                dataObj
+                dataObj || {}
             )
             .forEach(
                 key => {
@@ -3091,10 +3413,8 @@ function rebuildAndRenderBroadcastsCache() {
 
     localCachedBroadcasts.sort(
         (a,b) =>
-
             b.resolvedTimestamp -
             a.resolvedTimestamp
-
     );
 
 
@@ -3121,13 +3441,9 @@ function streamLiveAdminUpdatesLog() {
         snapshot => {
 
             rawShikelaNewsData =
-
                 snapshot.exists()
-
                     ? snapshot.val()
-
                     : {};
-
 
             rebuildAndRenderBroadcastsCache();
 
@@ -3146,13 +3462,9 @@ function streamLiveAdminUpdatesLog() {
         snapshot => {
 
             rawNewNewsData =
-
                 snapshot.exists()
-
                     ? snapshot.val()
-
                     : {};
-
 
             rebuildAndRenderBroadcastsCache();
 
@@ -3243,9 +3555,7 @@ function buildSingleNewsCardHTML(
 
         category
             .toLowerCase()
-            .includes(
-                "tips"
-            )
+            .includes("tips")
 
             ? "spotlight-pill system-badge"
 
@@ -3291,7 +3601,6 @@ function buildSingleNewsCardHTML(
             <div
                 class="badge-meta-row">
 
-
                 <div
                     style="
                         display:flex;
@@ -3320,7 +3629,6 @@ function buildSingleNewsCardHTML(
 
                 </span>
 
-
             </div>
 
 
@@ -3329,7 +3637,6 @@ function buildSingleNewsCardHTML(
 
             <div
                 class="clickable-news-content">
-
 
                 <h2
                     class="broadcast-title">
@@ -3350,9 +3657,7 @@ function buildSingleNewsCardHTML(
 
                 </p>
 
-
             </div>
-
 
         </div>
 
@@ -3472,6 +3777,25 @@ function renderFilteredBroadcasts(
         currentNativeAdElementId =
             null;
 
+
+        const AdMob =
+            getAdMobPlugin();
+
+        if (
+            AdMob &&
+            typeof
+                AdMob.hideNativeAd
+            === "function"
+        ) {
+
+            AdMob
+                .hideNativeAd()
+                .catch(
+                    () => {}
+                );
+
+        }
+
     }
 
 
@@ -3533,10 +3857,6 @@ function renderFilteredBroadcasts(
         item => {
 
 
-            /*
-             * NEWS CARD
-             */
-
             const card =
                 document.createElement(
                     "article"
@@ -3562,15 +3882,9 @@ function renderFilteredBroadcasts(
 
 
             /*
-             * =================================================
-             * REAL NATIVE ADMOB
+             * REAL NATIVE AD
              *
-             * Insert ONE native ad target after the
-             * second article.
-             *
-             * NativeAdMobPlugin.java renders the real
-             * Google NativeAdView above this location.
-             * =================================================
+             * Insert after article #2.
              */
 
             if (
@@ -3589,9 +3903,7 @@ function renderFilteredBroadcasts(
 
             ) {
 
-
                 const adContainerId =
-
                     "native-ad-feed";
 
 
@@ -3603,20 +3915,20 @@ function renderFilteredBroadcasts(
 
                 if (!existingAd) {
 
-                    const inlineAdWrapper =
+                    const wrapper =
                         document.createElement(
                             "div"
                         );
 
 
-                    inlineAdWrapper.innerHTML =
+                    wrapper.innerHTML =
                         getInlineNativeAdHTML(
                             adContainerId
                         );
 
 
                     container.appendChild(
-                        inlineAdWrapper
+                        wrapper
                     );
 
 
@@ -3655,6 +3967,322 @@ function renderFilteredBroadcasts(
 
 
 /* =========================================================
+   INTERSECTION OBSERVER
+========================================================= */
+
+function setupIntersectionObserver() {
+
+    const loaderBox =
+        document.getElementById(
+            "feedLoaderBox"
+        );
+
+
+    if (!loaderBox) {
+        return;
+    }
+
+
+    const observer =
+        new IntersectionObserver(
+
+            entries => {
+
+                entries.forEach(
+                    entry => {
+
+                        if (
+
+                            entry.isIntersecting &&
+
+                            !document
+                                .getElementById(
+                                    "searchModalOverlay"
+                                )
+                                .classList
+                                .contains(
+                                    "active-search"
+                                )
+
+                        ) {
+
+                            executeLoadMoreBatch();
+
+                        }
+
+                    }
+                );
+
+            },
+
+            {
+
+                root: null,
+
+                rootMargin:
+                    "400px",
+
+                threshold:
+                    0
+
+            }
+
+        );
+
+
+    observer.observe(
+        loaderBox
+    );
+
+}
+
+
+/* =========================================================
+   LOAD MORE
+========================================================= */
+
+function executeLoadMoreBatch() {
+
+    if (
+        isFetchingMore
+    ) {
+
+        return;
+
+    }
+
+
+    const filtered =
+        localCachedBroadcasts.filter(
+
+            item =>
+
+                (
+                    item.category ||
+                    ""
+                )
+                .trim()
+                .toLowerCase()
+                ===
+                currentActiveCategoryFilter
+                    .trim()
+                    .toLowerCase()
+
+        );
+
+
+    if (
+
+        currentVisibleFeedCount >=
+        filtered.length
+
+    ) {
+
+        return;
+
+    }
+
+
+    isFetchingMore =
+        true;
+
+
+    const loaderSpinner =
+        document.getElementById(
+            "loaderSpinner"
+        );
+
+
+    const loaderText =
+        document.getElementById(
+            "loaderText"
+        );
+
+
+    if (loaderSpinner) {
+
+        loaderSpinner.style.display =
+            "inline-block";
+
+    }
+
+
+    if (loaderText) {
+
+        loaderText.innerText =
+            "Loading...";
+
+    }
+
+
+    setTimeout(
+        () => {
+
+            renderFilteredBroadcasts(
+                false
+            );
+
+            isFetchingMore =
+                false;
+
+        },
+        300
+    );
+
+}
+
+
+/* =========================================================
+   LOADER UI
+========================================================= */
+
+function updateLoaderUI() {
+
+    const loaderBox =
+        document.getElementById(
+            "feedLoaderBox"
+        );
+
+    const loaderSpinner =
+        document.getElementById(
+            "loaderSpinner"
+        );
+
+    const loaderText =
+        document.getElementById(
+            "loaderText"
+        );
+
+
+    if (!loaderBox) {
+        return;
+    }
+
+
+    const filtered =
+        localCachedBroadcasts.filter(
+
+            item =>
+
+                (
+                    item.category ||
+                    ""
+                )
+                .trim()
+                .toLowerCase()
+                ===
+                currentActiveCategoryFilter
+                    .trim()
+                    .toLowerCase()
+
+        );
+
+
+    loaderBox.style.display =
+        "block";
+
+
+    if (
+
+        currentVisibleFeedCount >=
+        filtered.length
+
+    ) {
+
+        if (
+            filtered.length > 0
+        ) {
+
+            if (loaderSpinner) {
+
+                loaderSpinner.style.display =
+                    "none";
+
+            }
+
+
+            if (loaderText) {
+
+                loaderText.innerText =
+                    "All updates loaded ✅";
+
+            }
+
+        } else {
+
+            loaderBox.style.display =
+                "none";
+
+        }
+
+    } else {
+
+        if (loaderSpinner) {
+
+            loaderSpinner.style.display =
+                "none";
+
+        }
+
+
+        if (loaderText) {
+
+            loaderText.innerText =
+                "Loading...";
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   BOTTOM NAV
+========================================================= */
+
+function adjustBottomNavigationOffsets() {
+
+    const nav =
+        document.getElementById(
+            "mainBottomNav"
+        );
+
+
+    if (!nav) {
+        return;
+    }
+
+
+    const navHeight =
+        nav.offsetHeight || 65;
+
+
+    document.documentElement
+        .style
+        .setProperty(
+            "--bottom-nav-height",
+            `${navHeight}px`
+        );
+
+
+    const mainArea =
+        document.getElementById(
+            "mainContentArea"
+        );
+
+
+    if (mainArea) {
+
+        mainArea.style.paddingBottom =
+            `${navHeight + 90}px`;
+
+    }
+
+}
+
+
+/* =========================================================
    SEARCH CONTROLS
 ========================================================= */
 
@@ -3665,18 +4293,15 @@ function setupSearchEngineControls() {
             "openSearchBtn"
         );
 
-
     const closeBtn =
         document.getElementById(
             "closeSearchDrawerBtn"
         );
 
-
     const searchOverlay =
         document.getElementById(
             "searchModalOverlay"
         );
-
 
     const searchInput =
         document.getElementById(
@@ -3738,12 +4363,13 @@ function setupSearchEngineControls() {
 
         searchInput.addEventListener(
             "input",
-            e =>
+            event => {
 
                 executeNewsSearchQuery(
-                    e.target.value
-                )
+                    event.target.value
+                );
 
+            }
         );
 
     }
@@ -3804,7 +4430,6 @@ function executeNewsSearchQuery(
     const matchedNews =
         localCachedBroadcasts.filter(
             item => {
-
 
                 const code =
 
@@ -3886,11 +4511,9 @@ function executeNewsSearchQuery(
                 ">
 
                 No updates matching
-                "<strong>${
-                    escapeHTML(
-                        cleanQuery
-                    )
-                }</strong>"
+                "<strong>${escapeHTML(
+                    cleanQuery
+                )}</strong>"
                 found.
 
             </div>
@@ -3952,19 +4575,20 @@ function bindVisualInterfaceControls() {
                     "click",
                     function () {
 
-
                         document
                             .querySelectorAll(
                                 ".filter-btn"
                             )
                             .forEach(
-                                p =>
+                                p => {
 
                                     p.classList
                                         .remove(
                                             "active-pill",
                                             "active"
-                                        )
+                                        );
+
+                                }
                             );
 
 
@@ -3987,11 +4611,6 @@ function bindVisualInterfaceControls() {
                             true
                         );
 
-
-                        /*
-                         * Load native ad again
-                         * for the new feed.
-                         */
 
                         setTimeout(
                             () => {
@@ -4019,18 +4638,15 @@ function bindVisualInterfaceControls() {
 
 <script>
 
-
-const openBtn =
+const openMenuButton =
     document.getElementById(
         "openMenuIframeBtn"
     );
 
-
-const overlay =
+const menuOverlay =
     document.getElementById(
         "menuIframeOverlay"
     );
-
 
 const menuIframe =
     document.getElementById(
@@ -4038,16 +4654,16 @@ const menuIframe =
     );
 
 
-if (openBtn) {
+if (openMenuButton) {
 
-    openBtn.addEventListener(
+    openMenuButton.addEventListener(
         "click",
         () => {
 
             menuIframe.src =
                 "menu.html";
 
-            overlay.classList.add(
+            menuOverlay.classList.add(
                 "active"
             );
 
@@ -4057,17 +4673,18 @@ if (openBtn) {
 }
 
 
-if (overlay) {
+if (menuOverlay) {
 
-    overlay.addEventListener(
+    menuOverlay.addEventListener(
         "click",
-        e => {
+        event => {
 
             if (
-                e.target === overlay
+                event.target ===
+                menuOverlay
             ) {
 
-                overlay.classList.remove(
+                menuOverlay.classList.remove(
                     "active"
                 );
 
@@ -4078,9 +4695,9 @@ if (overlay) {
 
 }
 
-
 </script>
 
 
 </body>
+
 </html>
