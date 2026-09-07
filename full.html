@@ -140,6 +140,18 @@
             box-shadow: 0 4px 14px rgba(8, 27, 56, 0.25);
         }
 
+        /* NATIVE AD LAYOUT PREVIEW */
+        .inline-feed-ad {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 24px;
+            margin-bottom: 8px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
         /* Full Screen Blurred Loading Overlay */
         .glass-loader-overlay {
             position: fixed;
@@ -183,24 +195,23 @@
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Bottom Fixed Ad */
+        /* 350x50 FIXED BOTTOM AD */
         .ad-container-wrapper {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
             display: flex;
-            justify-content: center;
+            justify-content: center; /* Centers the 350px container */
             pointer-events: none; 
             z-index: 990;
-            background: #ffffff;
-            border-top: 1px solid #e5e7eb;
+            background: transparent; 
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         .admob-banner-container {
-            width: 100%;
-            min-height: 50px;
+            width: 350px; /* Locked Fixed width */
+            height: 50px; /* Locked Fixed height */
             background: #ffffff;
             color: #202124;
             display: flex;
@@ -209,6 +220,10 @@
             padding: 0 12px;
             box-sizing: border-box;
             pointer-events: auto;
+            border: 1px solid #e5e7eb;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0; 
+            box-shadow: 0px -4px 12px rgba(0, 0, 0, 0.08);
         }
         
         .ad-badge {
@@ -282,7 +297,7 @@
         <!-- Content gets injected here -->
     </main>
 
-    <!-- Ad Wrapper -->
+    <!-- Fixed 350x50 Ad Wrapper -->
     <div class="ad-container-wrapper" id="adContainerWrapper" style="display: none;">
         <div class="admob-banner-container">
             <div style="display:flex; align-items:center; gap:8px;">
@@ -322,6 +337,7 @@
         window.globalAdConfig = {
             status: false,
             bannerId: "",
+            nativeId: "",
             placements: {}
         };
 
@@ -413,10 +429,12 @@
                 
                 const interstitialId = (adData.adMobInterstitialUnitId || "").trim();
                 const bannerId = (adData.adMobBannerUnitId || "").trim();
+                const nativeId = (adData.adMobNativeUnitId || "").trim();
 
                 window.globalAdConfig = {
                     status: isStatusOn,
                     bannerId: bannerId,
+                    nativeId: nativeId,
                     placements: adData.placements || {}
                 };
 
@@ -472,6 +490,27 @@
                 finalizeArticleRender();
             }
         };
+        
+        // Native Ad Mockup Generator
+        function getInlineNativeAdHTML() {
+            if (!window.globalAdConfig.status) return "";
+            
+            const nativeId = window.globalAdConfig.nativeId || "ca-app-pub-3940256099942544/2247696110";
+            
+            return `
+                <div class="inline-feed-ad">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                        <span class="ad-badge">AdMob Native</span>
+                        <span style="font-size:11px; color:#64748b; font-weight:600;">Sponsored Content</span>
+                    </div>
+                    <div style="font-size:32px; margin-bottom:8px;">💡</div>
+                    <strong style="font-size:15px; color:#1e293b; display:block;">Promoted Opportunities</strong>
+                    <span style="font-size:13px; color:#64748b; display:block; margin: 4px 0 2px 0;">AdMob Native Placement Preview.</span>
+                    <span style="font-size:10px; color:#9ca3af; display:block; margin-bottom: 12px; word-break: break-all;">ID: ${nativeId}</span>
+                    <button style="background:#2563eb; color:#fff; border:none; padding:12px 18px; border-radius:8px; font-size:13px; font-weight:700; width:100%; cursor:pointer;">LEARN MORE</button>
+                </div>
+            `;
+        }
 
         function finalizeArticleRender() {
             // Hide the blurred loading overlay
@@ -510,7 +549,11 @@
             let redirectBtnHTML = targetRedirectUrl
                 ? `<a href="${targetRedirectUrl}" target="_blank" class="action-link-btn">${actionLabel}</a>` : "";
 
-            // Notice: The fake wideRectangleAdHTML has been entirely removed from here.
+            // INJECT NATIVE AD MOCKUP AT END OF ARTICLE
+            let nativeAdHTML = "";
+            if (window.globalAdConfig.status && window.globalAdConfig.placements?.nativeAdPostDetails !== false) {
+                nativeAdHTML = getInlineNativeAdHTML();
+            }
 
             container.innerHTML = `
                 <div><span class="category-badge">${category}</span></div>
@@ -518,6 +561,7 @@
                 ${imageHTML}
                 ${videoHTML}
                 <div class="article-body-text">${fullContent}</div>
+                ${nativeAdHTML}
                 ${redirectBtnHTML}
             `;
 
@@ -532,10 +576,10 @@
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
                 const { AdMob } = Capacitor.Plugins;
                 try {
-                    // SMART_BANNER forces Google AdMob to stretch across the full width of the phone
+                    // Changed to 'BANNER' to match the 350x50 fixed container perfectly
                     await AdMob.showBanner({
                         adId: bannerId,
-                        adSize: 'SMART_BANNER', 
+                        adSize: 'BANNER', 
                         position: 'BOTTOM_CENTER',
                         margin: 0
                     });
